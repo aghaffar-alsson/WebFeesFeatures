@@ -1,0 +1,106 @@
+*{padding: 0; margin: 0;box-sizing: border-box;}
+
+.allDiv {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content:center;
+  max-width: 600px;
+  padding-top: 20px;
+  margin-top: 20px;
+  box-shadow: 10px 8px 20px rgba(8, 37, 142, 0.34); /* Soft shadow */
+  margin-left: 335px ;
+  border: double 4px black;
+  
+  border-radius: 12px;
+  margin-bottom: 20px;
+}
+.frmtitle{
+  display: flex;
+  gap:35px;
+  text-align: center;
+  padding-bottom: 10px;
+  margin: auto;
+}
+
+.frmtitle h3{
+  text-align: center;
+  font-size: 22px;
+  font-weight: 600;
+  transform: scaleY(1.5);
+  transform: scaleX(1.1);
+  color: black;
+  padding-bottom: 10px;
+  margin: auto;
+}
+
+.info,
+.sbmtt {
+  display: flex;
+  flex-direction: row;
+  gap: 10px;
+  align-items: flex-start;
+  justify-content:flex-start;
+}
+
+.emll,
+.mobb,
+.sbmtt {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: flex-start;
+  justify-content: flex-start;
+}
+
+/* ✅ Label */
+.lbl {
+  font-size: 14px;
+  /* border: 1px solid #ccc; */
+  background: transparent;
+  outline: none;
+  width: 500px;
+  height: 3vh;
+  border-radius: 8px;
+  margin-left: 35px;
+  margin-top: 5px;
+  margin-bottom: 5px;
+}
+
+/* ✅ Input box */
+.inp {
+  font-size: 18px;
+  border: 1px solid #ccc;
+  background: transparent;
+  outline: none;
+  width: 500px;
+  height: 5vh;
+  border-radius: 8px;
+  margin-left: 35px;
+  margin-top: 5px;
+}
+.inp:focus {
+  border-color: #007bff;
+}
+.divpss11{margin-left: 25px;}
+
+.signup{
+  text-align: left;
+  font-size: 16px;
+  font-weight: 600;
+  color: black;
+  margin-left: 30px;
+}
+
+.signuplnk{
+  font-size: 16px;
+  font-weight: 600;
+  margin-left: 15px;
+}
+
+.signuplnk:hover{
+  color: #0f172a;             
+  transform: scale(1.1) translateX(3px);
+}
+
+/* #pss1{margin-left: 40px;} */

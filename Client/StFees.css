@@ -1,0 +1,173 @@
+*{margin: 0; padding: 0; box-sizing: border-box;}
+.cont {
+  margin: 30px auto;
+  padding: 20px;
+  max-width: 1140px;
+  background: #fff;
+  border-radius: 12px;
+  /* width: 100%; */
+  /* max-width: 100%; */
+  margin-top: 20px;
+  padding-left: 20px;
+  box-shadow: none !important;
+  border: none !important;
+  transform: scale(1);      /* optional slight shrink */
+  transform-origin: top center;
+  page-break-after: avoid;     /* prevent trailing blank page */
+  overflow: hidden !important;  
+}
+
+.ant-table {
+  border-radius: 8px;
+  overflow: hidden;
+  border: 2px solid #1890ff;  
+}
+
+.ant-table-thead > tr > th,
+.ant-table-tbody > tr > td {
+  border: 1px solid #ccc;        /* inner cell borders */
+}
+
+.ant-table-thead > tr > th {
+  background: dodgerblue !important;
+  color: #fff !important;
+  text-align: center;
+}
+
+/* Optional: fix narrow column widths more uniformly */
+.ant-table-cell {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.even-row {
+  background-color: #f0f8ff; /* alice blue */
+}
+
+.odd-row {
+  background-color: #ffffff;
+}
+
+.total-row {
+  position: sticky;
+  bottom: 0;
+  background: #f1f5f9 !important; /* subtle gray-blue */
+  font-weight: bold;
+  color: #1e3a8a;
+  z-index: 2;
+  font-size: 16px;
+  font-weight: 600;
+  border-top: 2px solid #1e40af !important;
+}
+.ant-table-tbody > tr:hover > td {
+  background: #cce5ff !important;
+  color: #003366;
+}
+
+.fmhdr , .sthdr , .yrr{
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  align-items:flex-start;
+  gap: 30px;
+  font-size: 17px;
+  padding-bottom: 10px;
+}
+.prntTb{
+  margin-top: 20px;
+  height: 50px;
+  border-radius: 16px;
+  margin-left: 700px;
+  font-size: 16px;
+  color:#fff;
+  background: dodgerblue;
+
+}
+.prntTb:hover {
+  background: darkblue !important;
+  color: #fff !important;
+  border-color: darkblue !important;
+}
+.curdt{
+  padding-bottom: 10px;
+  font-size: 9px;
+}
+
+@media print {
+   body * {
+    visibility: hidden;
+  }
+  .cont, .cont * {
+    visibility: visible;
+  }
+  .cont {
+    position: absolute;
+    left: 0;
+    top: 0;
+  }
+  .prntTb {
+    display: none !important;
+  }
+  .action-col{display: none;}
+    /* Page setup */
+  /* @page {
+      @top-center {
+      content: "Student Fees Report – " counter(page) " | " attr(prinDt);
+      font-size: 10pt;
+      color: #444;
+    }
+  } */
+
+  .ant-table-cell {
+    font-size: 12px !important;
+    word-break: break-word;
+  } 
+  .fmhdr , .sthdr , .yrr{
+    font-size: 13px !important;
+    word-break: break-word;
+    font-weight:700 ;
+  }
+
+
+}
+/* .tbb{width: 1600;} */
+
+.action-col {
+  min-width: 180px; /* previously 120 */
+  text-align: center;
+}
+.bnkprntdiv{
+  display: flex;
+  flex-direction: row;
+  gap: 10px;
+}
+.disprnt{
+  cursor: none;
+  display: none;
+}
+.bnkcmb{
+  height: 30px;
+  margin-top: 15px;
+  width: 100px;
+  font-size: 12px;
+  color: dodgerblue;
+}
+
+.prntform{
+  color: dodgerblue;
+  border: #000 1px solid;
+  border-radius: 15px;
+  width: 120px;
+  text-align: center;
+  height: 35px;
+  font-size: 12px;
+  cursor: pointer;
+  margin-top: 15px;
+  padding-top: 8px;
+}
+
+
+.prntform:hover{
+  background-color: dodgerblue;
+  color: #fff;
+}

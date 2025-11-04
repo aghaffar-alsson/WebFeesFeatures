@@ -1,0 +1,149 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+
+.bnkfrmcont {
+  margin: auto;
+  max-width: 740px;
+  padding-top: 10px;
+  box-shadow: 0 1px 2px 2px rgba(0, 0, 0, 0.08);
+  margin-top: 50px;
+  height: 900px;
+}
+
+.logo {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 8px;
+  margin-bottom: 15px;
+}
+
+.divtitle {
+  display: flex;
+  flex-direction: column;
+}
+
+.frmtitle {
+  text-align: center;
+  font-size: 16px;
+  font-weight: bold;
+  text-decoration: underline;
+  margin-bottom: 10px;
+}
+
+.hdr {
+  margin-left: 50px;
+}
+
+h5 {
+  margin-top: 15px;
+  margin-bottom: 15px;
+}
+
+.bnkdetclass {
+  border: 1px solid black;
+}
+
+.bnkdetclass h5 {
+  padding-left: 15px;
+}
+
+.graytxt {
+  color: lightgrey;
+}
+
+.evdd {
+  color: red;
+}
+
+.evdd_1 {
+  margin-bottom: 10px;
+}
+
+.frmPrnt {
+  margin-top: 10px;
+  height: 50px;
+  border-radius: 16px;
+  margin-left: 300px;
+  
+  font-size: 16px;
+  color: #fff;
+  background: dodgerblue;
+}
+
+.frmPrnt:hover {
+  background: darkblue !important;
+  color: #fff !important;
+  border-color: darkblue !important;
+}
+
+@media print {
+  @page {
+    size: A4 portrait;
+    margin: 10mm;
+  }
+
+   body * {
+    visibility: hidden;
+  }
+
+  .bnkfrmcont,
+  .bnkfrmcont * {
+    visibility: visible;
+  }
+
+  .frmPrnt {
+    display: none !important;
+  }
+
+  
+  .bnkfrmcont {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    max-width: 210mm; 
+    /* height: 1123px;  */
+    overflow: hidden !important;
+    transform: scale(0.97); 
+    transform-origin: top left;
+    margin: 0 !important;
+    box-shadow: none !important;
+    background: #fff;
+    padding: 10mm;
+  }
+}
+
+/* --- Print preview boundary --- */
+@media screen {
+  .bnkfrmcont {
+    position: relative;
+  }
+
+  /* A4 preview box (shows visible border on screen only) */
+  .bnkfrmcont::after {
+    content: "A4 Print Area Preview";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 210mm;
+    height: 297mm;
+    border: 2px solid black; /* Preview border */
+    box-sizing: border-box;
+    pointer-events: none;
+    color: black;
+    font-size: 12px;
+    text-align: center;
+    padding-top: 5px;
+    background: rgba(255, 255, 255, 0.01);
+    border-radius: 12px;
+  }
+    .bnkfrmcont.exceeds::after {
+    border-color: orange;
+    content: "⚠️ Content exceeds A4 height!";
+  }
+}

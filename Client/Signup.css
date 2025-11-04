@@ -1,0 +1,290 @@
+
+/* @import url("https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300..800;1,300..800&display=swap"); */
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap');
+/* ✅ Default font */
+* {font-family: "Montserrat", sans-serif;}
+*{padding: 0; margin: 0;box-sizing: border-box;}
+/* ✅ Layout */
+.allDivv {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content:center;
+  max-width: 600px;
+  padding-top: 20px;
+  margin-top: 20px;
+  box-shadow: 10px 8px 20px rgba(8, 37, 142, 0.34); /* Soft shadow */
+  margin-left: 335px ;
+  border: double 4px #007bff;
+  border-radius: 12px;
+  margin-bottom: 20px;
+}
+
+.frmtitlee{
+  display: flex;
+  gap:35px;
+  text-align: center;
+  padding-bottom: 10px;
+  margin: auto;
+}
+.frmtitlee h3{
+
+  text-align: center;
+  font-size: 22px;
+  font-weight: 600;
+  transform: scaleY(1.5);
+  transform: scaleX(1.1);
+  color: dodgerblue;
+  padding-bottom: 10px;
+  margin: auto;
+
+}
+
+.titleimg{
+  border-radius:50%;
+  height: 15vh;
+  width: 15vh;
+  border: 2px solid dodgerblue;
+  box-shadow: 10px 8px 20px rgba(8, 37, 142, 0.34); /* Soft shadow */
+  padding: 8px;
+
+}
+.info,
+.sbmtt {
+  display: flex;
+  flex-direction: row;
+  gap: 10px;
+  align-items: flex-start;
+  justify-content:flex-start;
+}
+
+.emll,
+.mobb,
+.sbmtt {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: flex-start;
+  justify-content: flex-start;
+}
+
+/* .tmppss, .divpss1, .divpss2 {
+  display: flex;
+  flex-direction: row;
+  align-items:flex-start;
+  justify-content: flex-start;
+  margin: 0;
+  padding:  0;
+} */
+
+/* ✅ Label */
+.lbl {
+  font-size: 14px;
+  /* border: 1px solid #ccc; */
+  background: transparent;
+  outline: none;
+  width: 500px;
+  height: 3vh;
+  border-radius: 8px;
+  margin-left: 35px;
+  margin-top: 5px;
+  margin-bottom: 5px;
+}
+
+/* ✅ Input box */
+.inp {
+  font-size: 18px;
+  border: 1px solid #ccc;
+  background: transparent;
+  outline: none;
+  width: 500px;
+  height: 5vh;
+  border-radius: 8px;
+  margin-left: 35px;
+  margin-top: 5px;
+}
+.inp:focus {
+  border-color: #007bff;
+}
+
+/* ✅ Warning label */
+.lblworn {
+  color: red;
+  font-size: 14px;
+  font-weight: 700;
+  /* padding-top: 5px; */
+  padding-bottom: 20px;
+  display:inline-block;
+  margin-left: 35px;
+  /* margin-top: 5px;  */
+}
+.lblok {
+  color: green;
+  font-size: 14px;
+  font-weight: 700;
+  /* padding-top: 5px; */
+  margin-left: 35px;
+  /* margin-top: 5px;  */
+}
+#hdnn,
+#hdnn_1 {
+  display: none;
+  font-size: 1px;
+}
+
+/* ✅ Buttons */
+button {
+  padding: 10px 20px;
+  margin: 10px 15px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 1.1rem;
+}
+
+/* Enabled button */
+.enbtn {
+  background-color: #15c049;
+  color: white;
+  transition: background-color 0.3s ease;
+  margin: 5px 5px 5px 35px;
+  width: 190px;
+}
+
+.enbtn:hover {
+  background-color:darkgreen;
+
+}
+
+/* Disabled button */
+.disbtn {
+  background-color: grey;
+  color: #ccc;
+  cursor: not-allowed;
+  opacity: 0.6;
+  margin: 5px 5px 15px 35px;
+  width: 190px;
+}
+
+.fminfo{
+  text-wrap:calc();
+  font-size: 0.7rem;
+  color: darkgreen;
+  font-weight: 700;
+  width: 100%;
+  margin-left: 40px;
+  margin-bottom: 10px;
+
+}
+
+/* passwords input */
+.inp_1  {
+  font-size: 16px;
+  border: 1px solid #ccc;
+  background: transparent;
+  outline: none;
+  width: 180px;
+  height: 5vh;
+  border-radius: 8px;
+  margin-bottom: 10px;
+  margin-left: 15px;
+}
+#lbl1{
+  padding-right: 10px;
+
+}
+#lbl2{
+  padding-right: 20px;
+
+}
+.pssfrm {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content:center;
+  max-width: 450px;
+  padding-top: 5px;
+  margin-top: 5px;
+  margin-bottom: 5px;
+  margin-left: 85px;
+  box-shadow: 10px 8px 20px rgba(8, 37, 142, 0.34); /* Soft shadow */
+  border: solid 2px #007bff;
+  border-radius: 12px;
+}
+
+.frmcont {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  width: 550px;
+  margin: 1px auto;
+  background: #fff;
+  margin-top: 20px;
+  border-radius: 20px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1); /* Soft shadow */
+  text-align: center;
+  color: dodgerblue;
+};
+
+.signupform {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  margin: 80px auto;
+  gap: 12px;
+};
+
+
+
+.mobb{display: flex; flex-direction: column; gap:10px}
+.gotologin{
+  /* margin-left: 35px;
+  font-size: 18px;
+  margin-bottom: 5px;
+  border: solid 1px dodgerblue;
+  border-radius: 8px;
+  height: 5vh;
+  color: #fff;
+  background-color:dodgerblue ; */
+  background-color: #15c049;
+  color: white;
+  transition: background-color 0.3s ease;
+  margin: 5px 5px 15px 35px;
+  width: 200px;  
+}
+
+.gotologin:hover {
+  background-color:darkgreen;
+
+}
+/* .gotologin:hover{
+  background-color: white;
+  color:dod ;
+} */
+.psshints{
+  font-size: 14px;
+  color: grey;
+  margin-top: 7px;
+  margin-left:45px ;
+}
+
+.signin{
+  text-align: left;
+  font-size: 16px;
+  font-weight: 600;
+  color: black;
+  margin-left: 30px;
+}
+
+.signinlnk{
+  font-size: 16px;
+  font-weight: 600;
+  margin-left: 15px;
+}
+
+.signinlnk:hover{
+  color: #0f172a;             
+  transform: scale(1.1) translateX(3px);
+}
