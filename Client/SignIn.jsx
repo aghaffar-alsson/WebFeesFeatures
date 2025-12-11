@@ -208,7 +208,7 @@ export default function SignIn() {
     } catch (err) {
       console.error("Error fetching family data:", err);
     }
-
+    localStorage.setItem("curEmailAddress",regEmll)
     navigate('/fminfo')
   };
 
@@ -238,7 +238,7 @@ export default function SignIn() {
   // console.log(fmEml + ' '+ fmMob)
   const isFormValid = !errors.email && !errors.mobile &&
     regEmll && regMob && fmEml && fmMob &&
-    pswdRegExp.test(pss) && pss != '' && fmpss != undefined && pss != undefined
+    pswdRegExp.test(pss) && pss != '' && fmpss != undefined && pss != undefined && fmpss === pss
   String(pss).trim().toLowerCase() === String(fmpss).trim().toLowerCase();
 
   return (
@@ -286,8 +286,11 @@ export default function SignIn() {
         </div>
         {!isFormValid ? (<p></p>) :
           (<div ><strong className="fminfo">Family ID:{fmDtt.famid} - Family Name:{fmDtt.famnm} </strong></div>)}
-          <p className='signup'>Don't have an account?{''}<Link to="/signup" className="signuplnk">Sign Up</Link></p>
       </form >
+      <div className="signupdiv">
+        <p className='signup'>Don't have an account?{''}</p>
+        <Link to="/signup" className="signuplnk">Sign Up</Link>
+      </div>
 
     </div>
   )

@@ -3,10 +3,10 @@ import React, { useEffect, useState, useRef } from "react";
 import './Signup.css'
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCheck, faCheckDouble, faGreaterThan } from "@fortawesome/free-solid-svg-icons";
-import { faXmark } from "@fortawesome/free-solid-svg-icons";  
+import { faXmark } from "@fortawesome/free-solid-svg-icons";
 import imgg from './img/titlelogo.jpg'
 import 'antd/dist/reset.css';
-import { Button, Alert, Spin , Table , Tag , Input, message  } from "antd";
+import { Button, Alert, Spin, Table, Tag, Input, message } from "antd";
 //import { message } from 'antd';
 import { EyeInvisibleOutlined, EyeTwoTone } from '@ant-design/icons';
 import { Typography } from 'antd';
@@ -19,7 +19,7 @@ import '../Client/SignIn.jsx'
 
 var MobRegExp = /^01[0-2,5]{1}[0-9]{8}$/;
 var EmlRegExp = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
-var pswdRegExp =/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!_@#$%^&*]).{10,}$/;
+var pswdRegExp = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!_@#$%^&*]).{10,}$/;
 
 function SignUp() {
   useEffect(() => {
@@ -42,10 +42,10 @@ function SignUp() {
   const [vllerr, setVllErr] = useState('');
   const [fmDtt, setFmDtt] = useState({});
   const [loginCreated, setLoginCreated] = useState(false)
-  const [ownPss1 , setOwnPss1] = useState("")
-  const [ownPss2 , setOwnPss2] = useState("")
-  const [usrtmpPss , setusrtmpPss] = useState("")
-  const [systempPswd , setSysTempPswd] = useState("")
+  const [ownPss1, setOwnPss1] = useState("")
+  const [ownPss2, setOwnPss2] = useState("")
+  const [usrtmpPss, setusrtmpPss] = useState("")
+  const [systempPswd, setSysTempPswd] = useState("")
   const navigate = useNavigate();
 
   localStorage.removeItem("curFmNo");
@@ -72,7 +72,7 @@ function SignUp() {
       famnm: selectedFamNm,
       emll: regEmll,
       mobb: regMob,
-      pswd:'01071973',
+      pswd: '01071973',
     };
     //console.log(JSON.stringify(loginData))
     try {
@@ -162,7 +162,7 @@ function SignUp() {
   };
 
   //Update the password & go to the sign in component
-  const updtLogin = async ()=>{
+  const updtLogin = async () => {
     // const hashedPswd = await bcrypt.hash(ownPss1, 10);   
     // console.log({
     //       yrno : "2025",
@@ -178,7 +178,7 @@ function SignUp() {
       emll: regEmll,
       mobb: regMob,
       pswd: ownPss1,
-    };    
+    };
     try {
       const res = await fetch("http://localhost:3000/api/updtLogin", {
         method: "PUT",
@@ -193,9 +193,9 @@ function SignUp() {
         // }),
       });
       const data = await res.json();
-      if (data && data.pswd ) {
-          //console.log(data.pswd)
-          Alert('Password Updated')
+      if (data && data.pswd) {
+        //console.log(data.pswd)
+        Alert('Password Updated')
       } else {
 
       }
@@ -205,101 +205,107 @@ function SignUp() {
       // setErrors((prev) => ({ ...prev, email: "Server error" }));
     }
 
-    navigate('/signin')    
-  }  
+    navigate('/signin')
+  }
 
   const isFormValid = !errors.email && !errors.mobile && regEmll && regMob;
-  const isPssFormValid = String(ownPss1).trim().length === 10 
-  && String(ownPss2).trim().length === 10 
-  && ownPss1 === ownPss2  
-  && usrtmpPss === systempPswd
-  && pswdRegExp.test(ownPss1)
-  && pswdRegExp.test(ownPss2)
-  
+  const isPssFormValid = String(ownPss1).trim().length === 10
+    && String(ownPss2).trim().length === 10
+    && ownPss1 === ownPss2
+    && usrtmpPss === systempPswd
+    && pswdRegExp.test(ownPss1)
+    && pswdRegExp.test(ownPss2)
+
   // console.log(isPssFormValid)
   // console.log(systempPswd + '-' + usrtmpPss )
   //setLoginCreated(false)
   return (
-    <form className="allDivv" onSubmit={(e) => HandleSubmit(e, selectedFamid)}>
-      {/* FORM TITLE */}
-      <div className="frmtitlee">
-        <h3 style={{ paddingTop: "10px" }}>Sign Up to Parents' Fees Portal</h3>
-        <img className="titleimg" src={imgg} alt="EL ALSSON" />
-      </div>
-      {/* Mobile */}
-      <div className="mobb">
-        <input type="tel" id="regmobno" maxLength={11} className="inp" placeholder="Write Registered Mobile Number" ref={mobRef} value={regMob} onChange={handleChangeOnlyNo} onKeyUp={handleMobileBlur} />
-        {regMob === undefined || regMob === '' ? (<label className="lblworn"></label>) :
-          (errors.mobile ? (
-            <label className="lblworn" style={{ color: "red" }}>{errors.mobile}<FontAwesomeIcon icon={faXmark} /></label>) :
-            (<label className="lblworn" style={{ color: "green" }}>Correct Mobile Number!!<FontAwesomeIcon icon={faCheck} /></label>))
-        }
-      </div>
-      {/* Email */}
-      <div className="emll">
-        <input
-          type="email" id="regEmll" className="inp"
-          ref={emlRef} placeholder="Write Registered Email Address" value={regEmll}
-          onChange={(e) => setRegEmll(e.target.value)} onKeyUp={handleEmailBlur} required
-        />
-        {regEmll === undefined || regEmll === '' ? (<label className="lblworn"></label>) :
-          (errors.email ? (<label className="lblworn" style={{ color: "red" }}>{errors.email}<FontAwesomeIcon icon={faXmark} /></label>) :
-            (<label className="lblworn" style={{ color: "green", display: "flow" }}>Correct Email Address!!<FontAwesomeIcon icon={faCheck} /></label>))
-        }
-      </div>
+    <>
+      <form className="allDivv" onSubmit={(e) => HandleSubmit(e, selectedFamid)}>
+        {/* FORM TITLE */}
+        <div className="frmtitlee">
+          <h3 style={{ paddingTop: "10px" }}>Sign Up to Parents' Fees Portal</h3>
+          <img className="titleimg" src={imgg} alt="EL ALSSON" />
+        </div>
+        {/* Mobile */}
+        <div className="mobb">
+          <input type="tel" id="regmobno" maxLength={11} className="inp" placeholder="Write Your Registered Mobile Number" ref={mobRef} value={regMob} onChange={handleChangeOnlyNo} onKeyUp={handleMobileBlur} />
+          {regMob === undefined || regMob === '' ? (<label className="lblworn"></label>) :
+            (errors.mobile ? (
+              <label className="lblworn" style={{ color: "red" }}>{errors.mobile}<FontAwesomeIcon icon={faXmark} /></label>) :
+              (<label className="lblworn" style={{ color: "green" }}>Correct Mobile Number!!<FontAwesomeIcon icon={faCheck} /></label>))
+          }
+        </div>
+        {/* Email */}
+        <div className="emll">
+          <input
+            type="email" id="regEmll" className="inp"
+            ref={emlRef} placeholder="Write Your Registered Email Address" value={regEmll}
+            onChange={(e) => setRegEmll(e.target.value)} onKeyUp={handleEmailBlur} required
+          />
+          {regEmll === undefined || regEmll === '' ? (<label className="lblworn"></label>) :
+            (errors.email ? (<label className="lblworn" style={{ color: "red" }}>{errors.email}<FontAwesomeIcon icon={faXmark} /></label>) :
+              (<label className="lblworn" style={{ color: "green", display: "flow" }}>Correct Email Address!!<FontAwesomeIcon icon={faCheck} /></label>))
+          }
+        </div>
 
-      {/* Submit */}
-      {!isFormValid ? (<p></p>) :
-      (<div ><strong className="fminfo">Family ID:{fmDtt.famid} - Family Name:{fmDtt.famnm} </strong></div>)}
-      
-      <div className="sbmtt">
-      {isFormValid ? (<button className="enbtn" type="submit" tabIndex="9" id="btnSubmit" onClick={createLogin}>Create Login <FontAwesomeIcon icon={faCheckDouble} /></button>) :
-      (<button className="disbtn" type="button" tabIndex="9" id="btnSubmit" disabled>Create Password</button>)}
+        {/* Submit */}
+        {!isFormValid ? (<p></p>) :
+          (<div ><strong className="fminfo">Family ID:{fmDtt.famid} - Family Name:{fmDtt.famnm} </strong></div>)}
+
+        <div className="sbmtt">
+          {isFormValid ? (<button className="enbtn" type="submit" tabIndex="9" id="btnSubmit" onClick={createLogin}>Create Login <FontAwesomeIcon icon={faCheckDouble} /></button>) :
+            (<button className="disbtn" type="button" tabIndex="9" id="btnSubmit" disabled>Create Password</button>)}
+        </div>
+        {!loginCreated ? (<p></p>) :
+          (<div >
+            <div className="pssfrm">
+              <div className="pdvv">
+                <p className="lblok">Congratulations, Your login was created successfuly.</p>
+                <p className="lblok">Temporary password sent to your email address: {regEmll}</p>
+                <p className="lblok">Please wite it below for the first login only.</p>
+                <p className="lblok">Then change it with your own password immidiately.</p>
+              </div>
+              <div className="tmppss">
+                <label id="lbl1" className="lbl" htmlFor="tmppss"  >Write temp. password:</label>
+                <Input.Password id="tmppss" className="inp_1" type="password" maxLength={10}
+                  iconRender={(visible) => visible ? <EyeTwoTone /> : <EyeInvisibleOutlined />} value={usrtmpPss}
+                  onChange={(e) => setusrtmpPss(e.target.value)} />
+              </div>
+              <div className="divpss1">
+                <label id="lbl2" className="lbl" htmlFor="pss1" >Write own password:</label>
+                <Input.Password id="pss1" className="inp_1" type="password" maxLength={10} value={ownPss1}
+                  iconRender={(visible) => visible ? <EyeTwoTone /> : <EyeInvisibleOutlined />}
+                  onChange={(e) => setOwnPss1(e.target.value)} />
+              </div>
+              <div className="divpss2">
+                <label className="lbl" htmlFor="pss2">Confirm your password:</label>
+                <Input.Password id="pss2" className="inp_1" type="password" maxLength={10} ovalue={ownPss2}
+                  iconRender={(visible) => visible ? <EyeTwoTone /> : <EyeInvisibleOutlined />}
+                  onChange={(e) => setOwnPss2(e.target.value)} />
+              </div>
+              <div>
+                <ul className="psshints">
+                  <li>Password Hints:</li>
+                  <li>Should be 10 characters length</li>
+                  <li>At least one uppercase letter</li>
+                  <li>At least one number</li>
+                  <li>At least one special character (!_@#$%^&*)</li>
+                </ul>
+              </div>
+              <div >
+                {!isPssFormValid ? (<p></p>) :
+                  <button type="button" className="gotologin" onClick={updtLogin}> Go to login page <FontAwesomeIcon icon={faCheckDouble} /></button >}
+              </div>
+            </div>
+          </div>)}
+      </form >
+
+      <div className="signindiv">
+        <p className='signin'>Have an account?</p>
+        <Link to="/signin" className="signinlnk">Sign In</Link>
       </div>
-      {!loginCreated ? (<p></p>) :
-      (<div >
-      <div className="pssfrm">
-        <div className="pdvv">
-          <p className="lblok">Congratulations, Your login was created successfuly.</p>
-          <p className="lblok">Temporary password sent to your email address: {regEmll}</p>
-          <p className="lblok">Please wite it below for the first login only.</p>
-          <p className="lblok">Then change it with your own password immidiately.</p>
-        </div>
-        <div className="tmppss">
-          <label id="lbl1" className="lbl" htmlFor="tmppss"  >Write temp. password:</label>            
-          <Input.Password id="tmppss" className="inp_1" type="password" maxLength={10} 
-          iconRender={(visible) =>visible ? <EyeTwoTone /> : <EyeInvisibleOutlined />}value={usrtmpPss} 
-          onChange={(e) => setusrtmpPss(e.target.value)}/>
-        </div>
-        <div className="divpss1">
-          <label id="lbl2" className="lbl" htmlFor="pss1" >Write own password:</label>            
-          <Input.Password id="pss1" className="inp_1" type="password" maxLength={10} value={ownPss1} 
-          iconRender={(visible) =>visible ? <EyeTwoTone /> : <EyeInvisibleOutlined />} 
-          onChange={(e) => setOwnPss1(e.target.value)}/>
-        </div>      
-        <div className="divpss2">
-          <label  className="lbl"  htmlFor="pss2">Confirm your password:</label>            
-          <Input.Password id="pss2" className="inp_1" type="password" maxLength={10} ovalue={ownPss2} 
-          iconRender={(visible) =>visible ? <EyeTwoTone /> : <EyeInvisibleOutlined />} 
-          onChange={(e) => setOwnPss2(e.target.value)}/>
-        </div>
-        <div>
-          <ul className="psshints">
-              <li>Password Hints:</li>
-              <li>Should be 10 characters length</li>
-              <li>At least one uppercase letter</li>
-              <li>At least one number</li>
-              <li>At least one special character (!_@#$%^&*)</li>
-          </ul>
-        </div> 
-        <div >
-          {!isPssFormValid ? (<p></p>) :
-          <button type="button" className="gotologin" onClick={updtLogin}> Go to login page <FontAwesomeIcon icon={faCheckDouble} /></button > }
-        </div>
-        </div>
-      </div>)}
-      <p className='signin'>Have an account?{''}<Link to="/signin" className="signinlnk">Sign In</Link></p>
-    </form >
+    </>
   )
 }
 

@@ -53,7 +53,7 @@ export default function StPay() {
     if (!curFamilyNo || !curStudID || !curYgpNo) {
       return
     }
-    console.log(curFamilyNo , curStudID, curYgpNo)
+    console.log(curFamilyNo, curStudID, curYgpNo)
     // console.log(onlyRem)
     setLoading(true);
     try {
@@ -71,7 +71,7 @@ export default function StPay() {
       if (Array.isArray(data)) {
         //console.log(1)
         setstpaymtrx(data);
-        setScNm(data[0].schoolname )
+        setScNm(data[0].schoolname)
         console.log(scnm)
       } else if (data && data.stid) {
         //console.log(2)
@@ -168,7 +168,7 @@ export default function StPay() {
     },
     //TOTAL PAID
     {
-      title: 'Total PAID',
+      title: 'Total Paid',
       dataIndex: 'totpaid',
       align: "right",
       //render: (value1) => formatDec(value1),
@@ -210,16 +210,16 @@ export default function StPay() {
       width: 10,
     },
     //PERSON WHO PAID
-    {
+    hidd && {
       title: 'Paid By',
       dataIndex: 'payername',
-      className:'wrapp',
+      className: 'wrapp',
       align: "left",
       render: (text, record) =>
         record.IsTotal === 1 ? <strong>{text}</strong> : text,      // render: (status) => (
       width: 10,
     },
-  ];
+  ].filter(Boolean);
 
   //END OF TABLE COLUMNS
   //create toyals & grand totals
@@ -263,8 +263,8 @@ export default function StPay() {
     <div className='paycont' ref={payReff} >
       {contextHolder}
       <p className='paycurdt'>Date: {curDate}</p>
-      <h3 style={{ textAlign: "center" }}><u><b>{scnm} School</b></u></h3>
-      <h3 style={{ textAlign: "center" }}><u><b>Student Payment History Report - {import.meta.env.VITE_CUR_YEAR_NAME}</b></u></h3>
+      <h3 className='hdrr' style={{ textAlign: "center" }}><u><b>{scnm} School</b></u></h3>
+      <h3 className='hdrr' style={{ textAlign: "center" }}><u><b>Student Payment History Report - {import.meta.env.VITE_CUR_YEAR_NAME}</b></u></h3>
       <br></br>
       <div className="payyrr">
         <p>Academic Year: {import.meta.env.VITE_CUR_YEAR_NAME}</p>
@@ -290,12 +290,14 @@ export default function StPay() {
             bordered
             pagination={false}
             size="small"
+            scroll={{ x: 'max-content' }}
+
             rowClassName={(record, index) => { if (record.IsTotal === 1) return 'paytotal-row'; return index % 2 === 0 ? 'payeven-row' : 'payodd-row'; }}
           // scroll={{ y: 500 }}         
           />)
           : (<Alert message="No fee records found" type="info" showIcon />)
       }
-      <div>{loading ? (<p></p>) : (stpaymtrx.length > 0 ? (<Button className="payprntTb" onClick={payTbPrnt}>Print / Save As PDF</Button>) : (<></>))}</div>
+      <div>{loading ? (<p></p>) : (stpaymtrx.length > 0 ? (<Button id='btnn' className="payprntTb" onClick={payTbPrnt}>Print / Save As PDF</Button>) : (<></>))}</div>
     </div>
   )
 }

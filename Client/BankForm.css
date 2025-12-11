@@ -42,6 +42,7 @@
 h5 {
   margin-top: 15px;
   margin-bottom: 15px;
+  font-size: 16px;
 }
 
 .bnkdetclass {
@@ -69,7 +70,7 @@ h5 {
   height: 50px;
   border-radius: 16px;
   margin-left: 300px;
-  
+
   font-size: 16px;
   color: #fff;
   background: dodgerblue;
@@ -81,13 +82,36 @@ h5 {
   border-color: darkblue !important;
 }
 
+#amt {
+  color: red;
+  font-size: 20px;
+}
+
+#evdd1 {
+  color: red;
+  font-size: 16px;
+}
+
+#stinfotxt::before {
+  content: "|************************FAMILY INFO**************************|";
+}
+
+#bnkinfotxt::before {
+  content: "|***********************BANK DETAILS**************************|";
+  ;
+}
+
+#endforminfo::before {
+  content: "|***********************END OF FORM**************************|";
+}
+
 @media print {
   @page {
     size: A4 portrait;
     margin: 10mm;
   }
 
-   body * {
+  body * {
     visibility: hidden;
   }
 
@@ -100,22 +124,60 @@ h5 {
     display: none !important;
   }
 
-  
+
   .bnkfrmcont {
     position: absolute;
     top: 0;
     left: 0;
     width: 100%;
-    max-width: 210mm; 
-    /* height: 1123px;  */
+    max-width: 210mm;
+    /* height: 1123px; */
     overflow: hidden !important;
-    transform: scale(0.97); 
-    transform-origin: top left;
+    /* REMOVE SCALE ↓ ↓ */
+    /* transform: scale(0.97);
+       transform-origin: top left; */
     margin: 0 !important;
     box-shadow: none !important;
     background: #fff;
     padding: 10mm;
   }
+
+  .tbb,
+  .ant-table-body {
+    overflow: visible !important;
+    max-height: none !important;
+  }
+
+  .logo {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 8px;
+    margin-bottom: 15px;
+  }
+    #schoolLogo {
+    width: 260px !important;
+    /* adjust size as needed */
+    height: auto !important;
+  }
+
+  #bankLogo {
+    width: 200px !important;
+    /* adjust if needed */
+    height: auto !important;
+  }
+
+  .logo img {
+    object-fit: contain !important;
+  }
+  img#schoolLogo,
+  img#bankLogo {
+    visibility: visible !important;
+    width: 300px !important;
+    height: auto !important;
+    position: relative !important;
+    z-index: 9999 !important;
+  }  
 }
 
 /* --- Print preview boundary --- */
@@ -126,13 +188,14 @@ h5 {
 
   /* A4 preview box (shows visible border on screen only) */
   .bnkfrmcont::after {
-    content: "A4 Print Area Preview";
+    content: "Bank Form";
     position: absolute;
     top: 0;
     left: 0;
     width: 210mm;
     height: 297mm;
-    border: 2px solid black; /* Preview border */
+    border: 2px solid black;
+    /* Preview border */
     box-sizing: border-box;
     pointer-events: none;
     color: black;
@@ -142,8 +205,188 @@ h5 {
     background: rgba(255, 255, 255, 0.01);
     border-radius: 12px;
   }
-    .bnkfrmcont.exceeds::after {
+
+  .bnkfrmcont.exceeds::after {
     border-color: orange;
     content: "⚠️ Content exceeds A4 height!";
   }
+
+  #schoolLogo {
+    width: 200px ;
+    height: auto ;
+  }
+}
+
+
+
+/* --- Responsive adjustments for tablets (medium screens: 601px–1024px) --- */
+@media (max-width: 1024px) {
+  .bnkfrmcont {
+    max-width: 90%;
+    margin-top: 30px;
+    height: auto;
+    padding: 20px;
+  }
+
+  .logo {
+    flex-direction: row;
+    justify-content: space-around;
+    padding-bottom: 6px;
+  }
+
+  .divtitle {
+    align-items: center;
+  }
+
+  .frmtitle {
+    font-size: 15px;
+  }
+
+  .hdr {
+    margin-left: 25px;
+  }
+
+  .frmPrnt {
+    margin-left: 0;
+    width: 60%;
+    height: 45px;
+    display: block;
+    margin: 20px auto;
+    font-size: 15px;
+  }
+
+  .logo {
+    flex-direction: row;
+    justify-content: flex-start;
+    align-items: flex-start;
+    gap: 250px;
+  }
+
+  #schoolLogo,
+  #bankLogo {
+    max-width: 100px;
+  }
+
+  .frmtitle {
+    font-size: 15px;
+  }
+
+  .graytxt,
+  .graytxt h5 {
+    font-size: 12px;
+    color: gray;
+  }
+
+  #evdd1 {
+    color: red;
+    font-size: 16px;
+  }
+
+  #amt {
+    color: red;
+    font-size: 16px;
+  }
+
+}
+
+/* --- Responsive adjustments for phones (small screens: ≤600px) --- */
+@media (max-width: 600px) {
+  .bnkfrmcont {
+    max-width: 95%;
+    margin-top: 20px;
+    padding: 15px;
+    height: auto;
+    box-shadow: none;
+  }
+
+  .logo {
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .divtitle {
+    text-align: center;
+    align-items: center;
+  }
+
+  .frmtitle {
+    font-size: 14px;
+    margin-bottom: 8px;
+  }
+
+  .hdr {
+    margin-left: 10px;
+    font-size: 14px;
+  }
+
+  h5 {
+    margin-top: 10px;
+    margin-bottom: 10px;
+    font-size: 13px;
+  }
+
+  .bnkdetclass h5 {
+    padding-left: 10px;
+  }
+
+  .frmPrnt {
+    width: 90%;
+    margin: 15px auto;
+    height: 45px;
+    font-size: 14px;
+    border-radius: 10px;
+    display: block;
+  }
+
+  /* Hide the A4 preview border on small screens */
+  .bnkfrmcont::after {
+    display: none;
+  }
+
+  .logo {
+    flex-direction: row;
+    justify-content: flex-start;
+    align-items: flex-start;
+    gap: 250px;
+  }
+
+  #schoolLogo,
+  #bankLogo {
+    max-width: 150px;
+  }
+
+  .frmtitle {
+    font-size: 13px;
+  }
+
+  .graytxt,
+  .graytxt h5 {
+    font-size: 10px;
+    color: black;
+  }
+
+  #evdd1 {
+    color: red;
+    font-size: 14px;
+  }
+
+  #amt {
+    color: red;
+    font-size: 14px;
+  }
+
+  #stinfotxt::before {
+    content: "|************Student Info.********|";
+  }
+
+  #bnkinfotxt::before {
+    content: "|*********Bank Details***********|";
+  }
+
+  #endforminfo::before {
+    content: "|************End Of Form********|";
+  }
+
 }

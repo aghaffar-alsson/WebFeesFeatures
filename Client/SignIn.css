@@ -1,29 +1,35 @@
-*{padding: 0; margin: 0;box-sizing: border-box;}
+* {
+  padding: 0;
+  margin: 0;
+  box-sizing: border-box;
+}
 
 .allDiv {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  justify-content:center;
+  justify-content: center;
   max-width: 600px;
   padding-top: 20px;
   margin-top: 20px;
-  box-shadow: 10px 8px 20px rgba(8, 37, 142, 0.34); /* Soft shadow */
-  margin-left: 335px ;
+  box-shadow: 10px 8px 20px rgba(8, 37, 142, 0.34);
+  /* Soft shadow */
+  margin-left: 335px;
   border: double 4px black;
-  
+
   border-radius: 12px;
   margin-bottom: 20px;
 }
-.frmtitle{
+
+.frmtitle {
   display: flex;
-  gap:35px;
+  gap: 35px;
   text-align: center;
   padding-bottom: 10px;
   margin: auto;
 }
 
-.frmtitle h3{
+.frmtitle h3 {
   text-align: center;
   font-size: 22px;
   font-weight: 600;
@@ -40,7 +46,7 @@
   flex-direction: row;
   gap: 10px;
   align-items: flex-start;
-  justify-content:flex-start;
+  justify-content: flex-start;
 }
 
 .emll,
@@ -79,12 +85,26 @@
   margin-left: 35px;
   margin-top: 5px;
 }
+
 .inp:focus {
   border-color: #007bff;
 }
-.divpss11{margin-left: 25px;}
 
-.signup{
+.divpss11 {
+  margin-left: 25px;
+}
+
+.signupdiv {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  justify-content: flex-start;
+  gap: 14px;
+  margin-left: 310px;
+  margin-top: 10px;
+}
+
+.signup {
   text-align: left;
   font-size: 16px;
   font-weight: 600;
@@ -92,15 +112,216 @@
   margin-left: 30px;
 }
 
-.signuplnk{
+.signuplnk {
   font-size: 16px;
   font-weight: 600;
   margin-left: 15px;
 }
 
-.signuplnk:hover{
-  color: #0f172a;             
+.signuplnk:hover {
+  color: #0f172a;
   transform: scale(1.1) translateX(3px);
 }
 
 /* #pss1{margin-left: 40px;} */
+
+@media (max-width: 600px) {
+
+  /*Small screens (phones upto 600px width)*/
+  .allDiv {
+    max-width: 90%;
+    margin: 20px auto;
+    padding: 15px;
+    box-shadow: 4px 4px 12px rgba(8, 37, 142, 0.2);
+  }
+
+  .frmtitle {
+    flex-direction: row;
+    gap: 10px;
+  }
+
+  .frmtitle h3 {
+    font-size: 14px;
+    transform: none;
+  }
+
+  .titleimg {
+    width: 100px;
+    height: 100px;
+  }
+
+  .lbl,
+  .inp {
+    width: 90%;
+    margin-left: 0;
+    font-size: 12px;
+
+  }
+
+  #regmobno,
+  #regEmll {
+    font-size: 12px;
+    width: 330px;
+    margin-left: 0;
+  }
+
+  #pss1 {
+    font-size: 14px;
+    width: 230px;
+    margin-left: 0;
+  }
+
+
+  .inp_1 {
+    width: 80%;
+    margin-left: 0;
+    font-size: 12px;
+  }
+
+  .pssfrm {
+    margin-left: 0;
+    max-width: 90%;
+    padding: 10px;
+  }
+
+  .enbtn,
+  .disbtn,
+  .gotologin {
+    width: 90%;
+    margin-left: 0;
+    font-size: 1rem;
+  }
+
+  .fminfo,
+  .lblworn,
+  .lblok {
+    width: 90%;
+    margin-left: 0;
+    text-align: left;
+  }
+
+  .lblworn {
+    font-size: 12px;
+  }
+
+  #pss1 {
+    margin-left: 0;
+    font-size: 12px;
+  }
+
+  .signup,
+  .signuplnk {
+    margin-left: 0;
+    font-size: 14px;
+  }
+
+  .titleimg {
+    width: 80px;
+    height: 80px;
+  }
+
+  .signupdiv {
+    gap: 7px;
+    margin-left: 35px;
+  }
+
+  .divpss11 {
+    margin-left: 0;
+  }
+
+  #btnSubmit {
+    font-size: 14px;
+    width: 120px;
+  }
+}
+
+@media (min-width: 601px) and (max-width: 992px) {
+
+  /*Medium screens (tablets from 601px upto 992px width)*/
+  .allDiv {
+    max-width: 80%;
+    margin: 30px auto;
+    padding: 20px;
+  }
+
+  .frmtitle {
+    flex-direction: row;
+    justify-content: center;
+    gap: 20px;
+  }
+
+  .frmtitle h3 {
+    font-size: 18px;
+  }
+
+  .lbl,
+  .inp {
+    width: 85%;
+    margin-left: 0;
+    font-size: 14px;
+  }
+
+  .pssfrm {
+    margin-left: 30px;
+    max-width: 80%;
+  }
+
+  .enbtn,
+  .disbtn,
+  .gotologin {
+    width: 220px;
+    margin-left: 25px;
+  }
+
+  .fminfo {
+    margin-left: 25px;
+  }
+
+  .signup,
+  .signuplnk {
+    margin-left: 0;
+    font-size: 14px;
+  }
+
+  .titleimg {
+    width: 100px;
+    height: 100px;
+  }
+
+  #regmobno,
+  #regEmll {
+    font-size: 16px;
+    width: 450px;
+  }
+
+  #pss1 {
+    font-size: 16px;
+    width: 250px;
+  }
+
+  .signupdiv {
+    font-size: 14px;
+    gap: 7px;
+    margin-left: 95px;
+  }
+
+  .lblworn {
+    font-size: 12px;
+    margin-left: 0;
+  }
+
+  .inp_1 {
+    width: 80%;
+    margin-left: 0;
+    font-size: 12px;
+  }
+
+  .divpss11 {
+    margin-left: 0;
+  }
+
+  #btnSubmit {
+    font-size: 16px;
+    width: 120px;
+  }
+}

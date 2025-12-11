@@ -3,7 +3,7 @@ import React, { useEffect, useRef, useState } from 'react'
 import './FeesHist.css'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { useReactToPrint } from 'react-to-print'
-import { Table, Typography, Spin, Alert , Button, message} from 'antd'
+import { Table, Typography, Spin, Alert, Button, message } from 'antd'
 
 
 export default function FeesHist() {
@@ -15,28 +15,28 @@ export default function FeesHist() {
   const curYgpName = localStorage.getItem("ygp")
   const [payhistData, setPayHistData] = useState([]);
 
-  const  getStFeesHistory = async () =>{
-    if (!curFamilyNo || !curStudID  ){
+  const getStFeesHistory = async () => {
+    if (!curFamilyNo || !curStudID) {
       return
     }
     //console.log(CurFmNo , CurFmNm)
     setLoading(true);
     try {
       const res = await fetch("http://localhost:3000/api/getstfees", {
-      method: "POST",
+        method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           famid: curFamilyNo,
           curstid: curStudID,
           onlyRem: onlyRem,
         }),
-      });      
+      });
       const data = await res.json();
       //console.log(Array.isArray(data))
       if (Array.isArray(data)) {
         //console.log(1)
         setStFeesMtrx(data);
-        setScNm(data.schoolId === 1 ? 'American School' : 'British School' )
+        setScNm(data.schoolId === 1 ? 'American School' : 'British School')
       } else if (data && data.stid) {
         //console.log(2)
         setStFeesMtrx([data]);
@@ -48,11 +48,11 @@ export default function FeesHist() {
     } finally {
       setLoading(false);
     }
-      
-  }  
+
+  }
   return (
     <div>
-      
+
     </div>
   )
 }

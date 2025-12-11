@@ -1,4 +1,9 @@
-*{margin: 0; padding: 0; box-sizing: border-box;}
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
 .cont {
   margin: 30px auto;
   padding: 20px;
@@ -11,26 +16,30 @@
   padding-left: 20px;
   box-shadow: none !important;
   border: none !important;
-  transform: scale(1);      /* optional slight shrink */
+  transform: scale(1);
+  /* optional slight shrink */
   transform-origin: top center;
-  page-break-after: avoid;     /* prevent trailing blank page */
-  overflow: hidden !important;  
+  page-break-after: avoid;
+  /* prevent trailing blank page */
+  overflow: hidden !important;
 }
 
 .ant-table {
   border-radius: 8px;
   overflow: hidden;
-  border: 2px solid #1890ff;  
+  border: 2px solid #1890ff;
 }
 
-.ant-table-thead > tr > th,
-.ant-table-tbody > tr > td {
-  border: 1px solid #ccc;        /* inner cell borders */
+.ant-table-thead>tr>th,
+.ant-table-tbody>tr>td {
+  border: 1px solid #ccc;
+  /* inner cell borders */
 }
 
-.ant-table-thead > tr > th {
+.ant-table-thead>tr>th {
   background: dodgerblue !important;
   color: #fff !important;
+  /* color: #000 !important; */
   text-align: center;
 }
 
@@ -40,8 +49,10 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
+
 .even-row {
-  background-color: #f0f8ff; /* alice blue */
+  background-color: #f0f8ff;
+  /* alice blue */
 }
 
 .odd-row {
@@ -51,7 +62,8 @@
 .total-row {
   position: sticky;
   bottom: 0;
-  background: #f1f5f9 !important; /* subtle gray-blue */
+  background: #f1f5f9 !important;
+  /* subtle gray-blue */
   font-weight: bold;
   color: #1e3a8a;
   z-index: 2;
@@ -59,101 +71,87 @@
   font-weight: 600;
   border-top: 2px solid #1e40af !important;
 }
-.ant-table-tbody > tr:hover > td {
+
+.ant-table-tbody>tr:hover>td {
   background: #cce5ff !important;
   color: #003366;
 }
 
-.fmhdr , .sthdr , .yrr{
+.fmhdr,
+.sthdr,
+.yrr {
   display: flex;
   flex-direction: row;
   justify-content: flex-start;
-  align-items:flex-start;
+  align-items: flex-start;
   gap: 30px;
   font-size: 17px;
   padding-bottom: 10px;
 }
-.prntTb{
+
+.prntTb {
   margin-top: 20px;
   height: 50px;
   border-radius: 16px;
   margin-left: 700px;
   font-size: 16px;
-  color:#fff;
+  color: #fff;
   background: dodgerblue;
 
 }
-.prntTb:hover {
+
+.prntBnkk {
+  margin-top: 8px;
+  height: 50px;
+  border-radius: 16px;
+  font-size: 16px;
+  color: #fff;
+  background: dodgerblue;
+
+}
+
+.prntTb:hover , .prntBnkk:hover {
   background: darkblue !important;
   color: #fff !important;
   border-color: darkblue !important;
 }
-.curdt{
+
+.curdt {
   padding-bottom: 10px;
   font-size: 9px;
 }
 
-@media print {
-   body * {
-    visibility: hidden;
-  }
-  .cont, .cont * {
-    visibility: visible;
-  }
-  .cont {
-    position: absolute;
-    left: 0;
-    top: 0;
-  }
-  .prntTb {
-    display: none !important;
-  }
-  .action-col{display: none;}
-    /* Page setup */
-  /* @page {
-      @top-center {
-      content: "Student Fees Report – " counter(page) " | " attr(prinDt);
-      font-size: 10pt;
-      color: #444;
-    }
-  } */
-
-  .ant-table-cell {
-    font-size: 12px !important;
-    word-break: break-word;
-  } 
-  .fmhdr , .sthdr , .yrr{
-    font-size: 13px !important;
-    word-break: break-word;
-    font-weight:700 ;
-  }
-
-
-}
 /* .tbb{width: 1600;} */
 
 .action-col {
-  min-width: 180px; /* previously 120 */
+  min-width: 180px;
+  /* previously 120 */
   text-align: center;
 }
-.bnkprntdiv{
+
+.bnkprntdiv {
   display: flex;
   flex-direction: row;
   gap: 10px;
 }
-.disprnt{
+
+.disprnt {
   cursor: none;
   display: none;
 }
-.bnkcmb{
-  height: 30px;
-  margin-top: 15px;
-  width: 100px;
-  font-size: 12px;
+
+.bnkcmb {
+  height: 40px;
+  margin-top: 10px;
+  width: 180px;
+  font-size: 14px;
   color: dodgerblue;
+  /* margin-top: 25px; */
+  border-radius: 8px;
+  
 }
 
-.prntform{
+.prntform {
   color: dodgerblue;
   border: #000 1px solid;
   border-radius: 15px;
@@ -165,9 +163,282 @@
   margin-top: 15px;
   padding-top: 8px;
 }
+.chkInclude{
+  font-size: 12px;
+}
 
-
-.prntform:hover{
+.prntform:hover {
   background-color: dodgerblue;
   color: #fff;
+}
+
+.bnkdiv{
+  display: flex;
+  justify-items: center;
+  justify-content: flex-end;
+  gap: 20px;
+  width: 350px;
+  border: 2px solid dodgerblue;
+  border-radius: 8px;
+  padding: 10px;
+
+}
+.awspay{
+  display: flex;
+  justify-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  
+}
+.selected-total {
+  margin-top: 15px;
+  font-size: 18px;
+  text-align: right;
+  color: #1e3a8a;
+  font-weight: 600;
+}
+
+@media print {
+  /* 1️⃣ Page setup */
+  @page {
+    size: A4 landscape;
+    margin: 10mm; /* small margins to maximize space */
+  }
+  /* Hide everything by default */
+  body * {
+    visibility: hidden;
+    margin: 0;
+    padding: 0;
+  }
+
+  /* Make only the printable container visible */
+  .cont, .cont * {
+    visibility: visible;
+  }
+  /* 2️⃣ Container scaling to fit one page */
+  .cont {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 80%;
+    transform: scale(0.9); /* adjust if needed: 0.7–0.75 usually fits */
+    transform-origin: top left;
+    font-size: 10pt;
+    line-height: 1.1;
+    overflow: visible !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  /* 3️⃣ Hide non-essential elements */
+  .prntTb,
+  .prntBnkk,
+  .bnkdiv,
+  .bnkcmb,
+  .selected-total,
+  .action-col {
+    display: none !important;
+  }
+
+  /* 4️⃣ Table adjustments */
+  .ant-table {
+    width: 140% !important;
+    table-layout: fixed !important; /* shrink columns proportionally */
+    font-size: 10px !important; /* reduce font to fit */
+    border-collapse: collapse !important;
+  }
+
+  .ant-table-thead > tr > th,
+  .ant-table-tbody > tr > td {
+    padding: 1px 2px !important; /* smaller padding */
+    font-size: 10px !important;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    border: 1px solid #fff !important; /* visible borders in print */
+  }
+
+  .ant-table-thead > tr > th {
+    background: dodgerblue !important;
+    color: #fff !important;
+    text-align: center;
+  }
+
+  .ant-table-tbody > tr {
+    page-break-inside: avoid; /* prevent breaking single rows */
+  }
+
+  /* 5️⃣ Headers & other text adjustments */
+  .fmhdr,
+  .sthdr,
+  .yrr {
+    font-size: 18px !important;
+    font-weight: 500;
+    gap: 10px !important;
+    margin-bottom: 20px;
+  }
+  p{margin-bottom: 15px;}
+  .curdt {
+    font-size: 8px !important;
+  }
+
+  /* 6️⃣ Optional: row striping */
+  .even-row {
+    background-color: #f0f8ff !important;
+  }
+
+  .odd-row {
+    background-color: #ffffff !important;
+  }
+
+  /* 7️⃣ Remove scrolls & overflow */
+  body, html {
+    overflow: visible !important;
+    width: 110%;
+  }
+
+  .tbb {
+    overflow-x: visible !important;
+  }
+  .frmhdr{font-size: 1.5rem; margin-bottom: 20px;}
+}
+
+
+/* =======================
+   📱 Responsive Design
+   ======================= */
+
+/* Medium screens (tablets, ≤ 992px) */
+@media (max-width: 992px) {
+
+
+
+  .fmhdr,
+  .sthdr,
+  .yrr {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+    font-size: 15px;
+  }
+
+  .ant-table {
+    font-size: 13px;
+    scrollbar-width: auto;
+  }
+
+  .ant-table-thead>tr>th {
+    font-size: 14px;
+    padding: 8px;
+  }
+
+  .prntTb, .prntBnkk {
+    margin-left: 0;
+    display: block;
+    width: 100%;
+    height: 45px;
+    font-size: 15px;
+  }
+
+  .bnkprntdiv {
+    flex-direction: column;
+    gap: 8px;
+    align-items: flex-start;
+  }
+
+  .bnkcmb,
+  .prntform {
+    width: 100%;
+    margin-top: 10px;
+  }
+
+  .cont h3 {
+    font-size: 16px;
+  }
+  .bnkdiv{
+    flex-direction: column;
+    gap: 5px;
+    width: 250px;
+    border: 2px solid dodgerblue;
+    border-radius: 8px;
+    padding: 2px;
+    
+  }
+
+
+}
+
+/* Small screens (mobiles, ≤ 576px) */
+@media (max-width: 576px) {
+
+  .cont {
+    max-width: 95%;
+    padding: 10px;
+    margin: 10px auto;
+    border-radius: 8px;
+  }
+
+  .fmhdr,
+  .sthdr,
+  .yrr {
+    flex-direction: column;
+    gap: 6px;
+    font-size: 14px;
+  }
+
+  .ant-table {
+    font-size: 12px;
+    overflow-x: auto;
+    display: block;
+    scrollbar-width: auto;
+  }
+
+  .ant-table-thead>tr>th,
+  .ant-table-tbody>tr>td {
+    padding: 6px;
+    font-size: 12px;
+    white-space: normal;
+    /* allow wrapping */
+  }
+
+  .prntTb , .prntBnkk{
+    width: 100%;
+    margin: 15px 0 0 0;
+    font-size: 14px;
+  }
+
+  .bnkprntdiv {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .bnkcmb,
+  .prntform {
+    width: 100%;
+    font-size: 13px;
+    height: 35px;
+  }
+
+  .curdt {
+    font-size: 8px;
+    text-align: right;
+  }
+
+  .cont h3 {
+    font-size: 14px;
+  }
+.bnkdiv{
+  flex-direction: column;
+  gap: 5px;
+  width: 150px;
+  border: 2px solid dodgerblue;
+  border-radius: 8px;
+  padding: 2px;
+  
+}
+
+  /* .ant-table{    overflow-y: auto;
+    overflow-x: auto;
+    scrollbar-width: thin;
+    scrollbar-color: dodgerblue #f1f1f1;} */
 }

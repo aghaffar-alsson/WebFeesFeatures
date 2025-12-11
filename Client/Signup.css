@@ -1,33 +1,38 @@
-
 /* @import url("https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300..800;1,300..800&display=swap"); */
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap');
-/* ✅ Default font */
-* {font-family: "Montserrat", sans-serif;}
-*{padding: 0; margin: 0;box-sizing: border-box;}
-/* ✅ Layout */
+
+
+* {
+  padding: 0;
+  margin: 0;
+  box-sizing: border-box;
+  font-family: "Montserrat", sans-serif;
+}
+
 .allDivv {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  justify-content:center;
+  justify-content: center;
   max-width: 600px;
   padding-top: 20px;
   margin-top: 20px;
-  box-shadow: 10px 8px 20px rgba(8, 37, 142, 0.34); /* Soft shadow */
-  margin-left: 335px ;
+  box-shadow: 10px 8px 20px rgba(8, 37, 142, 0.34);
+  margin-left: 335px;
   border: double 4px #007bff;
   border-radius: 12px;
   margin-bottom: 20px;
 }
 
-.frmtitlee{
+.frmtitlee {
   display: flex;
-  gap:35px;
+  gap: 35px;
   text-align: center;
   padding-bottom: 10px;
   margin: auto;
 }
-.frmtitlee h3{
+
+.frmtitlee h3 {
 
   text-align: center;
   font-size: 22px;
@@ -40,22 +45,24 @@
 
 }
 
-.titleimg{
-  border-radius:50%;
+.titleimg {
+  border-radius: 50%;
   height: 15vh;
   width: 15vh;
   border: 2px solid dodgerblue;
-  box-shadow: 10px 8px 20px rgba(8, 37, 142, 0.34); /* Soft shadow */
+  box-shadow: 10px 8px 20px rgba(8, 37, 142, 0.34);
+  /* Soft shadow */
   padding: 8px;
 
 }
+
 .info,
 .sbmtt {
   display: flex;
   flex-direction: row;
   gap: 10px;
   align-items: flex-start;
-  justify-content:flex-start;
+  justify-content: flex-start;
 }
 
 .emll,
@@ -103,6 +110,7 @@
   margin-left: 35px;
   margin-top: 5px;
 }
+
 .inp:focus {
   border-color: #007bff;
 }
@@ -114,10 +122,11 @@
   font-weight: 700;
   /* padding-top: 5px; */
   padding-bottom: 20px;
-  display:inline-block;
+  display: inline-block;
   margin-left: 35px;
   /* margin-top: 5px;  */
 }
+
 .lblok {
   color: green;
   font-size: 14px;
@@ -126,6 +135,7 @@
   margin-left: 35px;
   /* margin-top: 5px;  */
 }
+
 #hdnn,
 #hdnn_1 {
   display: none;
@@ -152,7 +162,7 @@ button {
 }
 
 .enbtn:hover {
-  background-color:darkgreen;
+  background-color: darkgreen;
 
 }
 
@@ -166,8 +176,8 @@ button {
   width: 190px;
 }
 
-.fminfo{
-  text-wrap:calc();
+.fminfo {
+  text-wrap: calc();
   font-size: 0.7rem;
   color: darkgreen;
   font-weight: 700;
@@ -178,7 +188,7 @@ button {
 }
 
 /* passwords input */
-.inp_1  {
+.inp_1 {
   font-size: 16px;
   border: 1px solid #ccc;
   background: transparent;
@@ -189,25 +199,29 @@ button {
   margin-bottom: 10px;
   margin-left: 15px;
 }
-#lbl1{
+
+#lbl1 {
   padding-right: 10px;
 
 }
-#lbl2{
+
+#lbl2 {
   padding-right: 20px;
 
 }
+
 .pssfrm {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  justify-content:center;
+  justify-content: center;
   max-width: 450px;
   padding-top: 5px;
   margin-top: 5px;
   margin-bottom: 5px;
   margin-left: 85px;
-  box-shadow: 10px 8px 20px rgba(8, 37, 142, 0.34); /* Soft shadow */
+  box-shadow: 10px 8px 20px rgba(8, 37, 142, 0.34);
+  /* Soft shadow */
   border: solid 2px #007bff;
   border-radius: 12px;
 }
@@ -222,10 +236,11 @@ button {
   background: #fff;
   margin-top: 20px;
   border-radius: 20px;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.1); /* Soft shadow */
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  /* Soft shadow */
   text-align: center;
   color: dodgerblue;
-};
+}
 
 .signupform {
   display: flex;
@@ -234,12 +249,17 @@ button {
   align-items: center;
   margin: 80px auto;
   gap: 12px;
-};
+}
 
 
 
-.mobb{display: flex; flex-direction: column; gap:10px}
-.gotologin{
+.mobb {
+  display: flex;
+  flex-direction: column;
+  gap: 10px
+}
+
+.gotologin {
   /* margin-left: 35px;
   font-size: 18px;
   margin-bottom: 5px;
@@ -252,25 +272,26 @@ button {
   color: white;
   transition: background-color 0.3s ease;
   margin: 5px 5px 15px 35px;
-  width: 200px;  
+  width: 200px;
 }
 
 .gotologin:hover {
-  background-color:darkgreen;
+  background-color: darkgreen;
 
 }
+
 /* .gotologin:hover{
   background-color: white;
   color:dod ;
 } */
-.psshints{
+.psshints {
   font-size: 14px;
   color: grey;
   margin-top: 7px;
-  margin-left:45px ;
+  margin-left: 45px;
 }
 
-.signin{
+.signin {
   text-align: left;
   font-size: 16px;
   font-weight: 600;
@@ -278,13 +299,177 @@ button {
   margin-left: 30px;
 }
 
-.signinlnk{
+.signinlnk {
   font-size: 16px;
   font-weight: 600;
   margin-left: 15px;
 }
 
-.signinlnk:hover{
-  color: #0f172a;             
+.signinlnk:hover {
+  color: #0f172a;
   transform: scale(1.1) translateX(3px);
+}
+
+.signindiv {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  justify-content: flex-start;
+  gap: 14px;
+  margin-left: 310px;
+  margin-top: 10px;
+}
+
+@media (max-width: 600px) {
+
+  /*Small screens (phones upto 600px width)*/
+  .allDivv {
+    max-width: 90%;
+    margin: 20px auto;
+    padding: 15px;
+    box-shadow: 4px 4px 12px rgba(8, 37, 142, 0.2);
+  }
+
+  .frmtitlee {
+    flex-direction: row;
+    gap: 10px;
+  }
+
+  .frmtitlee h3 {
+    font-size: 14px;
+    transform: none;
+  }
+
+  .titleimg {
+    width: 100px;
+    height: 100px;
+  }
+
+  .lbl,
+  .inp {
+    width: 90%;
+    margin-left: 0;
+    font-size: 12px;
+
+  }
+
+  #regmobno,
+  #regEmll {
+    font-size: 14px;
+    width: 230px;
+    margin-left: 0;
+  }
+
+
+  .inp_1 {
+    width: 80%;
+    margin-left: 0;
+    font-size: 12px;
+  }
+
+  .pssfrm {
+    margin-left: 0;
+    max-width: 90%;
+    padding: 10px;
+  }
+
+  .enbtn,
+  .disbtn,
+  .gotologin {
+    width: 90%;
+    margin-left: 0;
+    font-size: 1rem;
+  }
+
+  .fminfo,
+  .lblworn,
+  .lblok {
+    width: 90%;
+    margin-left: 0;
+    text-align: left;
+  }
+
+  .signin,
+  .signinlnk {
+    margin-left: 0;
+    font-size: 14px;
+  }
+
+  .titleimg {
+    width: 80px;
+    height: 80px;
+  }
+
+  .signindiv {
+    gap: 7px;
+    margin-left: 35px;
+  }
+}
+
+@media (min-width: 601px) and (max-width: 992px) {
+
+  /*Medium screens (tablets from 601px upto 992px width)*/
+  .allDivv {
+    max-width: 80%;
+    margin: 30px auto;
+    padding: 20px;
+  }
+
+  .frmtitlee {
+    flex-direction: row;
+    justify-content: center;
+    gap: 20px;
+  }
+
+  .frmtitlee h3 {
+    font-size: 18px;
+  }
+
+  .lbl,
+  .inp {
+    width: 85%;
+    margin-left: 0;
+    font-size: 14px;
+  }
+
+  .pssfrm {
+    margin-left: 30px;
+    max-width: 80%;
+  }
+
+  .enbtn,
+  .disbtn,
+  .gotologin {
+    width: 220px;
+    margin-left: 25px;
+  }
+
+  .fminfo {
+    margin-left: 25px;
+  }
+
+  .signin,
+  .signinlnk {
+    margin-left: 0;
+    font-size: 14px;
+  }
+
+  .titleimg {
+    width: 100px;
+    height: 100px;
+  }
+
+  #regmobno,
+  #regEmll {
+    font-size: 16px;
+    width: 450px;
+  }
+
+  .signindiv {
+    font-size: 14px;
+    gap: 7px;
+    margin-left: 95px;
+  }
+
+
 }

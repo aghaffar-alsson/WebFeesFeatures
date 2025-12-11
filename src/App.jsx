@@ -10,6 +10,8 @@ import FmInfo from '../Client/FmInfo.jsx';
 import StFees from '../Client/StFees.jsx';
 import BankForm from '../Client/BankForm.jsx';
 import StPay from '../Client/StPay.jsx';
+import CheckoutPage from '../Client/CheckoutPage.jsx';
+import CheckoutResult from '../Client/CheckoutResult.jsx';
 
 function App() {
   const [count, setCount] = useState(0)
@@ -26,6 +28,8 @@ function App() {
       <Route path='/stfees' element={<StFees />} />
       <Route path='/bnkform' element={<BankForm />} />
       <Route path='/stpayhist' element={<StPay />} />
+      <Route path='/checkoutpage' element={<CheckoutPage />} />
+      <Route path='/checkout-result' element={<CheckoutResult />} />
     </Routes>
     </BrowserRouter>
 

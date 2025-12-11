@@ -1,4 +1,9 @@
-*{margin: 0; padding: 0; box-sizing: border-box;}
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
 .paycont {
   margin: 30px auto;
   padding: 20px;
@@ -11,24 +16,27 @@
   padding-left: 20px;
   box-shadow: none !important;
   border: none !important;
-  transform: scale(1);      /* optional slight shrink */
+  transform: scale(1);
+  /* optional slight shrink */
   transform-origin: top center;
-  page-break-after: avoid;     /* prevent trailing blank page */
-  overflow: hidden !important;  
+  page-break-after: avoid;
+  /* prevent trailing blank page */
+  overflow: hidden !important;
 }
 
 .ant-table {
   border-radius: 8px;
   overflow: hidden;
-  border: 2px solid #1890ff;  
+  border: 2px solid #1890ff;
 }
 
-.ant-table-thead > tr > th,
-.ant-table-tbody > tr > td {
-  border: 1px solid #ccc;        /* inner cell borders */
+.ant-table-thead>tr>th,
+.ant-table-tbody>tr>td {
+  border: 1px solid #ccc;
+  /* inner cell borders */
 }
 
-.ant-table-thead > tr > th {
+.ant-table-thead>tr>th {
   background: dodgerblue !important;
   color: #fff !important;
   text-align: center;
@@ -39,9 +47,14 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  /* white-space: normal !important;
+  word-wrap: break-word !important;
+  word-break: break-word !important;   */
 }
+
 .payeven-row {
-  background-color: #f0f8ff; /* alice blue */
+  background-color: #f0f8ff;
+  /* alice blue */
 }
 
 .payodd-row {
@@ -51,7 +64,8 @@
 .paytotal-row {
   position: sticky;
   bottom: 0;
-  background: #f1f5f9 !important; /* subtle gray-blue */
+  background: #f1f5f9 !important;
+  /* subtle gray-blue */
   font-weight: bold;
   color: #1e3a8a;
   z-index: 2;
@@ -59,7 +73,8 @@
   font-weight: 600;
   border-top: 2px solid #1e40af !important;
 }
-.ant-table-tbody > tr:hover > td {
+
+.ant-table-tbody>tr:hover>td {
   background: #cce5ff !important;
   color: #003366;
 }
@@ -74,47 +89,81 @@
   word-break: break-word !important;
 }
 
-.payfmhdr , .paysthdr , .payyrr{
+.payfmhdr,
+.paysthdr,
+.payyrr {
   display: flex;
   flex-direction: row;
   justify-content: flex-start;
-  align-items:flex-start;
+  align-items: flex-start;
   gap: 30px;
   font-size: 17px;
   padding-bottom: 10px;
 }
-.payprntTb{
+
+.payprntTb {
   margin-top: 20px;
   height: 50px;
   border-radius: 16px;
   margin-left: 700px;
   font-size: 16px;
-  color:#fff;
+  color: #fff;
   background: dodgerblue;
 
 }
+
 .payprntTb:hover {
   background: darkblue !important;
   color: #fff !important;
   border-color: darkblue !important;
 }
-.paycurdt{
+
+.paycurdt {
   padding-bottom: 10px;
   font-size: 9px;
 }
 
+.paydisprnt {
+  cursor: none;
+  display: none;
+}
+
+/* Border just around the checkbox square */
+.ant-checkbox-inner {
+  border: 2px solid dodgerblue !important; /* 👈 visible border for the box */
+  border-radius: 4px !important;
+  width: 18px !important;
+  height: 18px !important;
+}
+
+/* Optional hover effect */
+.ant-checkbox:hover .ant-checkbox-inner {
+  border-color: blue !important;
+}
+
+/* When checked */
+.ant-checkbox-checked .ant-checkbox-inner {
+  background-color: dodgerblue !important;
+  border-color: dodgerblue !important;
+}
+
 @media print {
-   body * {
+  body * {
     visibility: hidden;
   }
-  .paycont, .paycont * {
+
+  .paycont,
+  .paycont * {
     visibility: visible;
   }
+
   .paycont {
     position: absolute;
     left: 0;
     top: 0;
+    zoom: 100%;
   }
+
   .payprntTb {
     display: none !important;
   }
@@ -122,18 +171,73 @@
   .ant-table-cell {
     font-size: 12px !important;
     word-break: break-word;
-  } 
-  .payfmhdr , .paysthdr , .payyrr{
-    font-size: 13px !important;
-    word-break: break-word;
-    font-weight:700 ;
   }
 
+  .payfmhdr,
+  .paysthdr,
+  .payyrr {
+    font-size: 13px !important;
+    word-break: break-word;
+    font-weight: 700;
+  }
 
+.hdrr{margin-bottom: 20px; font-size: 22px;}
 }
+
 /* .tbb{width: 1600;} */
 
-.paydisprnt{
-  cursor: none;
-  display: none;
+@media (max-width: 576px) {
+  .payyrr {
+    font-size: 14px;
+  }
+
+  .payfmhdr,
+  .paysthdr {
+    font-size: 12px;
+  }
+
+  .hdrr {
+    font-size: 14px;
+  }
+
+  .payprntTb {
+    width: 100%;
+    margin: 15px 0 0 0;
+    font-size: 14px;
+  }
+
+  #btnn {
+    margin-left: 0;
+    font-size: 14px;
+  }
+  .chkInclude{font-size: 11px;}
+}
+
+@media (max-width: 1024px) {
+  .payyrr {
+    font-size: 16px;
+  }
+
+  .payfmhdr,
+  .paysthdr {
+    font-size: 14px;
+  }
+
+  .hdrr {
+    font-size: 16px;
+  }
+
+  .payprntTb {
+    width: 100%;
+    margin: 15px 0 0 0;
+    font-size: 14px;
+  }
+
+  #btnn {
+    margin-left: 0;
+    font-size: 14px;
+  }
+    .chkInclude{font-size: 13px;}
+
+
 }

@@ -12,7 +12,8 @@ import dotenv from 'dotenv';
 import { log } from 'console';
 import { createRequire } from 'module';
 import bcrypt from "bcrypt";
-
+import fs from "fs-extra";
+import PDFDocument from "pdfkit";
 //******************OPEN CONNECTION & ESTABLISH SERVER************************/
 const require = createRequire(import.meta.url);
 const nodemailer = require('nodemailer');
@@ -25,7 +26,7 @@ const app = express();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const port = process.env.port || 3000;
+const port = process.env.VITE_PORT || 3000;
 
 app.use(cors());
 app.use(express.json());
@@ -163,8 +164,7 @@ const transporter = nodemailer.createTransport({
 
 //create random temp password
 function generateTempPassword(length = 8) {
-  const chars =
-    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789@$!%*?&";
+  const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789@$!%*?&";
   let password = "";
   for (let i = 0; i < length; i++) {
     password += chars.charAt(Math.floor(Math.random() * chars.length));
@@ -182,6 +182,7 @@ app.post('/api/signup', async (req, res) => {
 
   try {
     const tempPswd = generateTempPassword(10);
+    console.log(tempPswd)
     //const hashedPswd = await bcrypt.hash(tempPswd, 10);    
     const hashedPswd = tempPswd;    
     const pool = await sql.connect(sqlConfig);
@@ -197,9 +198,9 @@ app.post('/api/signup', async (req, res) => {
 
       //SEND TEMP PASSWORD TO THE PARENT EMAIL
       const mailOptions = {
-        from: 'fees@alsson.com',
+        from: process.env.FromEmailAddress,
         to: emll,
-        subject: "Your Parents Fees Portal Temporary Password",
+        subject: "Your Temporary Password For Parents' Fees Portal",
         html: `
           <font face="Calibri" size="3" color = "blue">
           <h3>Dear Parent: ${famnm},</h3>
@@ -210,7 +211,8 @@ app.post('/api/signup', async (req, res) => {
           <p>Here is your temporary password:</p><u><h2 style="color:#1a73e8;">${tempPswd}</h2></u>
           <p>You can login using the email adress:</p><u><h2 style="color:#1a73e8;">${emll}</h2></u>
           <br/>
-          <p>Please write this password when you login for the first time and change it by your own password immediately.</p>
+          <p>Please write this password when you login for the first time only.</p>
+          <p>You should change it by your own password immediately.</p>
           <br/>
           <p>Finance Department - Fees Section</p>
           <p>El Alsson School- </p>
@@ -403,12 +405,12 @@ app.post('/api/sp_GetFmInfo', async (req, res) => {
       .input('yrNo', sql.Char(4), yrNo)
       .input('famid', sql.Int, CurFmNo)
       .execute('sp_GetFmInfo');
-const records = result.recordset;      
-if (records && records.length > 0) {
-  res.json(records); // ✅ sends array
-} else {
-  res.json([]);
-}      
+    const records = result.recordset;      
+    if (records && records.length > 0) {
+      res.json(records); // ✅ sends array
+    } else {
+      res.json([]);
+    }      
 
 // const record = result.recordset?.[0];
 
@@ -497,7 +499,6 @@ app.post('/api/getstpayhist', async (req, res) => {
   if (!famid || !curstid || !ygpno) {
     return res.status(400).json({ message: 'Missing required fields' });
   }
-
   try {
     const pool = await sql.connect(sqlConfig);
     const result = await pool
@@ -515,5 +516,58 @@ app.post('/api/getstpayhist', async (req, res) => {
   } catch (err) {
     console.error('Database Error:', err);
     res.status(500).json({ message: 'Database Error', error: err.message });
+  }
+});
+
+// Generate PDF function
+async function generatePDF(data) {
+  const filePath = path.join("receipts", `receipt_${data.merchant_reference}.pdf`);
+  await fs.mkdirSync("receipts", { recursive: true });
+
+  const doc = new PDFDocument();
+  doc.pipe(fs.createWriteStream(filePath));
+  doc.fontSize(18).text("Payment Receipt", { align: "center" });
+  doc.moveDown();
+  doc.fontSize(12)
+    .text(`Parent Email: ${data.parentEmail}`)
+    .text(`Amount: ${data.amount} EGP`)
+    .text(`Fort ID: ${data.fort_id}`)
+    .text(`Merchant Ref: ${data.merchant_reference}`)
+    .text(`Message: ${data.response_message}`)
+    .text(`Status: ${data.status}`)
+    .text(`Date: ${new Date().toLocaleString()}`);
+  doc.end();
+
+  return filePath;
+}
+
+// Main endpoint to send email
+app.post("/api/send-receipt-email", async (req, res) => {
+  try {
+    const { receiptData } = req.body;
+    if (!receiptData || !receiptData.parentEmail || !receiptData.amount) {
+      return res.status(400).json({ error: "Invalid receiptData" });
+    }
+
+    const filePath = await generatePDF(receiptData);
+
+    const mailOptions = {
+      from: `"Parent" <${receiptData.parentEmail}>`,
+      to: "fees@alsson.com",
+      subject: `Receipt ${receiptData.merchant_reference}`,
+      text: "Please find the payment receipt attached.",
+      attachments: [
+        {
+          filename: path.basename(filePath),
+          path: filePath
+        }
+      ]
+    };
+
+    await transporter.sendMail(mailOptions);
+
+    res.json({ success: true, message: "Email sent to school" });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
 });

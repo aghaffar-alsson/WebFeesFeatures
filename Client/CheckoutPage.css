@@ -1,0 +1,197 @@
+@import url('https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300..800;1,300..800&display=swap');
+
+* {
+  padding: 0;
+  margin: 0;
+  box-sizing: border-box;
+  font-family: "Open Sans", sans-serif;
+  font-optical-sizing: auto;
+  font-weight: 600;
+}
+/* ---- GLOBAL STYLING ---- */
+
+body {
+  font-family: "Open Sans", sans-serif;
+  background: #f9fafb;
+  margin: 0;
+  padding: 0;
+}
+
+/* ---- PAGE HEADER ---- */
+
+.alsh1 {
+  text-align: center;
+  font-size: 28px;
+  font-weight: 700;
+  margin-top: 20px;
+  color: #222;
+}
+
+.alshdrr {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 40px;
+  margin: 20px 200px;
+}
+
+.alsimghdrlft {
+  width: 250px;           /* Adjust size as needed */
+  height: 80px;
+  object-fit: contain;     /* keeps full image visible without cutting */
+  object-position: center; /* centers the image */
+  border-radius: 8px;
+  background: #fff;
+  padding: 5px;  
+}
+
+/* ---- CART SECTION ---- */
+
+.crtt {
+  background: white;
+  width: 80%;
+  margin: 0 auto;
+  margin-top: 20px;
+  padding: 25px;
+  border-radius: 12px;
+  box-shadow: 0 2px 14px rgba(0, 0, 0, 0.08);
+}
+
+.itmm {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 1px dashed #ddd;
+  font-size: 16px;
+}
+
+.itmm span {
+  font-weight: 600;
+  color: #333;
+}
+
+.totcrtt {
+  font-size: 20px;
+  font-weight: 700;
+  margin-top: 20px;
+  text-align: right;
+}
+
+.totamm {
+  color: #0077cc;
+}
+
+/* ---- PAY BUTTON ---- */
+
+button.MuiButton-root {
+  display: block !important;
+  margin: 5px auto !important;
+  padding: 10px 35px;
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 15px ;
+}
+/* Header style */
+.ant-table-thead > tr > th {
+  font-size: 18px !important;
+  font-weight: 700 !important;
+  color:#fff;
+  background: dodgerblue !important;
+}
+
+/* Body style */
+.ant-table-tbody > tr > td {
+  font-size: 16px !important;
+  font-weight: 600 !important;
+  padding: 12px 16px !important;
+}
+
+/* Optional: thicker row separator */
+.ant-table-tbody > tr {
+  border-bottom: 1px solid #e3e3e3;
+}
+.payfortpay {
+  text-align: center;
+  margin-top: 20px;
+  margin-bottom: 25px;
+}
+
+/* Custom PayFort Payment Button */
+.payfort-btn.MuiButton-root {
+  background-color: #0177b9 !important; /* APS primary blue */
+  border-radius: 10px !important;
+  text-transform: none !important;
+  font-size: 18px !important;
+  font-weight: 700 !important;
+  padding: 12px 40px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+  
+}
+
+.payfort-btn.MuiButton-root:hover {
+  background-color: #005b8c !important;
+}
+
+.payfort-btn.Mui-disabled {
+  background-color: #8bbcd3 !important; /* lighter when disabled */
+  color: #e9eef1 !important;
+}
+.empty{margin-top: 25px; font-size: 1px;}
+
+/* ---- RESPONSIVE ---- */
+
+@media (max-width: 768px) {
+  .crtt {
+    width: 95%;
+  }
+
+  .alshdrr {
+    flex-direction: column;
+  }
+}
+
+/* .alsh1{
+  margin-top: 20px;
+  margin-left: 20px;
+  width: 100%;
+  text-align: center;
+}
+.itmm{
+  font-weight: 500;
+  margin-top: 10px;
+  margin-left: 20px;
+}
+.crtt{
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 8px;
+  margin: auto;
+  margin-top: 20px;
+  font-family: "Open Sans", sans-serif;
+  font-optical-sizing: auto;
+  font-size: 18px;
+  font-weight: 600;  
+  width: 50%;
+  border: 2px solid dodgerblue;
+  border-radius: 12px;
+}
+.alshdrr{
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  justify-content: flex-start;
+  width: 50%;
+  margin: auto;
+  margin-top: 20px;
+}
+.alsimghdrlft{
+
+  width: 170px;
+  height: 120px;
+  border: 2px solid dodgerblue;
+  border-radius: 50%;
+} */
