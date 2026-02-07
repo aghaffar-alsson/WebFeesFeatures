@@ -192,7 +192,7 @@ export default function StPay() {
       width: 10,
     },
     //BANK NAME
-    {
+    hidd && {
       title: 'Bank Name',
       dataIndex: 'bankname',
       align: "left",
@@ -201,7 +201,7 @@ export default function StPay() {
       width: 10,
     },
     //NOTES
-    {
+    hidd && {
       title: 'Notes',
       dataIndex: 'notes',
       align: "left",
@@ -297,7 +297,7 @@ export default function StPay() {
           />)
           : (<Alert message="No fee records found" type="info" showIcon />)
       }
-      <div>{loading ? (<p></p>) : (stpaymtrx.length > 0 ? (<Button id='btnn' className="payprntTb" onClick={payTbPrnt}>Print / Save As PDF</Button>) : (<></>))}</div>
+      <div>{loading ? (<p></p>) : (stpaymtrx.length > 0 ? (<Button id='btnn' className="payprntTb" onClick={payTbPrnt}>Print / Save As PDF <i class="fa fa-print"></i></Button>) : (<></>))}</div>
     </div>
   )
 }

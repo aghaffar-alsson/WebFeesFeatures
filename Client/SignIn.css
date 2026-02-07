@@ -104,6 +104,13 @@
   margin-top: 10px;
 }
 
+.forgotdiv {
+  margin-left: 35px;
+  margin-top: 10px;
+  margin-bottom: 15px;
+  font-size: 16px;
+
+}
 .signup {
   text-align: left;
   font-size: 16px;
@@ -112,20 +119,20 @@
   margin-left: 30px;
 }
 
-.signuplnk {
+.signuplnk, .forgotlnk {
   font-size: 16px;
   font-weight: 600;
   margin-left: 15px;
 }
 
-.signuplnk:hover {
+.signuplnk:hover, .forgotlnk:hover {
   color: #0f172a;
   transform: scale(1.1) translateX(3px);
 }
 
 /* #pss1{margin-left: 40px;} */
 
-@media (max-width: 600px) {
+@media (min-width: 600px) and (max-width: 990px){
 
   /*Small screens (phones upto 600px width)*/
   .allDiv {
@@ -155,13 +162,12 @@
     width: 90%;
     margin-left: 0;
     font-size: 12px;
-
   }
 
   #regmobno,
   #regEmll {
     font-size: 12px;
-    width: 330px;
+    width: 220px;
     margin-left: 0;
   }
 
@@ -188,7 +194,7 @@
   .disbtn,
   .gotologin {
     width: 90%;
-    margin-left: 0;
+    margin-left: 10px !important;
     font-size: 1rem;
   }
 
@@ -210,9 +216,13 @@
   }
 
   .signup,
-  .signuplnk {
+  .signuplnk , .forgotlnk {
     margin-left: 0;
     font-size: 14px;
+  }
+  .forgotdiv {
+    margin-left: 10px !important;
+    font-size: 12px;
   }
 
   .titleimg {
@@ -270,7 +280,7 @@
   .disbtn,
   .gotologin {
     width: 220px;
-    margin-left: 25px;
+    margin-left: 10px;
   }
 
   .fminfo {
@@ -291,12 +301,12 @@
   #regmobno,
   #regEmll {
     font-size: 16px;
-    width: 450px;
+    width: 400px !important;
   }
 
   #pss1 {
     font-size: 16px;
-    width: 250px;
+    width: 150px !important;
   }
 
   .signupdiv {
@@ -322,6 +332,128 @@
 
   #btnSubmit {
     font-size: 16px;
+    width: 120px;
+  }
+    .forgotdiv {
+    margin-left: 10px !important;
+  }
+
+}
+
+@media (min-width: 200px) and (max-width: 599px){
+
+  /*Small screens (phones upto 600px width)*/
+  .allDiv {
+    max-width: 60%;
+    margin: 5px auto;
+    padding: 5px;
+    box-shadow: 4px 4px 12px rgba(8, 37, 142, 0.2);
+  }
+
+  .frmtitle {
+    flex-direction: row;
+    gap: 4px;
+  }
+
+  .frmtitle h3 {
+    font-size: 10px;
+    transform: none;
+  }
+
+  .titleimg {
+    width: 60px;
+    height: 60px;
+  }
+
+  .lbl,
+  .inp {
+    width: 150px;
+    margin-left: 0;
+    font-size: 11px;
+
+  }
+
+  #regmobno,
+  #regEmll {
+    font-size: 12px;
+    width: 250px !important;
+    margin-left: 0;
+    overflow: hidden !important;
+  }
+
+  #pss1 {
+    font-size: 8px;
+    width: 170px;
+    margin-left: 0;
+    overflow: hidden !important;
+  }
+
+
+  .inp_1 {
+    width: 50%;
+    margin-left: 0;
+    font-size: 10px;
+  }
+
+  .pssfrm {
+    margin-left: 0;
+    max-width: 60%;
+    padding: 4px;
+  }
+
+  .enbtn,
+  .disbtn,
+  .gotologin {
+    width: 150px;
+    margin-left: 10px;
+    font-size: 0.6rem;
+  }
+
+  .fminfo,
+  .lblworn,
+  .lblok {
+    width: 150px;
+    margin-left: 0;
+    text-align: left;
+  }
+
+  .lblworn {
+    font-size: 12px;
+    width: 180px;
+  }
+
+  #pss1 {
+    margin-left: 0;
+    font-size: 8px;
+  }
+
+  .signup,
+  .signuplnk {
+    margin-left: 0;
+    font-size: 10px;
+  }
+
+  .titleimg {
+    width: 60px;
+    height: 60px;
+  }
+
+  .signupdiv {
+    gap: 7px;
+    margin-left: 15px;
+  }
+  .forgotdiv {
+    margin-left: 10px !important;
+    font-size: 10px;
+  }
+
+
+  .divpss11 {
+    margin-left: 0;
+  }
+
+  #btnSubmit {
+    font-size: 12px;
     width: 120px;
   }
 }

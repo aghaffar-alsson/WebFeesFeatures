@@ -7,11 +7,57 @@ import './CheckoutPage.css'
 import alsimgg from '../src/assets/newgiza-logo.jpg'
 import { Table } from "antd";
 import { useLocation } from "react-router-dom";
-<link
-  rel="stylesheet"
-  href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
-/>
 
+
+
+export default function CheckoutPage() {
+  const [loading, setLoading] = useState(false);
+  // const { state } = useLocation();
+  // console.log("CheckoutPage state:", state);  
+  // if (!state) {
+  //   return <p>No checkout data available.</p>;
+  // }  
+  // const {
+  // paymentItems : initialPaymentItems  = [],
+  // installments = [],
+  // total = 0,
+  // curEmailAddress,
+  // curStudID,
+  // curStudName,
+  // curYgpName,
+  // curFamilyNo,
+  // curFamilyName,
+  // schoolNoo,
+  // schoolNmm,
+  // fullName
+  // } = state;
+  const { state } = useLocation();
+  const stored = sessionStorage.getItem("checkoutData");
+  const checkoutData = state || (stored ? JSON.parse(stored) : null);
+  if (!checkoutData) {
+    return <p>No checkout data available.</p>;
+  }
+  const {
+    paymentItems: initialPaymentItems = [],
+    installments = [],
+    total = 0,
+    curEmailAddress,
+    curStudID,
+    curStudName,
+    curYgpName,
+    curFamilyNo,
+    curFamilyName,
+    schoolNoo,
+    schoolNmm,
+    fullName
+  } = checkoutData;
+
+  const [paymentItems, setPaymentItems] = useState(initialPaymentItems);
+  console.log("Received:", paymentItems, installments, total, curEmailAddress, curStudID, curStudName, curYgpName, curFamilyNo, curFamilyName, schoolNoo, schoolNmm, fullName);
+  console.log("Received:", initialPaymentItems);
+  const INTEREST_RATE = 0.0075; // 0.75%
+  // Calculate interest value
+  var interestAmount = Number(total) * INTEREST_RATE;
 // const email = "aghaffar@alsson.com";
 
 const columns = [
@@ -38,27 +84,29 @@ function formatDec(vll) {
     maximumFractionDigits: 2,
   }).format(vll);
 }
-function ApsMerchantPage({ cartItems, email }) {
+
+function ApsMerchantPage({ cartItems, email, paymentItems }) {
   const [loading, setLoading] = useState(false);
-
   const handlePay = async () => {
-    const amount = cartItems.reduce((a, v) => a + v.amount, 0);
-    const currency = "EGP";
-
-    try {
+  try {
       setLoading(true);
-
+      const totalAmount = cartItems.reduce((a, v) => a + Number(v.amount),0);    
+      const roundedTotal = Math.floor(totalAmount);    
+      const amount = roundedTotal ;
+      console.log("Total Amount for Payfort:", amount);
+      const currency = "EGP";
+      const schoolId = localStorage.getItem("schoolNoo") || "1";
+      console.log(schoolId);
+      console.log(paymentItems);
       // Call backend to get Payfort payload
       const res = await axios.post(
         "https://my-payfort-backend.onrender.com/createFormPayLoad",
-        { email, amount, currency }
+        { email, amount, currency, schoolId , paymentItems }
       );
 
       const payfortData = res.data; // <-- directly
-
       // Debug log
       console.log("Payfort payload:", payfortData);
-
       // Create temporary form
       const form = document.createElement("form");
       form.method = "POST";
@@ -69,7 +117,7 @@ function ApsMerchantPage({ cartItems, email }) {
         const input = document.createElement("input");
         input.type = "hidden";
         input.name = key;
-        input.value = payfortData[key];
+        input.value = String(payfortData[key] || "");
         form.appendChild(input);
       });
 
@@ -83,7 +131,6 @@ function ApsMerchantPage({ cartItems, email }) {
     }
   };
 
-
   return (
     <div className="payfortpay">
       {/* <Button
@@ -95,71 +142,91 @@ function ApsMerchantPage({ cartItems, email }) {
       >
         {loading ? "Redirecting..." : "Pay through PayFort (APS)"}
       </Button> */}
-      <div className="payfortpay">
-        <Button
-          className="payfort-btn"
-          variant="contained"
-          onClick={handlePay}
-          disabled={loading}
-          startIcon={<i className="fas fa-lock"></i>}
-        >
-          {loading ? "Redirecting..." : "SECURE PAYMENT WITH PAYFORT (APS)"}
-        </Button>
-        <p className="empty">ChekoutPage</p>
-      </div>
+      <Button
+        className="payfort-btn"
+        variant="contained"
+        onClick={handlePay}
+        disabled={loading}
+        startIcon={<i className="fas fa-lock"></i>}
+      >
+        {loading ? "Redirecting..." : "SECURE PAYMENT WITH PAYFORT (APS)"}
+      </Button>
+      <p className="empty">Chekout Page</p>
     </div>
   );
 }
 
-export default function CheckoutPage() {
+// const handleCheckoutClick = async () => {
+//   console.log("Checkout button clicked");
+//   try {
+//     setLoading(true);
 
-  const { state } = useLocation();
-  const { installments, total, curEmailAddress, studentID, studentName } = state || {};
-  console.log("Received:", installments, total, curEmailAddress, studentID, studentName);
+//     await handleLogPayment();   // 1️⃣ log first
+//     //await handlePay();          // 2️⃣ then redirect to PayFort
 
-  // const cartItems = [
-  //   { name: "April Installment", amount: 5000, currency: "EGP" },
-  //   { name: "September Installment", amount: 15000, currency: "EGP" },
-  //   { name: "November Installment", amount: 12500, currency: "EGP" },
-  //   { name: "January Installment", amount: 8500, currency: "EGP" },
-  // ];
+//   } catch (err) {
+//     console.error(err);
+//     alert("Checkout failed");
+//   } finally {
+//     setLoading(false);
+//   }
+// };
 
-  // const total = cartItems.reduce((a, v) => a + v.amount, 0);
+// const cartItems = [
+//   { name: "April Installment", amount: 5000, currency: "EGP" },
+//   { name: "September Installment", amount: 15000, currency: "EGP" },
+//   { name: "November Installment", amount: 12500, currency: "EGP" },
+//   { name: "January Installment", amount: 8500, currency: "EGP" },
+// ];
 
+// const total = cartItems.reduce((a, v) => a + v.amount, 0);
+// Build final installments list
+
+const installmentsWithInterest = React.useMemo(() => {
+    if (!installments.length) return [];
+
+    return [
+      ...installments,
+      {
+        instCode: "INTEREST_FEE",
+        instName: "INTEREST & HANDLING FEES (0.75%) + EGP 1.51",
+        amount: interestAmount + (Number(interestAmount) * INTEREST_RATE) + 1.51,
+      },
+    ];
+  }, [installments, interestAmount]);
+  interestAmount = interestAmount + (Number(interestAmount) * INTEREST_RATE);
+  interestAmount = interestAmount +  1.51
+  const finalTotal = total + interestAmount ;
+  const finalFinalTotal = Math.floor(finalTotal);
   return (
     <div>
       <h1 className="alsh1">El Alsson British & American International School - Newgiza</h1>
       <div className="alshdrr">
         <h1 className="alsh1">Checkout Page</h1>
         <img className="alsimghdrlft" src={alsimgg} alt="Placeholder" />
-        <img></img>
       </div>
       <div className="crtt">
+        {/* <h3 className="crttt">Cart Details for: <strong>{curStudName}</strong>   ID: <strong>{curStudID}</strong> Year Group: <strong>{curYgpName}</strong></h3> */}
+        <h3 className="crttt">Student ID: <strong>{curStudID}</strong> </h3>
+        <h3 className="crttt">Student Name: <strong>{curStudName}</strong>  </h3>
+        <h3 className="crttt">Year Group: <strong>{curYgpName}</strong></h3>
         <Table
           className="chkoutTbb"
           columns={[
             { title: "Installment Name", dataIndex: "instName" },
-            {
-              title: "Amount",
-              dataIndex: "amount",
-              render: (value) => formatDec(Number(value)),
-            },
+            { title: "Amount",dataIndex: "amount", render: (value) => formatDec(Number(value)), align: "right" },
           ]}
-          dataSource={installments}
+          dataSource={installmentsWithInterest}
           pagination={false}
           rowKey="instCode"
         />
         <br />
         <p className="totcrtt">
-          Total Amount: <span className="totamm">EGP {formatDec(total)}</span>
+          Total Amount: <span className="totamm">EGP {formatDec(((finalFinalTotal)))}</span>
         </p>
       </div>
       <br />
-      {/* <Typography>Customer Email: {email}</Typography> */}
-
-      <br />
-      {/* <ApsMerchantPage cartItems={cartItems} email={email} /> */}
-      <ApsMerchantPage cartItems={installments} email={curEmailAddress} />
+      <ApsMerchantPage cartItems={installmentsWithInterest} email={curEmailAddress} paymentItems={paymentItems} />
     </div>
   );
 }

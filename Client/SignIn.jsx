@@ -12,7 +12,9 @@ import { Link } from 'react-router-dom'
 import { useNavigate } from "react-router-dom";
 //const { Link } = Typography;
 import '../Client/SignUp.jsx'
-import FmInfo from '../Client/FmInfo.jsx'
+import '../Client/PssForgot.jsx'
+
+// import FmInfo from '../Client/FmInfo.jsx'
 
 var MobRegExp = /^01[0-2,5]{1}[0-9]{8}$/;
 var EmlRegExp = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
@@ -23,7 +25,6 @@ export default function SignIn() {
   useEffect(() => {
     localStorage.clear();
   }, []);
-
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
@@ -119,6 +120,7 @@ export default function SignIn() {
           setErrors((prev) => ({ ...prev, email: "" }));
         } else {
           setFmEml("");
+          console.log("Unregistered Email Address");
           setErrors((prev) => ({ ...prev, email: "Unregistered Email Address" }));
         }
       } catch (err) {
@@ -146,6 +148,8 @@ export default function SignIn() {
         body: JSON.stringify({
           yr: YrNmm,
           pswd: pss,
+          email_reg: String(regEmll).trim(),
+          phone_reg: String(regMob).trim(),
         }),
       });
 
@@ -181,6 +185,7 @@ export default function SignIn() {
       yr: YrNmm,
       emll: regEmll,
       mobb: regMob,
+
     };
     //console.log(loginData);
 
@@ -286,11 +291,19 @@ export default function SignIn() {
         </div>
         {!isFormValid ? (<p></p>) :
           (<div ><strong className="fminfo">Family ID:{fmDtt.famid} - Family Name:{fmDtt.famnm} </strong></div>)}
+        <div className="forgotdiv">
+          {isFormValid ? (<p></p>) :
+          <Link to="/forgot-pswd" className="forgotlnk">Forgot Password</Link>}
+        </div>
       </form >
+
       <div className="signupdiv">
         <p className='signup'>Don't have an account?{''}</p>
         <Link to="/signup" className="signuplnk">Sign Up</Link>
       </div>
+      {/* <div className="forgt">
+        <button className="enbtn" type="button" tabIndex="10" id="btnForgt" disabled  onClick={() => navigate("/forgot-pswd")}>Forgot Password</button>)
+      </div> */}
 
     </div>
   )

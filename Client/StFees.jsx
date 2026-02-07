@@ -7,6 +7,8 @@ import Checkbox from 'antd/es/checkbox/Checkbox';
 
 export default function StFees() {
   //DECLARE GLOBAL VARIABLES
+  //TO DELAY THE EXECUTION OF THE STORED PROCEDURE CALL
+  const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
   const { Title } = Typography;
   const [loading, setLoading] = useState(false);
   const curFamilyNo = localStorage.getItem("curFmNo")
@@ -16,6 +18,7 @@ export default function StFees() {
   const curYgpName = localStorage.getItem("ygp")
   const onlyRem = localStorage.getItem("onlyout")
   const curEmailAddress = localStorage.getItem("curEmailAddress")
+  const [selectedRows, setSelectedRows] = useState([]);
 
   const [stfeesmtrx, setStFeesMtrx] = useState([])
   const [selectedBnk, setSelectedBnk] = useState(0);
@@ -76,7 +79,7 @@ export default function StFees() {
 
 
   //console.log(curFamilyNo, curFamilyName, curStudID, curStudName, curYgpName)
-
+  
   //Collect fees matrix for the selected student through stored procedure
   const getStFeesMtrx = async () => {
     if (!curFamilyNo || !curStudID || !onlyRem) {
@@ -100,8 +103,20 @@ export default function StFees() {
       if (Array.isArray(data)) {
         //console.log(1)
         setStFeesMtrx(data);
-        setScNm(data.schoolId === 1 ? 'American School' : 'British School')
-        setScID(data.schoolId)
+        //console.log(data[0].schoolId)
+        const schoolId = data[0].schoolId;
+        const schoolName = schoolId === 1 ? "American School" : "British School";        
+        console.log(schoolName)
+        console.log(schoolId)
+        
+        //console.log(scnm)
+        setScID(schoolId)
+        // console.log(data[0]?.schoolId)
+        // console.log(scid)
+        localStorage.removeItem("schoolNoo")
+        localStorage.setItem("schoolNoo", schoolId)
+        localStorage.removeItem("schoolNmm")
+        localStorage.setItem("schoolNmm", schoolName)
       } else if (data && data.stid) {
         //console.log(2)
         setStFeesMtrx([data]);
@@ -167,30 +182,117 @@ export default function StFees() {
   //   });
   // };
 
-const handleUserSelection = (index, checked) => {
-  setCheckedRows(prev => {
-    const updated = { ...prev };
-    if (checked) {
-      for (let i = 0; i <= index; i++) updated[i] = true;
-      const newLocked = {};
-      for (let i = 0; i < index; i++) newLocked[i] = true;
-      setLocked(newLocked);
-    } else {
-      for (let i = index; i < stfeesmtrx.length; i++) {
-        updated[i] = false;
-      }
-      setLocked({});
+// const handleUserSelection = (record, index, checked) => {
+
+//   setSelectedRows(prev => {
+//     const key = `${record.stid}-${record.instCode}`;
+
+//     if (checked) {
+//       if (prev.some(r => `${r.stid}-${r.instCode}` === key)) {
+//         return prev;
+//       }
+
+//       return [
+//         ...prev,
+//         {
+//           stid: record.stid,
+//           instCode: record.instCode,
+//           facename: record.FACENAME,
+//           amount: Number(record.TotRem) || 0,
+//         }
+//       ];
+//     } else {
+//       return prev.filter(
+//         r => `${r.stid}-${r.instCode}` !== key
+//       );
+//     }
+//   });
+
+//   setCheckedRows(prev => {
+//     const updated = { ...prev };
+
+//     if (checked) {
+//       for (let i = 0; i <= index; i++) updated[i] = true;
+
+//       const newLocked = {};
+//       for (let i = 0; i < index; i++) newLocked[i] = true;
+//       setLocked(newLocked);
+
+//     } else {
+//       for (let i = index; i < stfeesmtrx.length; i++) {
+//         updated[i] = false;
+//       }
+//       setLocked({});
+//     }
+
+//     return updated;
+//   });
+// };
+const handleUserSelection = (record, index, checked) => {
+
+  // Uncheck → clear from index onward
+  if (!checked) {
+    setSelectedRows([]);
+    setCheckedRows({});
+    setLocked({});
+    return;
+  }
+
+  const selected = [];
+  const checkedMap = {};
+  const lockedMap = {};
+
+  // Walk sequentially from row 0 → index
+  for (let i = 0; i <= index; i++) {
+    const r = stfeesmtrx[i];
+
+    // Skip zero remainder rows
+    if (Number(r.TotRem) <= 0) continue;
+
+    selected.push({
+      stid: curStudID,
+      instCode: r.row_num,
+      facename: r.FACENAME,
+      amount: Number(r.TotRem),
+    });
+
+    checkedMap[i] = true;
+
+    // Lock all previous valid rows
+    if (i < index) {
+      lockedMap[i] = true;
     }
-    return updated;
-  });
-};  
-  // useEffect(() => {
+  }
+
+  setSelectedRows(selected);
+  setCheckedRows(checkedMap);
+  setLocked(lockedMap);
+};
+
+// useEffect(() => {
   //   console.log("Checked rows:", checkedRows);
   // }, [checkedRows]);
   useEffect(() => {
     console.log("Checked rows:", locked);
   }, [locked]);
+  //get the installment code from the facename
+  const getInstCodeFromFaceName = (facename) => {
+    if (!facename) return null;
 
+    const parts = facename.split("_");
+    return parts.length > 1 ? Number(parts[1]) : null;
+  };
+
+  const paymentItems = selectedRows.map(r => ({
+    curyear: import.meta.env.VITE_CUR_YEAR_NAME,
+    famid: curFamilyNo,      
+    stid: curStudID,
+    instCode: getInstCodeFromFaceName(r.facename),
+    schoolId: scid,
+    facename: r.facename,
+    amount: Math.round(r.amount), // PayFort-safe
+  }));
+  console.log("Payment Items:", paymentItems);  
   //Declare COLUMNS OF THE TABLE
   const columns = [
     //ROW NUMBER
@@ -339,7 +441,7 @@ const handleUserSelection = (index, checked) => {
                 </select>)} */}
                 {/* {record.TotRem >= 1000 && (<p className="prntform" onClick={() => callBnkForm(record)}>Print Bank Form</p>)} */}
                 {/* {record.TotRem >= 1000 && (<Checkbox className='chkInclude' disabled={locked[record.row_num]} checked={checkedRows[record.row_num]} onChange={(e) => handleUserSelection(record.row_num, e.target.checked)}>Add to Bank Form or PayFort Invoice</Checkbox>)} */}
-                {record.TotRem >= 1000 && (<Tooltip title="Select this installment to include in payment"><Checkbox className='chkInclude' disabled={locked[index]} checked={checkedRows[index]} onChange={(e) => handleUserSelection(index, e.target.checked)}>Add to Bank Form or PayFort Invoice</Checkbox></Tooltip>)}
+                {record.TotRem >= 50 && (<Tooltip title="Select this installment to include in payment"><Checkbox checked={checkedRows[index]} disabled={locked[index]} onChange={(e) => handleUserSelection(record, index, e.target.checked)}>Add to Bank Form or PayFort Invoice</Checkbox></Tooltip>)}
               </div>)
           }
         }
@@ -349,6 +451,15 @@ const handleUserSelection = (index, checked) => {
       title: 'School ID',
       dataIndex: 'schoolId',
       align: "left",
+      render: (text, record) =>
+        record.IsTotal === 1 ? <strong style={{ color: "#1e3a8a", display: "block", fontWeight: 700 }}>Totals:{text}</strong> : text,      // render: (status) => (
+      width: 0,
+    },
+    {
+      title: 'Face Name',
+      dataIndex: 'FACENAME',
+      align: "left",
+      className: "action-col",      
       render: (text, record) =>
         record.IsTotal === 1 ? <strong style={{ color: "#1e3a8a", display: "block", fontWeight: 700 }}>Totals:{text}</strong> : text,      // render: (status) => (
       width: 0,
@@ -789,7 +900,7 @@ const getSelectedTotal = () => {
       {contextHolder}
       <p className='curdt'>Date: {curDate}</p>
       <h3 className="frmhdr" style={{ textAlign: "center" }}><u><b>{scnm}</b></u></h3>
-      <h3 className="frmhdr" style={{ textAlign: "center" }}><u><b>Student Fees Report - {import.meta.env.VITE_CUR_YEAR_NAME}</b></u></h3>
+      <h3 className="frmhdr" style={{ textAlign: "center", fontSize:"20px" , }}><u>Student Fees Report - {import.meta.env.VITE_CUR_YEAR_NAME}</u></h3>
       <br></br>
       <div className="yrr">
         <p>Academic Year: {import.meta.env.VITE_CUR_YEAR_NAME}</p>
@@ -822,7 +933,7 @@ const getSelectedTotal = () => {
           />)
           : (<Alert message="No fee records found" type="info" showIcon />)
       }
-      <div>{loading ? (<></>) : (stfeesmtrx.length > 0 ? (<Button className="prntTb" onClick={tbPrnt}>Print / Save As PDF</Button>) : (<></>))}</div>
+      <div>{loading ? (<></>) : (stfeesmtrx.length > 0 ? (<Button className="prntTb" onClick={tbPrnt}>Print / Save As PDF <i className="fa fa-print"></i></Button>) : (<></>))}</div>
       {loading ? (<></>) :  (stfeesmtrx.length > 0 ? <div className='bnkdiv'><select className="bnkcmb" value={selectedBnk} id="bnkcmbID" onChange={handleBnkChange}>
         <option value="">-- Select Bank --</option>
         {bnks.map((opt) => (
@@ -831,7 +942,7 @@ const getSelectedTotal = () => {
           </option>
         ))}
       </select>
-      <Button className="prntBnkk" disabled={selectedTotal === 0} onClick={() => callBnkForm()}>Print Bank Form</Button>
+      <Button className="prntBnkk" disabled={selectedTotal === 0} onClick={() => callBnkForm()}>Print Bank Form <i  className="fa fa-print"></i></Button>
       </div> : (<></>))}
       
       {loading ? <></> :       
@@ -844,19 +955,51 @@ const getSelectedTotal = () => {
         onClick={() => {
           const installments = getSelectedInstallments();
           const total = getSelectedTotal();
-
-          navigate("/checkoutpage", {
-            state: {
+          const schoolNoo = scid;
+          const schoolNmm = scnm;
+          const ygpNmm = curYgpName;
+          const studNmm = curStudName;
+          const studentIdd = curStudID;
+          const fullName = `${curStudName} - ${curYgpName} - ${scnm}`;
+          console.log(studNmm + " " + studentIdd)
+          sessionStorage.setItem(
+            "checkoutData",
+            JSON.stringify({
+              paymentItems,
               installments,
               total,
               curEmailAddress,
-              stud,
-              fullName,
-            }
-          });
+              curStudID,
+              curStudName,
+              curYgpName,
+              curFamilyNo,
+              curFamilyName,
+              schoolNoo,
+              schoolNmm,
+              fullName
+            })
+          );
+          navigate("/checkoutpage");
+
+          // navigate("/checkoutpage", {
+          //   state: {
+          //     paymentItems,
+          //     installments,
+          //     total,
+          //     curEmailAddress,
+          //     curStudID,
+          //     curStudName,
+          //     curYgpName,
+          //     curFamilyNo,
+          //     curFamilyName,
+          //     schoolNoo,
+          //     schoolNmm,
+          //     fullName,
+          //     }
+          // });
         }}
       >
-        Redirect to PayFort (APS)
+      Redirect to PayFort (APS)
       </Button>
 
       {loading ? <></> :

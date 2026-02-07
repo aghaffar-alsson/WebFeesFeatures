@@ -157,31 +157,48 @@
     visibility: visible;
   }
 
-  .paycont {
+  /* .paycont {
     position: absolute;
     left: 0;
     top: 0;
     zoom: 100%;
+  } */
+   .paycont {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    transform: scale(0.9); /* adjust if needed: 0.7–0.75 usually fits */
+    transform-origin: top left;
+    font-size: 10pt;
+    line-height: 1.1;
+    overflow: visible !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    size: A4 landscape !important;
+   }
+     @page {
+    size: landscape;
   }
-
   .payprntTb {
     display: none !important;
   }
 
   .ant-table-cell {
     font-size: 12px !important;
-    word-break: break-word;
+    word-break: break-word !important;
   }
 
   .payfmhdr,
   .paysthdr,
   .payyrr {
-    font-size: 13px !important;
+    font-size: 20px !important;
     word-break: break-word;
     font-weight: 700;
   }
 
-.hdrr{margin-bottom: 20px; font-size: 22px;}
+.hdrr{margin-bottom: 20px; font-size: 20px;}
+.paytbb{width: 100% !important; font-size: 12px !important; }
 }
 
 /* .tbb{width: 1600;} */

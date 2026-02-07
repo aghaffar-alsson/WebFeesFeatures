@@ -16,10 +16,17 @@
 
 .logo {
   display: flex;
+  flex-direction: row;
   justify-content: space-between;
   align-items: center;
   padding-bottom: 8px;
   margin-bottom: 15px;
+  gap: 250px;
+}
+
+#schoolLogo {
+  width: 1000px;
+  padding-right: 150px;
 }
 
 .divtitle {
@@ -106,10 +113,6 @@ h5 {
 }
 
 @media print {
-  @page {
-    size: A4 portrait;
-    margin: 10mm;
-  }
 
   body * {
     visibility: hidden;
@@ -140,6 +143,7 @@ h5 {
     box-shadow: none !important;
     background: #fff;
     padding: 10mm;
+    transform: scale(0.97);
   }
 
   .tbb,
@@ -149,35 +153,47 @@ h5 {
   }
 
   .logo {
+    
     display: flex;
+    flex-direction: row;
     justify-content: space-between;
-    align-items: center;
+    align-items: flex-start;
     padding-bottom: 8px;
     margin-bottom: 15px;
+    gap: 250px;
   }
-    #schoolLogo {
-    width: 260px !important;
-    /* adjust size as needed */
-    height: auto !important;
-  }
-
-  #bankLogo {
+  /* #schoolLogo {
     width: 200px !important;
-    /* adjust if needed */
+    
     height: auto !important;
-  }
+  } */
 
-  .logo img {
-    object-fit: contain !important;
+  /* #bankLogo {
+    width: 200px !important;
+    height: auto !important;
+    align-items: right !important;
+  } */
+  @page {
+    size: A4 portrait;
+    margin: 5mm;
   }
-  img#schoolLogo,
-  img#bankLogo {
+  
+#schoolLogo {
+  width: 400px;
+  padding-right: 150px;
+}
+  /* .logo img {
+    object-fit: contain !important;
+  } */
+  /* #schoolLogo,
+  #bankLogo {
     visibility: visible !important;
     width: 300px !important;
     height: auto !important;
     position: relative !important;
     z-index: 9999 !important;
-  }  
+  }   */
+  .frmtitle {font-size: 22px; }     
 }
 
 /* --- Print preview boundary --- */
@@ -211,10 +227,11 @@ h5 {
     content: "⚠️ Content exceeds A4 height!";
   }
 
-  #schoolLogo {
+
+  /* #schoolLogo {
     width: 200px ;
     height: auto ;
-  }
+  } */
 }
 
 
@@ -229,8 +246,9 @@ h5 {
   }
 
   .logo {
+    display: flex;
     flex-direction: row;
-    justify-content: space-around;
+    justify-content: space-between;
     padding-bottom: 6px;
   }
 
@@ -257,15 +275,15 @@ h5 {
 
   .logo {
     flex-direction: row;
-    justify-content: flex-start;
+    justify-content: space-between;
     align-items: flex-start;
     gap: 250px;
   }
 
-  #schoolLogo,
+  /* #schoolLogo,
   #bankLogo {
     max-width: 100px;
-  }
+  } */
 
   .frmtitle {
     font-size: 15px;
@@ -300,8 +318,8 @@ h5 {
   }
 
   .logo {
-    flex-direction: column;
-    justify-content: center;
+    flex-direction: row;
+    justify-content: space-between;
     align-items: center;
     gap: 8px;
   }
@@ -312,7 +330,7 @@ h5 {
   }
 
   .frmtitle {
-    font-size: 14px;
+    font-size: 12px;
     margin-bottom: 8px;
   }
 
@@ -335,10 +353,12 @@ h5 {
     width: 90%;
     margin: 15px auto;
     height: 45px;
-    font-size: 14px;
+    font-size: 10px;
     border-radius: 10px;
     display: block;
+    /*display: none;*/
   }
+  .prntico{display: none;}
 
   /* Hide the A4 preview border on small screens */
   .bnkfrmcont::after {
@@ -347,18 +367,18 @@ h5 {
 
   .logo {
     flex-direction: row;
-    justify-content: flex-start;
+    justify-content: space-between;
     align-items: flex-start;
     gap: 250px;
   }
 
   #schoolLogo,
   #bankLogo {
-    max-width: 150px;
+    max-width: 250px;
   }
 
   .frmtitle {
-    font-size: 13px;
+    font-size: 10px;
   }
 
   .graytxt,

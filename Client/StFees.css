@@ -107,6 +107,8 @@
   font-size: 16px;
   color: #fff;
   background: dodgerblue;
+  width: 100%;
+  margin-left: 0px;
 
 }
 
@@ -140,22 +142,27 @@
   display: none;
 }
 
-.bnkcmb {
+/* .bnkcmb {
   height: 40px;
   margin-top: 10px;
   width: 180px;
   font-size: 14px;
   color: dodgerblue;
-  /* margin-top: 25px; */
   border-radius: 8px;
-  
-}
+} */
+  .bnkcmb,
+  .prntform {
+    width: 100%;
+    font-size: 13px;
+    height: 35px;
+    border-radius: 10px;
+  }
 
 .prntform {
   color: dodgerblue;
   border: #000 1px solid;
   border-radius: 15px;
-  width: 120px;
+  width: 100%;
   text-align: center;
   height: 35px;
   font-size: 12px;
@@ -172,7 +179,7 @@
   color: #fff;
 }
 
-.bnkdiv{
+/* .bnkdiv{
   display: flex;
   justify-items: center;
   justify-content: flex-end;
@@ -182,6 +189,14 @@
   border-radius: 8px;
   padding: 10px;
 
+} */
+.bnkdiv{
+  flex-direction: column;
+  gap: 5px;
+  width: 250px;
+  border: 2px solid dodgerblue;
+  border-radius: 8px;
+  padding: 2px;
 }
 .awspay{
   display: flex;
@@ -349,8 +364,10 @@
   .bnkcmb,
   .prntform {
     width: 100%;
-    margin-top: 10px;
+    font-size: 13px;
+    height: 35px;
   }
+
 
   .cont h3 {
     font-size: 16px;
@@ -404,7 +421,8 @@
   .prntTb , .prntBnkk{
     width: 100%;
     margin: 15px 0 0 0;
-    font-size: 14px;
+    font-size: 12px;
+    margin-left: 0px;
   }
 
   .bnkprntdiv {
@@ -427,15 +445,15 @@
   .cont h3 {
     font-size: 14px;
   }
-.bnkdiv{
-  flex-direction: column;
-  gap: 5px;
-  width: 150px;
-  border: 2px solid dodgerblue;
-  border-radius: 8px;
-  padding: 2px;
-  
-}
+  .bnkdiv{
+    flex-direction: column;
+    gap: 5px;
+    width: 250px;
+    border: 2px solid dodgerblue;
+    border-radius: 8px;
+    padding: 2px;
+    
+  }
 
   /* .ant-table{    overflow-y: auto;
     overflow-x: auto;

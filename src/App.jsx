@@ -12,6 +12,7 @@ import BankForm from '../Client/BankForm.jsx';
 import StPay from '../Client/StPay.jsx';
 import CheckoutPage from '../Client/CheckoutPage.jsx';
 import CheckoutResult from '../Client/CheckoutResult.jsx';
+import PssForgot from '../Client/PssForgot.jsx';
 
 function App() {
   const [count, setCount] = useState(0)
@@ -30,6 +31,7 @@ function App() {
       <Route path='/stpayhist' element={<StPay />} />
       <Route path='/checkoutpage' element={<CheckoutPage />} />
       <Route path='/checkout-result' element={<CheckoutResult />} />
+      <Route path='/forgot-pswd' element={<PssForgot />} />
     </Routes>
     </BrowserRouter>
 

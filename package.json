@@ -31,6 +31,7 @@
     "bcrypt": "^6.0.0",
     "body-parser": "^2.2.1",
     "bootstrap": "^5.3.8",
+    "cloudinary": "^2.8.0",
     "clsx": "^2.1.1",
     "cors": "^2.8.5",
     "crypto": "^1.0.1",
@@ -59,13 +60,15 @@
     "react-to-print": "^3.2.0",
     "redux": "^5.0.1",
     "tedious": "^19.0.0",
-    "twilio": "^5.10.7"
+    "twilio": "^5.10.7",
+    "url": "^0.11.4"
   },
   "devDependencies": {
     "@eslint/js": "^9.36.0",
     "@types/react": "^19.2.2",
     "@types/react-dom": "^19.2.2",
     "@vitejs/plugin-react": "^5.0.4",
+    "baseline-browser-mapping": "^2.9.17",
     "eslint": "^9.36.0",
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-refresh": "^0.4.22",

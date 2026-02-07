@@ -13,7 +13,7 @@ import { Typography } from 'antd';
 import { useNavigate } from "react-router-dom";
 // const { Link } = Typography;
 import { Link } from 'react-router-dom'
-import '../Client/SignUp.jsx'
+import './PssForgot.css'
 // import Message from "tedious/lib/message.js";
 // import bcrypt from "bcrypt";
 
@@ -21,7 +21,7 @@ var MobRegExp = /^01[0-2,5]{1}[0-9]{8}$/;
 var EmlRegExp = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
 var pswdRegExp = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!_@#$%^&*]).{10,}$/;
 
-function SignUp() {
+function PssForgot() {
   useEffect(() => {
     localStorage.clear();
   }, []);
@@ -64,7 +64,7 @@ function SignUp() {
   };
 
   //CREATE FAMILY LOGIN , TEMP PASSWORD & SEND IT TO EMAIL ADDRESS
-  const createLogin = async (e) => {
+  const modifyLogin = async (e) => {
     e.preventDefault();
     const loginData = {
       yr: "2025",
@@ -76,7 +76,7 @@ function SignUp() {
     };
     console.log(JSON.stringify(loginData))
     try {
-      const res = await fetch("http://localhost:3000/api/signup", {
+      const res = await fetch("http://localhost:3000/api/modifylogin", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(loginData),
@@ -87,7 +87,7 @@ function SignUp() {
         messageApi.open({
           type: "success",
           content: data.message,
-          key: "createLogin",
+          key: "modifylogin",
           duration: 4
         });        
         //Alert(data.message)
@@ -112,7 +112,7 @@ function SignUp() {
 
     try {
       setErrors((prev) => ({ ...prev, mobile: "" }));
-      const res = await fetch(`http://localhost:3000/api/spgetfmdet/${regMob}`);
+      const res = await fetch(`http://localhost:3000/api/spgetlogindet/${regMob}`);
       const data = await res.json();
       if (data && data[0] && data.length > 0) {
         setSelectedFamid(data[0].famid);
@@ -140,7 +140,7 @@ function SignUp() {
     }
     try {
       setErrors((prev) => ({ ...prev, email: "" }));
-      const res = await fetch("http://localhost:3000/api/sp_GetFmDetByMob&Email", {
+      const res = await fetch("http://localhost:3000/api/sp_GetLoginDetByMob&Email", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -153,8 +153,10 @@ function SignUp() {
         setFmDtt(data)
         setSelectedFamid(data.famid);
         setSelectedFamNM(data.famnm);
+        console.log(data)
         setErrors((prev) => ({ ...prev, email: "" }));
       } else {
+        console.log('No data found for the provided email and mobile number.')
         setSelectedFamid("");
         setSelectedFamNM("");
         setEmail("");
@@ -231,7 +233,7 @@ function SignUp() {
       <form className="allDivv" onSubmit={(e) => HandleSubmit(e, selectedFamid)}>
         {/* FORM TITLE */}
         <div className="frmtitlee">
-          <h3 style={{ paddingTop: "10px" }}>Sign Up to Parents' Fees Portal</h3>
+          <h3 style={{ paddingTop: "10px" }}>Reset Password to Parents' Fees Portal</h3>
           <img className="titleimg" src={imgg} alt="EL ALSSON" />
         </div>
         {/* Mobile */}
@@ -261,20 +263,20 @@ function SignUp() {
           (<div ><strong className="fminfo">Family ID:{fmDtt.famid} - Family Name:{fmDtt.famnm} </strong></div>)}
 
         <div className="sbmtt">
-          {isFormValid ? (<button className="enbtn" type="submit" tabIndex="9" id="btnSubmit" onClick={createLogin}>Create Login <FontAwesomeIcon icon={faCheckDouble} /></button>) :
+          {isFormValid ? (<button className="enbtn" type="submit" tabIndex="9" id="btnSubmit" onClick={modifyLogin}>Reset Password<FontAwesomeIcon icon={faCheckDouble} /></button>) :
             (<button className="disbtn" type="button" tabIndex="9" id="btnSubmit" disabled>Create Password</button>)}
         </div>
         {!loginCreated ? (<p></p>) :
           (<div >
             <div className="pssfrm">
               <div className="pdvv">
-                <p className="lblok">Congratulations, Your login was created successfuly.</p>
+                {/* <p className="lblok">Your password was reset & your login was updated successfuly.</p> */}
                 <p className="lblok">Temporary password sent to your email address: {regEmll}</p>
-                <p className="lblok">Please write it below for the first login only.</p>
+                <p className="lblok">Please write it below only once now.</p>
                 <p className="lblok">Then change it with your own password immidiately.</p>
               </div>
               <div className="tmppss">
-                <label id="lbl1" className="lbl" htmlFor="tmppss"  >Write temp. password:</label>
+                <label id="lbl1" className="lbl" htmlFor="tmppss">Write temp. password:</label>
                 <Input.Password id="tmppss" className="inp_1" type="password" maxLength={10}
                   iconRender={(visible) => visible ? <EyeTwoTone /> : <EyeInvisibleOutlined />} value={usrtmpPss}
                   onChange={(e) => setusrtmpPss(e.target.value)} />
@@ -302,19 +304,19 @@ function SignUp() {
               </div>
               <div >
                 {!isPssFormValid ? (<p></p>) :
-                  <button type="button" className="gotologin" onClick={updtLogin}> Go to login page <FontAwesomeIcon icon={faCheckDouble} /></button >}
+                  <button type="button" className="gotologin" onClick={updtLogin}>Go to login page <FontAwesomeIcon icon={faCheckDouble} /></button >}
               </div>
             </div>
           </div>)}
       </form >
 
-      <div className="signindiv">
+      {/* <div className="signindiv">
         <p className='signin'>Have an account?</p>
         <Link to="/signin" className="signinlnk">Sign In</Link>
-      </div>
+      </div> */}
     </>
   )
 }
 
 
-export default SignUp
+export default PssForgot

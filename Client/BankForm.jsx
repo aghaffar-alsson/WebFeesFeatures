@@ -4,7 +4,11 @@ import './BankForm.css'
 import numberToWords from "number-to-words";
 import { useReactToPrint } from 'react-to-print';
 import { Button, message } from 'antd';
-
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faWhatsapp } from '@fortawesome/free-brands-svg-icons'
+import { faEnvelope } from '@fortawesome/free-solid-svg-icons'
+import { faHouse } from '@fortawesome/free-solid-svg-icons'
+import { faReceipt } from '@fortawesome/free-solid-svg-icons'
 
 
 export default function BankForm() {
@@ -112,7 +116,7 @@ export default function BankForm() {
             <h5 id='endforminfo'></h5>
           </div>
         </div>
-        <Button className="frmPrnt" onClick={frmPrnt}>Print / Save As PDF</Button>
+        <Button className="frmPrnt" onClick={frmPrnt}>Print/Save As PDF<i className="prntico" class="fa fa-print"></i></Button>
       </div>
       <div>
       </div>

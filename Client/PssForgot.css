@@ -333,9 +333,8 @@ button {
   margin-top: 10px;
 }
 input#pss, input#pss{ font-size: 16px; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;}
+
 #btnSubmit{ font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; width: 100%; margin-top: 10px;}
-
-
 @media (max-width: 600px) {
 
   /*Small screens (phones upto 600px width)*/
