@@ -14,7 +14,7 @@ import useMessage from "antd/es/message/useMessage";
 export default function CheckoutResult() {
   // const REACT_APP_API_BASE = "https://my-payfort-backend.onrender.com"
   const [messageApi, contextHolder] = message.useMessage()
-  const REACT_APP_API_BASE = "http://localhost:3000"
+  //const REACT_APP_API_BASE = "http://localhost:3000"
   const { search } = useLocation();
   const [status, setStatus] = useState(null);
   const [details, setDetails] = useState(null);  // response details
@@ -22,6 +22,8 @@ export default function CheckoutResult() {
   const studentId = localStorage.getItem("curstid");
   const studentName = localStorage.getItem("curstname");
   const curYgp = localStorage.getItem("ygp");
+  const REACT_PORT = import.meta.env.VITE_PORT || 3000;
+  const API_URL = import.meta.env.VITE_API_URL || `http://localhost:${REACT_PORT}/api`;
   // const shareByEmail = (schoolEmail = "fees@alsson.com") => {
   //   const subject = encodeURIComponent(`Payment Receipt - Order ${details.merchant_reference || ""}`);
   //   const body = encodeURIComponent(
@@ -234,7 +236,8 @@ export default function CheckoutResult() {
       //const res = await axios.post(`${REACT_APP_API_BASE}/api/generate-receipt`,payload, { headers: { "Content-Type": "application/json" } });    
 
       //await axios.post("http://localhost:3000/api/send-receipt-email", payload); console.log(res.data)
-      const res = await axios.post("http://localhost:3000/api/send-receipt-email", payload);
+      //const res = await axios.post("http://localhost:3000/api/send-receipt-email", payload);
+      const res = await axios.post(`${API_URL}/send-receipt-email`, payload);
       console.log(res.data);
 
       //const { data: pdfData } = await axios.post(`${REACT_APP_API_BASE}/api/generate-receipt`, payload);

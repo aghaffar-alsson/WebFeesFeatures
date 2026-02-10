@@ -48,8 +48,10 @@ export default function StFees() {
   const [bnknmm, setBnkNmm] = useState("");
   const [messageApi, contextHolder] = message.useMessage()
   //define global arrays for student & banks
-  let globBnkDet = []
-  let globStInfo = []
+  // let globBnkDet = []
+  // let globStInfo = []
+  const REACT_PORT = import.meta.env.VITE_PORT || 3000;
+  const API_URL = import.meta.env.VITE_API_URL || `http://localhost:${REACT_PORT}/api`;
 
   const feesReff = useRef();
   //Print or Save As PDF for fees table
@@ -89,7 +91,8 @@ export default function StFees() {
     // console.log(onlyRem)
     setLoading(true);
     try {
-      const res = await fetch("http://localhost:3000/api/getstfees", {
+      // const res = await fetch("http://localhost:3000/api/getstfees", {
+      const res = await fetch(`${API_URL}/getstfees`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -539,7 +542,8 @@ const handleUserSelection = (record, index, checked) => {
   useEffect(() => {
     const fetchBanks = async () => {
       try {
-        const res = await fetch("http://localhost:3000/api/banks");
+        // const res = await fetch("http://localhost:3000/api/banks");
+        const res = await fetch(`${API_URL}/banks`);
         const bnkdata = await res.json();
         setBnks(bnkdata);
       } catch (err) {
@@ -568,7 +572,8 @@ const handleUserSelection = (record, index, checked) => {
       return;
     }
     try {
-      const res = await fetch(`http://localhost:3000/api/bankdet/${bnkId}`);
+      // const res = await fetch(`http://localhost:3000/api/bankdet/${bnkId}`);
+      const res = await fetch(`${API_URL}/bankdet/${bnkId}`);
       const bnkDetData = await res.json();
       //console.log(bnkDetData[0])
       if (bnkDetData && bnkDetData[0].BANKID && bnkDetData[0].BANKNAME && bnkDetData[0].AMACCNO && bnkDetData[0].AMACCNM

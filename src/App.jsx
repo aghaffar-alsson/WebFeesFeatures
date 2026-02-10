@@ -13,6 +13,7 @@ import StPay from '../Client/StPay.jsx';
 import CheckoutPage from '../Client/CheckoutPage.jsx';
 import CheckoutResult from '../Client/CheckoutResult.jsx';
 import PssForgot from '../Client/PssForgot.jsx';
+//import { SpeedInsights } from "@vercel/speed-insights/next"
 
 function App() {
   const [count, setCount] = useState(0)

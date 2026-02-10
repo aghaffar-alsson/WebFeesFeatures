@@ -43,6 +43,8 @@ export default function StPay() {
   const [scnm, setScNm] = useState('')
   const navigate = useNavigate();
   const hidd = false
+  const REACT_PORT = import.meta.env.VITE_PORT || 3000;
+  const API_URL = import.meta.env.VITE_API_URL || `http://localhost:${REACT_PORT}/api`;
 
 
   const [messageApi, contextHolder] = message.useMessage()
@@ -57,7 +59,8 @@ export default function StPay() {
     // console.log(onlyRem)
     setLoading(true);
     try {
-      const res = await fetch("http://localhost:3000/api/getstpayhist", {
+      // const res = await fetch("http://localhost:3000/api/getstpayhist", {
+      const res = await fetch(`${API_URL}/getstpayhist`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

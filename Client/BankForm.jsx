@@ -3,7 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import './BankForm.css'
 import numberToWords from "number-to-words";
 import { useReactToPrint } from 'react-to-print';
-import { Button, message } from 'antd';
+import { Button, message } from 'antd'; 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faWhatsapp } from '@fortawesome/free-brands-svg-icons'
 import { faEnvelope } from '@fortawesome/free-solid-svg-icons'

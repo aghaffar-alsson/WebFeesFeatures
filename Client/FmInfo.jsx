@@ -22,6 +22,9 @@ export default function FmInfo() {
   const yrNo = import.meta.env.VITE_CUR_YEAR
   const { Meta } = Card;
   const Navigate = useNavigate()
+  const REACT_PORT = import.meta.env.VITE_PORT || 3000;
+  const API_URL = import.meta.env.VITE_API_URL || `http://localhost:${REACT_PORT}/api`;
+
   //console.log(yrNo)
   const getFmInfo = async () => {
     if (!CurFmNm || !CurFmNo) {
@@ -29,7 +32,8 @@ export default function FmInfo() {
     }
     //console.log(CurFmNo , CurFmNm)
     try {
-      const res = await fetch("http://localhost:3000/api/sp_GetFmInfo", {
+      // const res = await fetch("http://localhost:3000/api/sp_GetFmInfo", {
+      const res = await fetch(`${API_URL}/sp_GetFmInfo`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

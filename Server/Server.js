@@ -72,6 +72,8 @@ const sqlConfig = {
   },
   requestTimeout: 25000,
 };
+console.log(sqlConfig)
+
 // SQL Config
 // const sqlConfig = {
 //   server: "41.128.168.249",
@@ -93,10 +95,17 @@ let poolPromise = sql.connect(sqlConfig)
   .catch(err => {
     console.error("❌ Database Connection Failed!", err);
   });
+// // --- Start Server
+// app.listen(port, () => {
+//   console.log(`🚀 Server is running on port ${process.env.VITE_PORT}`);
+// });
 // --- Start Server
-app.listen(port, () => {
-  console.log(`🚀 Server is running on port ${process.env.VITE_PORT}`);
-});
+if (process.env.NODE_ENV !== "production") {
+  const PORT = process.env.PORT || 5000;
+  app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+  });
+}
 // --- Test API
 app.get("/", (req, res) => {
   res.send("Server is running");

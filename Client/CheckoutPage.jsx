@@ -9,7 +9,7 @@ import { Table } from "antd";
 import { useLocation } from "react-router-dom";
 
 
-
+ 
 export default function CheckoutPage() {
   const [loading, setLoading] = useState(false);
   // const { state } = useLocation();

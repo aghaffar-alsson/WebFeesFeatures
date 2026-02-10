@@ -14,7 +14,8 @@ export default function FeesHist() {
   const curStudName = localStorage.getItem("curstname")
   const curYgpName = localStorage.getItem("ygp")
   const [payhistData, setPayHistData] = useState([]);
-
+  const REACT_PORT = import.meta.env.VITE_PORT || 3000;
+  const API_URL = import.meta.env.VITE_API_URL || `http://localhost:${REACT_PORT}/api`;
   const getStFeesHistory = async () => {
     if (!curFamilyNo || !curStudID) {
       return
@@ -22,7 +23,8 @@ export default function FeesHist() {
     //console.log(CurFmNo , CurFmNm)
     setLoading(true);
     try {
-      const res = await fetch("http://localhost:3000/api/getstfees", {
+      // const res = await fetch("http://localhost:3000/api/getstfees", {
+      const res = await fetch(`${API_URL}/getstfees`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
