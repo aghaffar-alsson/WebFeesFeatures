@@ -7,4 +7,7 @@ app.get("/hello", (req, res) => {
   res.json({ message: "Hello from Vercel!" });
 });
 
+import app from "../Server/Server.js";
+
 export default app;
+
