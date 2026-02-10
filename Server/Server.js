@@ -1311,6 +1311,9 @@ app.post("/api/generate-whatsapp-link", (req, res) => {
 app.get("/api/health", (req, res) => {
   res.json({ ok: true });
 });
+app.get("/hello", (req, res) => {
+  res.json({ message: "Hello from Vercel!" });
+});
 // --- Start Server
 if (process.env.NODE_ENV !== "production") {
   const PORT = process.env.VITE_PORT || 3000;
