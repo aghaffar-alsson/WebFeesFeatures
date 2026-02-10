@@ -101,7 +101,7 @@ let poolPromise = sql.connect(sqlConfig)
 // });
 // --- Start Server
 if (process.env.NODE_ENV !== "production") {
-  const PORT = process.env.PORT || 5000;
+  const PORT = process.env.VITE_PORT || 3000;
   app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
   });
@@ -1314,3 +1314,8 @@ app.post("/api/generate-whatsapp-link", (req, res) => {
   }
 });
 
+app.get("/api/health", (req, res) => {
+  res.json({ ok: true });
+});
+
+export default app;
