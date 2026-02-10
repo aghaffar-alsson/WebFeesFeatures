@@ -1311,7 +1311,7 @@ app.post("/api/generate-whatsapp-link", (req, res) => {
 app.get("/api/health", (req, res) => {
   res.json({ ok: true });
 });
-app.get("/hello", (req, res) => {
+app.get("/api/hello", (req, res) => {
   res.json({ message: "Hello from Vercel!" });
 });
 // --- Start Server
@@ -1321,4 +1321,11 @@ if (process.env.NODE_ENV !== "production") {
     console.log(`Server running on port ${PORT}`);
   });
 }
+if (process.env.VERCEL !== "1") {
+  const PORT = process.env.VITE_PORT || 3000;
+  app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+  });
+}
+
 export default app;
