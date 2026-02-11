@@ -106,7 +106,7 @@ app.get("/", (req, res) => {
 });
 //***************************APIs START**************************************************/
 // --- Get family ID by mobile number Stored Procedure 
-app.get("/api/spgetfmdet/:mobno", async (req, res) => {
+app.get("/spgetfmdet/:mobno", async (req, res) => {
   const mobno = req.params.mobno ? String(req.params.mobno).trim() : null;
   //console.log("Received mobno:", mobno);
 
@@ -133,7 +133,7 @@ app.get("/api/spgetfmdet/:mobno", async (req, res) => {
 });
 
 // --- Get family ID by mobile number from FMLOGIN TABLE Stored Procedure 
-app.get("/api/spgetlogindet/:mobno", async (req, res) => {
+app.get("/spgetlogindet/:mobno", async (req, res) => {
   const mobno = req.params.mobno ? String(req.params.mobno).trim() : null;
   //console.log("Received mobno:", mobno);
 
@@ -158,7 +158,7 @@ app.get("/api/spgetlogindet/:mobno", async (req, res) => {
   }
 });
 // --- Get family ID by email Address & Mobile No. Stored Procedure 
-app.post("/api/sp_GetFmDetByMob&Email", async (req, res) => {
+app.post("/sp_GetFmDetByMob&Email", async (req, res) => {
   const { mobno = req.params.mobno ? String(req.params.mobno).trim() : null, 
     emll  = req.params.emll ? String(req.params.emll).trim() : null } = req.body;
   if (!mobno) {
@@ -184,7 +184,7 @@ app.post("/api/sp_GetFmDetByMob&Email", async (req, res) => {
 });
 
 // --- Get family ID by email Address & Mobile No. Stored Procedure 
-app.post("/api/sp_GetLoginDetByMob&Email", async (req, res) => {
+app.post("/sp_GetLoginDetByMob&Email", async (req, res) => {
   const { mobno = req.params.mobno ? String(req.params.mobno).trim() : null, 
     emll  = req.params.emll ? String(req.params.emll).trim() : null } = req.body;
   if (!mobno) {
@@ -229,7 +229,7 @@ function generateTempPassword(length = 8) {
 }
 
 //CREATE NEW LOGIN
-app.post('/api/signup', async (req, res) => {
+app.post('/signup', async (req, res) => {
   const { yr,  famid, famnm, emll, mobb, pswd } = req.body;
   console.log(req.body);
   if (!yr || !famid || !famnm || !emll || !mobb || !pswd) {
@@ -286,7 +286,7 @@ app.post('/api/signup', async (req, res) => {
 });
 
 //MODIFY AN EXISTING LOGIN BY RESETTING THE PASSWORD TO A NEW TEMPORARY ONE & SEND IT TO THE PARENT EMAIL ADDRESS
-app.post('/api/modifylogin', async (req, res) => {
+app.post('/modifylogin', async (req, res) => {
   const { yr,  famid, famnm, emll, mobb, pswd } = req.body;
   console.log(req.body);
   if (!yr || !famid || !famnm || !emll || !mobb || !pswd) {
@@ -343,7 +343,7 @@ app.post('/api/modifylogin', async (req, res) => {
 });
 
 //CHECK THE EXISTENCE OF FAMILY LOGIN USING THE SUPPLIED MOBILE NUMBER
-app.post('/api/chkLoginByMob', async (req, res) => {
+app.post('/chkLoginByMob', async (req, res) => {
   const { yr,  mobb } = req.body;
 
   if (!yr   || !mobb  ) {
@@ -372,7 +372,7 @@ app.post('/api/chkLoginByMob', async (req, res) => {
 
 
 //CHECK THE EXISTENCE OF FAMILY LOGIN USING THE SUPPLIED EMAIL ADDRESS
-app.post('/api/chkLoginByEml', async (req, res) => {
+app.post('/chkLoginByEml', async (req, res) => {
   const { yr, emll } = req.body;
 
   if (!yr   || !emll  ) {
@@ -401,7 +401,7 @@ app.post('/api/chkLoginByEml', async (req, res) => {
 });
 
 //CHECK THE EXISTENCE OF FAMILY LOGIN USING THE EMAIL ADDRESS & MOBILE NUMBER
-app.post('/api/chkLogin', async (req, res) => {
+app.post('/chkLogin', async (req, res) => {
   const { yr, emll , mobb } = req.body;
 
   if (!yr   || !emll || !mobb ) {
@@ -431,7 +431,7 @@ app.post('/api/chkLogin', async (req, res) => {
 });
 
 //CHECK THE EXISTENCE OF FAMILY LOGIN USING THE EMAIL ADDRESS & MOBILE NUMBER
-app.put('/api/updtLogin', async (req, res) => {
+app.put('/updtLogin', async (req, res) => {
   const { yr,  famid, emll, mobb, pswd } = req.body;
   console.log(req.body);
   //console.log(pswd)
@@ -467,7 +467,7 @@ app.put('/api/updtLogin', async (req, res) => {
 
 
 //CHECK THE EXISTENCE OF FAMILY LOGIN USING THE SUPPLIED PSWD
-app.post('/api/chkLoginByPswd', async (req, res) => {
+app.post('/chkLoginByPswd', async (req, res) => {
   const { yr, pswd, email_reg, phone_reg } = req.body;
 
   if (!yr   || !pswd  ) {
@@ -508,7 +508,7 @@ app.post('/api/chkLoginByPswd', async (req, res) => {
 });
 
 //GET THE PERSONAL INFO FOR THE SELECTED FAMILY
-app.post('/api/sp_GetFmInfo', async (req, res) => {
+app.post('/sp_GetFmInfo', async (req, res) => {
   const { yrNo, CurFmNo } = req.body;
 
   if (!yrNo || !CurFmNo) {
@@ -550,7 +550,7 @@ app.post('/api/sp_GetFmInfo', async (req, res) => {
 });
 
 // --- Bank Details Stored Procedure
-app.get("/api/bankdet/:bnkId", async (req, res) => {
+app.get("/bankdet/:bnkId", async (req, res) => {
   const bnkId = parseInt(req.params.bnkId, 10);
   try {
     const pool = await sql.connect(sqlConfig);
@@ -567,7 +567,7 @@ app.get("/api/bankdet/:bnkId", async (req, res) => {
 
 
 // --- Banks API
-app.get("/api/banks", async (req, res) => {
+app.get("/banks", async (req, res) => {
   try {
     const pool = await sql.connect(sqlConfig);
     const result = await pool.request().query(
@@ -581,7 +581,7 @@ app.get("/api/banks", async (req, res) => {
 });
 
 //GET WHOLE FFES SITUATION FOR THE SELECTED STUDENT
-app.post('/api/getstfees', async (req, res) => {
+app.post('/getstfees', async (req, res) => {
   const { famid, curstid, onlyRem } = req.body;
 
   if (!famid || !curstid || !onlyRem) {
@@ -610,7 +610,7 @@ app.post('/api/getstfees', async (req, res) => {
 
 
 //GET PAYMENT HISTORY FOR THE SELECTED STUDENT
-app.post('/api/getstpayhist', async (req, res) => {
+app.post('/getstpayhist', async (req, res) => {
   const { famid, curstid, ygpno } = req.body;
 
   if (!famid || !curstid || !ygpno) {
@@ -637,7 +637,7 @@ app.post('/api/getstpayhist', async (req, res) => {
 });
 
 //HERE TO SETTLE THE FEES PAYMENT FOR THE SELECTED STUDENT
-app.post('/api/settlefees', async (req, res) => {
+app.post('/settlefees', async (req, res) => {
   const { famid, curstid, onlyRem } = req.body;
 
   if (!famid || !curstid || onlyRem === undefined) {
@@ -829,7 +829,7 @@ function getLogoPath() {
   return fs.existsSync(p) ? p : null;
 }
 // Endpoint to generate receipt for whtasapp
-app.post("/api/generate-receipt", async (req, res) => {
+app.post("/generate-receipt", async (req, res) => {
   try {
     const data = req.body;
 
@@ -862,7 +862,7 @@ app.post("/api/generate-receipt", async (req, res) => {
 
 
 // Main endpoint to send email
-app.post("/api/send-receipt-email", async (req, res) => {
+app.post("/send-receipt-email", async (req, res) => {
   try {
     const { receiptData } = req.body;
 
@@ -956,7 +956,7 @@ app.post("/api/send-receipt-email", async (req, res) => {
 });
 
 
-// app.post("/api/send-receipt-email", async (req, res) => {
+// app.post("/send-receipt-email", async (req, res) => {
 //   try {
 //     const { receiptData } = req.body;
 
@@ -1249,7 +1249,7 @@ function drawTable(doc, rows, fontSize = 12) {
 //   }
 // }
 
-// app.post("/api/log-payment", async (req, res) => {
+// app.post("/log-payment", async (req, res) => {
 //   const { paymentItems } = req.body;
 
 //   console.log("Incoming items:", paymentItems);
@@ -1271,7 +1271,7 @@ function drawTable(doc, rows, fontSize = 12) {
 
 
 // Endpoint to generate WhatsApp link
-app.post("/api/generate-whatsapp-link", (req, res) => {
+app.post("/generate-whatsapp-link", (req, res) => {
   try {
     const {
       schoolNumber = "201003828160",
@@ -1308,10 +1308,10 @@ app.post("/api/generate-whatsapp-link", (req, res) => {
   }
 });
 
-app.get("/api/health", (req, res) => {
+app.get("/health", (req, res) => {
   res.json({ ok: true });
 });
-app.get("/api/hello", (req, res) => {
+app.get("/hello", (req, res) => {
   res.json({ message: "Hello from Vercel!" });
 });
 // --- Start Server
@@ -1321,11 +1321,6 @@ if (process.env.NODE_ENV !== "production") {
     console.log(`Server running on port ${PORT}`);
   });
 }
-if (process.env.VERCEL !== "1") {
-  const PORT = process.env.VITE_PORT || 3000;
-  app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
-  });
-}
+
 
 export default app;
