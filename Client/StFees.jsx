@@ -51,7 +51,8 @@ export default function StFees() {
   // let globBnkDet = []
   // let globStInfo = []
   const REACT_PORT = import.meta.env.VITE_PORT || 3000;
-  const API_URL = import.meta.env.VITE_API_URL || `http://localhost:${REACT_PORT}/api`;
+  const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000/api";
+  const API_BASE = `${import.meta.env.VITE_API_URL}/api`;
 
   const feesReff = useRef();
   //Print or Save As PDF for fees table
@@ -92,7 +93,7 @@ export default function StFees() {
     setLoading(true);
     try {
       // const res = await fetch("http://localhost:3000/api/getstfees", {
-      const res = await fetch(`${API_URL}/getstfees`, {
+      const res = await fetch(`${API_BASE}/getstfees`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -543,7 +544,7 @@ const handleUserSelection = (record, index, checked) => {
     const fetchBanks = async () => {
       try {
         // const res = await fetch("http://localhost:3000/api/banks");
-        const res = await fetch(`${API_URL}/banks`);
+        const res = await fetch(`${API_BASE}/banks`);
         const bnkdata = await res.json();
         setBnks(bnkdata);
       } catch (err) {
@@ -573,7 +574,7 @@ const handleUserSelection = (record, index, checked) => {
     }
     try {
       // const res = await fetch(`http://localhost:3000/api/bankdet/${bnkId}`);
-      const res = await fetch(`${API_URL}/bankdet/${bnkId}`);
+      const res = await fetch(`${API_BASE}/bankdet/${bnkId}`);
       const bnkDetData = await res.json();
       //console.log(bnkDetData[0])
       if (bnkDetData && bnkDetData[0].BANKID && bnkDetData[0].BANKNAME && bnkDetData[0].AMACCNO && bnkDetData[0].AMACCNM

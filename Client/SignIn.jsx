@@ -49,9 +49,10 @@ export default function SignIn() {
   const mobRef = useRef(null);
   const YrNmm = import.meta.env.VITE_CUR_YEAR
   const REACT_PORT = import.meta.env.VITE_PORT || 3000;
-  const API_URL = import.meta.env.VITE_API_URL || `http://localhost:${REACT_PORT}/api`;
-  console.log(API_URL)
-  console.log(YrNmm)
+  const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000/api";
+  const API_BASE = `${import.meta.env.VITE_API_URL}/api`;
+  // console.log(API_URL)
+  // console.log(YrNmm)
 
   //To check the family login using mobile number
   useEffect(() => {
@@ -68,7 +69,7 @@ export default function SignIn() {
       try {
         setErrors((prev) => ({ ...prev, mobile: "" }));
         //const res = await fetch("http://localhost:3000/api/chkLoginByMob", {
-        const res = await fetch(`${API_URL}/chkLoginByMob`, {
+        const res = await fetch(`${API_BASE}/chkLoginByMob`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -110,7 +111,7 @@ export default function SignIn() {
       try {
         setErrors((prev) => ({ ...prev, email: "" }));
         //const res = await fetch("http://localhost:3000/api/chkLoginByEml", {
-        const res = await fetch(`${API_URL}/chkLoginByEml`, {
+        const res = await fetch(`${API_BASE}/chkLoginByEml`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -152,7 +153,7 @@ export default function SignIn() {
     // console.log(pss)
     try {
       //const res = await fetch("http://localhost:3000/api/chkLoginByPswd", {
-      const res = await fetch(`${API_URL}/chkLoginByPswd`, {
+      const res = await fetch(`${API_BASE}/chkLoginByPswd`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -201,7 +202,7 @@ export default function SignIn() {
 
     try {
       //const res = await fetch("http://localhost:3000/api/chkLogin", {
-      const res = await fetch(`${API_URL}/chkLogin`, {
+      const res = await fetch(`${API_BASE}/chkLogin`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

@@ -48,7 +48,8 @@ function PssForgot() {
   const [systempPswd, setSysTempPswd] = useState("")
   const navigate = useNavigate();
   const REACT_PORT = import.meta.env.VITE_PORT || 3000;
-  const API_URL = import.meta.env.VITE_API_URL || `http://localhost:${REACT_PORT}/api`;
+  const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000/api";
+  const API_BASE = `${import.meta.env.VITE_API_URL}/api`;
 
   localStorage.removeItem("curFmNo");
   localStorage.removeItem("curFmNm");
@@ -79,7 +80,7 @@ function PssForgot() {
     console.log(JSON.stringify(loginData))
     try {
       // const res = await fetch("http://localhost:3000/api/modifylogin", {
-      const res = await fetch(`${API_URL}/modifylogin`, {
+      const res = await fetch(`${API_BASE}/modifylogin`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(loginData),
@@ -116,7 +117,7 @@ function PssForgot() {
     try {
       setErrors((prev) => ({ ...prev, mobile: "" }));
       // const res = await fetch(`http://localhost:3000/api/spgetlogindet/${regMob}`);
-      const res = await fetch(`${API_URL}/spgetlogindet/${regMob}`);
+      const res = await fetch(`${API_BASE}/spgetlogindet/${regMob}`);
       const data = await res.json();
       if (data && data[0] && data.length > 0) {
         setSelectedFamid(data[0].famid);
@@ -145,7 +146,7 @@ function PssForgot() {
     try {
       setErrors((prev) => ({ ...prev, email: "" }));
       // const res = await fetch("http://localhost:3000/api/sp_GetLoginDetByMob&Email", {
-      const res = await fetch(`${API_URL}/sp_GetLoginDetByMob&Email`, {
+      const res = await fetch(`${API_BASE}/sp_GetLoginDetByMob&Email`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -195,7 +196,7 @@ function PssForgot() {
     console.log(JSON.stringify(loginData))
     try {
       // const res = await fetch("http://localhost:3000/api/updtLogin", {
-      const res = await fetch(`${API_URL}/updtLogin`, {
+      const res = await fetch(`${API_BASE}/updtLogin`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(loginData)
