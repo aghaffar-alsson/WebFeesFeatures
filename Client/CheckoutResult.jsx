@@ -24,7 +24,7 @@ export default function CheckoutResult() {
   const curYgp = localStorage.getItem("ygp");
   const REACT_PORT = import.meta.env.VITE_PORT || 3000;
   const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000/api";
-  const API_BASE = `${import.meta.env.VITE_API_URL}/api`;
+  const API_BASE = `${import.meta.env.VITE_API_URL}`;
   // const shareByEmail = (schoolEmail = "fees@alsson.com") => {
   //   const subject = encodeURIComponent(`Payment Receipt - Order ${details.merchant_reference || ""}`);
   //   const body = encodeURIComponent(

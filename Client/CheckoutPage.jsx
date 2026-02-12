@@ -101,7 +101,7 @@ function ApsMerchantPage({ cartItems, email, paymentItems }) {
       // Call backend to get Payfort payload
       const res = await axios.post(
         "https://my-payfort-backend.onrender.com/createFormPayLoad",
-        { email, amount, currency, schoolId , paymentItems }
+        { email, amount, currency, schoolId , paymentItems, frontendOrigin: window.location.origin }
       );
 
       const payfortData = res.data; // <-- directly
@@ -149,7 +149,7 @@ function ApsMerchantPage({ cartItems, email, paymentItems }) {
         disabled={loading}
         startIcon={<i className="fas fa-lock"></i>}
       >
-        {loading ? "Redirecting..." : "SECURE PAYMENT WITH PAYFORT (APS)"}
+        {loading ? "Redirecting Please wait..." : "SECURE PAYMENT WITH PAYFORT (APS)"}
       </Button>
       <p className="empty">Chekout Page</p>
     </div>
