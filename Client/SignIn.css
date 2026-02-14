@@ -4,17 +4,19 @@
   box-sizing: border-box;
 }
 
-.allDivv {
+.allDiv {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
   justify-content: center;
-  max-width: 600px;
+  max-width: 700px;
   padding-top: 20px;
   margin-top: 20px;
   box-shadow: 10px 8px 20px rgba(8, 37, 142, 0.34);
-  margin-left: 335px;
-  border: double 4px #007bff;
+  /* Soft shadow */
+  margin-left: 35px;
+  border: double 4px black;
+
   border-radius: 12px;
   margin-bottom: 20px;
 }
@@ -134,7 +136,7 @@
 
   /*Small screens (phones upto 600px width)*/
   .allDiv {
-    max-width: 90%;
+    max-width: 600px;
     margin: 20px auto;
     padding: 15px;
     box-shadow: 4px 4px 12px rgba(8, 37, 142, 0.2);
@@ -247,7 +249,7 @@
 
   /*Medium screens (tablets from 601px upto 992px width)*/
   .allDiv {
-    max-width: 80%;
+    max-width: 500px;
     margin: 30px auto;
     padding: 20px;
   }
@@ -342,7 +344,7 @@
 
   /*Small screens (phones upto 600px width)*/
   .allDiv {
-    max-width: 50%;
+    max-width: 400px;
     margin: 5px auto;
     padding: 5px;
     box-shadow: 4px 4px 12px rgba(8, 37, 142, 0.2);
