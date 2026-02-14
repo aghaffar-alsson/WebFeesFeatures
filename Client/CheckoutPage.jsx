@@ -5,13 +5,20 @@ import LockIcon from "@mui/icons-material/Lock";
 
 import './CheckoutPage.css'
 import alsimgg from '../src/assets/newgiza-logo.jpg'
-import { Table } from "antd";
+import { Table, Typography, Spin, Alert, message, Tooltip  } from 'antd'
+import { LoadingOutlined } from '@ant-design/icons';
 import { useLocation } from "react-router-dom";
 
 
  
 export default function CheckoutPage() {
   const [loading, setLoading] = useState(false);
+  const whiteSpinner = (
+    <LoadingOutlined
+      style={{ fontSize: 18, color: '#ffffff' }}
+      spin
+    />
+  );  
   // const { state } = useLocation();
   // console.log("CheckoutPage state:", state);  
   // if (!state) {
@@ -149,6 +156,9 @@ function ApsMerchantPage({ cartItems, email, paymentItems }) {
         disabled={loading}
         startIcon={<i className="fas fa-lock"></i>}
       >
+        {/* {loading ? ( <ConfigProvider theme={{token: {colorPrimary: '#fff', },}}><Spin className="payfortspin" tip="Loading Payfort Payment Screen..." size="large" /></ConfigProvider>) : (<></>)} */}
+        {loading && (<Spin indicator={whiteSpinner} style={{ marginRight: 8 }}/>)}
+        {/* {loading ? (<LoadingOutlined style={{color: '#fff',}}><Spin className="payfortspin" tip="Loading Payfort Payment Screen..." size="large" /></LoadingOutlined> ) : (<></>)} */}
         {loading ? "Redirecting Please wait..." : "SECURE PAYMENT WITH PAYFORT (APS)"}
       </Button>
       <p className="empty">Chekout Page</p>
