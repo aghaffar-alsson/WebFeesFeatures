@@ -136,7 +136,7 @@
 
   /*Small screens (phones upto 600px width)*/
   .allDiv {
-    max-width: 500px;
+    max-width: 400px;
     margin: 20px auto;
     padding: 15px;
     box-shadow: 4px 4px 12px rgba(8, 37, 142, 0.2);
@@ -249,7 +249,7 @@
 
   /*Medium screens (tablets from 601px upto 992px width)*/
   .allDiv {
-    max-width: 500px;
+    max-width: 400px;
     margin: 30px auto;
     padding: 20px;
   }
@@ -344,7 +344,7 @@
 
   /*Small screens (phones upto 600px width)*/
   .allDiv {
-    max-width: 400px;
+    max-width: 300px;
     margin: 5px auto;
     padding: 5px;
     box-shadow: 4px 4px 12px rgba(8, 37, 142, 0.2);
