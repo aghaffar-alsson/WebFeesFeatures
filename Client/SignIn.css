@@ -136,7 +136,7 @@
 
   /*Small screens (phones upto 600px width)*/
   .allDiv {
-    max-width: 600px;
+    max-width: 500px;
     margin: 20px auto;
     padding: 15px;
     box-shadow: 4px 4px 12px rgba(8, 37, 142, 0.2);
