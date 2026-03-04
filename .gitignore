@@ -23,6 +23,7 @@ dist-ssr
 *.sln
 *.sw?
 # Environment variables
+Client/selected_families_info.txt
 .env
 client/.env
 server/.env
