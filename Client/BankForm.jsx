@@ -116,7 +116,8 @@ export default function BankForm() {
             <h5 id='endforminfo'></h5>
           </div>
         </div>
-        <Button className="frmPrnt" onClick={frmPrnt}>Print/Save As PDF<i className="prntico" class="fa fa-print"></i></Button>
+        <Button className="frmPrnt" onClick={() => {if (bnkName && trgtAccNo && trgtAccNm && trgtAccIBAN && trgtAccSwft) {frmPrnt();} else {messageApi.warning("Bank info is still loading, please wait a moment.");}}}>Print/Save As PDF <i className="fa fa-print"></i></Button>
+        {/* <Button className="frmPrnt" onClick={frmPrnt}>Print/Save As PDF<i className="prntico" class="fa fa-print"></i></Button> */}
       </div>
       <div>
       </div>

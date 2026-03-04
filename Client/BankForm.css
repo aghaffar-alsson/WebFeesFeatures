@@ -193,9 +193,12 @@ h5 {
     position: relative !important;
     z-index: 9999 !important;
   }   */
-  .frmtitle {font-size: 22px; }     
+  .frmtitle {font-size: 22px; }    
+  .curdt {
+    font-size: 12px !important;
+    text-align: right 
 }
-
+}
 /* --- Print preview boundary --- */
 @media screen {
   .bnkfrmcont {
@@ -330,13 +333,13 @@ h5 {
   }
 
   .frmtitle {
-    font-size: 12px;
+    font-size: 13px !important;
     margin-bottom: 8px;
   }
 
   .hdr {
     margin-left: 10px;
-    font-size: 14px;
+    font-size: 13px;
   }
 
   h5 {
@@ -353,7 +356,7 @@ h5 {
     width: 90%;
     margin: 15px auto;
     height: 45px;
-    font-size: 10px;
+    font-size: 15px ;
     border-radius: 10px;
     display: block;
     /*display: none;*/
@@ -378,12 +381,12 @@ h5 {
   }
 
   .frmtitle {
-    font-size: 10px;
+    font-size: 13px;
   }
 
   .graytxt,
   .graytxt h5 {
-    font-size: 10px;
+    font-size: 14px;
     color: black;
   }
 

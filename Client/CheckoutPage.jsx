@@ -159,7 +159,7 @@ function ApsMerchantPage({ cartItems, email, paymentItems }) {
         {/* {loading ? ( <ConfigProvider theme={{token: {colorPrimary: '#fff', },}}><Spin className="payfortspin" tip="Loading Payfort Payment Screen..." size="large" /></ConfigProvider>) : (<></>)} */}
         {loading && (<Spin indicator={whiteSpinner} style={{ marginRight: 8 }}/>)}
         {/* {loading ? (<LoadingOutlined style={{color: '#fff',}}><Spin className="payfortspin" tip="Loading Payfort Payment Screen..." size="large" /></LoadingOutlined> ) : (<></>)} */}
-        {loading ? "Redirecting Please wait..." : "SECURE PAYMENT WITH PAYFORT (APS)"}
+        {loading ? "Redirecting Please wait...(It may takes 2-3 minutes for the first time)" : "SECURE PAYMENT WITH PAYFORT (APS)"}
       </Button>
       <p className="empty">Chekout Page</p>
     </div>

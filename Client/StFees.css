@@ -99,6 +99,7 @@
   color: #fff;
   background: dodgerblue;
 
+
 }
 
 .prntBnkk {
@@ -121,7 +122,7 @@
 
 .curdt {
   padding-bottom: 10px;
-  font-size: 9px;
+  font-size: 11px;
 }
 
 /* .tbb{width: 1600;} */
@@ -154,7 +155,7 @@
   .bnkcmb,
   .prntform {
     width: 100%;
-    font-size: 13px;
+    font-size: 14px;
     height: 35px;
     border-radius: 10px;
   }
@@ -217,7 +218,7 @@
 @media print {
   /* 1️⃣ Page setup */
   @page {
-    size: A4 landscape;
+    size: A4 portrait; /* standard paper size */
     margin: 10mm; /* small margins to maximize space */
   }
   /* Hide everything by default */
@@ -258,9 +259,9 @@
 
   /* 4️⃣ Table adjustments */
   .ant-table {
-    width: 140% !important;
+    width: 100% !important;
     table-layout: fixed !important; /* shrink columns proportionally */
-    font-size: 10px !important; /* reduce font to fit */
+    font-size: 12px !important; /* reduce font to fit */
     border-collapse: collapse !important;
   }
 
@@ -295,7 +296,7 @@
   }
   p{margin-bottom: 15px;}
   .curdt {
-    font-size: 8px !important;
+    font-size: 10px !important;
   }
 
   /* 6️⃣ Optional: row striping */
@@ -366,7 +367,7 @@
   .bnkcmb,
   .prntform {
     width: 100%;
-    font-size: 13px;
+    font-size: 14px;
     height: 35px;
   }
 
@@ -423,7 +424,7 @@
   .prntTb , .prntBnkk{
     width: 100%;
     margin: 15px 0 0 0;
-    font-size: 12px;
+    font-size: 16px;
     margin-left: 0px;
   }
 
@@ -435,12 +436,12 @@
   .bnkcmb,
   .prntform {
     width: 100%;
-    font-size: 13px;
+    font-size: 14px;
     height: 35px;
   }
 
   .curdt {
-    font-size: 8px;
+    font-size: 10px;
     text-align: right;
   }
 
