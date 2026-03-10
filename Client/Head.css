@@ -9,9 +9,9 @@
   align-items: flex-start;
   /* Vertically align image + text */
   justify-content: flex-start;
-  gap: 15px;
+  gap: 8px;
   /* Space between image and text */
-  padding: 1.5rem;
+  padding: 1rem;
   /* Breathing room */
   background: #fff;
   /*dodgerblue;*/
@@ -20,7 +20,8 @@
   /* Smooth corners */
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
   /* Soft shadow */
-  margin-top: 15px;
+  margin-top: 10px;
+  margin-bottom: 20px;
   /* flex: 1;  */
 }
 
@@ -38,7 +39,7 @@
   margin: 0;
   color: dodgerblue;
   text-align: left;
-  padding-top: 25px;
+  padding-top: 12px;
 
 }
 
@@ -67,7 +68,7 @@
   .container h1,
   .container h2 {
     font-size: 0.9rem;
-    font-weight: 700;
+    font-weight: 600;
   }
 
   .imghdrlft {

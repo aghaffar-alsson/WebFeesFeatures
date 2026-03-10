@@ -280,7 +280,7 @@ function SignUp() {
                 <p className="lblok">Congratulations, Your login was created successfuly.</p>
                 <p className="lblok">Temporary password sent to your email address: {regEmll}</p>
                 <p className="lblok">Please write it below for the first login only.</p>
-                <p className="lblok">Then change it with your own password immidiately.</p>
+                <p className="lblok">Then change it with your own password immediately.</p>
               </div>
               <div className="tmppss">
                 <label id="lbl1" className="lbl" htmlFor="tmppss"  >Write temp. password:</label>

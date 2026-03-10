@@ -49,6 +49,7 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  font-size: 10px;
 }
 
 .even-row {
@@ -328,9 +329,6 @@
 
 /* Medium screens (tablets, ≤ 992px) */
 @media (max-width: 992px) {
-
-
-
   .fmhdr,
   .sthdr,
   .yrr {
@@ -389,7 +387,7 @@
 }
 
 /* Small screens (mobiles, ≤ 576px) */
-@media (max-width: 576px) {
+@media (max-width: 600px) {
 
   .cont {
     max-width: 95%;
@@ -406,19 +404,65 @@
     font-size: 14px;
   }
 
-  .ant-table {
+  .cont .ant-table {
     font-size: 8px;
     overflow-x: auto;
     display: block;
     scrollbar-width: auto;
   }
 
-  .ant-table-thead>tr>th,
+ .cont .ant-table-thead>tr>th,
   .ant-table-tbody>tr>td {
     padding: 6px;
     font-size: 12px;
     white-space: normal;
-    /* allow wrapping */
+    
+  }
+
+  .cont .ant-table {
+    font-size: 12px !important;
+    display: block;
+    overflow-x: auto;
+  }
+
+  .cont .ant-table-cell {
+    font-size: 12px !important;
+  }
+
+ /* .cont .ant-table-thead > tr > th,
+  .ant-table-tbody > tr > td {
+    padding: 3px 4px !important;
+    font-size: 12px !important;
+    line-height: 1.1;
+  }
+
+  .cont .ant-table-thead > tr > th {
+    font-size: 12px !important;
+  }*/
+    .ant-table-cell {
+    padding: 1px 2px !important;
+  }
+    .action-col {
+    min-width: 210px;
+  }
+
+  .chkInclude {
+    font-size: 12px;
+  }
+
+  .ant-checkbox-wrapper {
+    font-size: 12px;
+    line-height: 1.2;
+  } 
+.fmhdr,
+.sthdr,
+.yrr {
+  flex-direction: column;
+  gap: 6px;
+  font-size: 14px;
+}
+ .cont {
+    padding: 6px;
   }
 
   .prntTb , .prntBnkk{

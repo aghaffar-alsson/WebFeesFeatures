@@ -937,6 +937,7 @@ const getSelectedTotal = () => {
             bordered
             pagination={false}
             size="small"
+            style={{ fontSize: "9px" }}
             scroll={{ x: 500 }}
             rowClassName={(record, index) => { if (record.IsTotal === 1) return 'total-row'; return index % 2 === 0 ? 'even-row' : 'odd-row'; }}
           // scroll={{ y: 500 }}         

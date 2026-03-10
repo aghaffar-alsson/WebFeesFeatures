@@ -19,6 +19,7 @@ export default function CheckoutResult() {
   const [status, setStatus] = useState(null);
   const [details, setDetails] = useState(null);  // response details
   const [loading, setLoading] = useState(true);
+  const [emailSent, setEmailSent] = useState(false);
   const studentId = localStorage.getItem("curstid");
   const studentName = localStorage.getItem("curstname");
   const curYgp = localStorage.getItem("ygp");
@@ -73,19 +74,19 @@ export default function CheckoutResult() {
     const statusName = details.status === "success" || details.status === "14" ? "Success" : "Failed";
 
     const bodyText =
-    `Dear Team:\n\n` +
-    `Please find below details of my Payment Receipt\n\n` +
-    `Amount: ${formatDec(details.amount / 100)} EGP\n` +
-    `Transaction ID (Fort ID): ${details.fort_id}\n` +
-    `Order Reference: ${details.merchant_reference}\n` +
-    `Response Message: ${details.response_message || "N/A"}\n` +
-    `Parent Email: ${details.customer_email || "N/A"}\n` +
-    `Date: ${new Date().toLocaleString()}`;
+      `Dear Team:\n\n` +
+      `Please find below details of my Payment Receipt\n\n` +
+      `Amount: ${formatDec(details.amount / 100)} EGP\n` +
+      `Transaction ID (Fort ID): ${details.fort_id}\n` +
+      `Order Reference: ${details.merchant_reference}\n` +
+      `Response Message: ${details.response_message || "N/A"}\n` +
+      `Parent Email: ${details.customer_email || "N/A"}\n` +
+      `Date: ${new Date().toLocaleString()}`;
     const schoolEml = "fees@alsson.com"
     const emailHref =
-    `mailto:${schoolEml}` +
-    `?subject=${encodeURIComponent(`Payment Receipt - Order ${details.merchant_reference}`)}` +
-    `&body=${encodeURIComponent(bodyText)}`;
+      `mailto:${schoolEml}` +
+      `?subject=${encodeURIComponent(`Payment Receipt - Order ${details.merchant_reference}`)}` +
+      `&body=${encodeURIComponent(bodyText)}`;
 
     const whatsappHref =
       `https://wa.me/201003928160?text=${encodeURIComponent(bodyText)}`;
@@ -178,7 +179,6 @@ export default function CheckoutResult() {
     const response_message = params.get("response_message");
     const customer_email = params.get("customer_email");
 
-
     setStatus(qsStatus);
     setDetails({
       amount,
@@ -194,6 +194,13 @@ export default function CheckoutResult() {
 
     setLoading(false);
   }, []);
+
+  useEffect(() => {
+    if (!loading && details && status === "success" && !emailSent) {
+      sendEmailToSchool();
+      setEmailSent(true);
+    }
+  }, [loading, details, status, emailSent]);
 
   if (loading) {
     return <div style={{ marginTop: 60, textAlign: "center" }}>Verifying payment...</div>;
