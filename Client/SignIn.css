@@ -4,6 +4,10 @@
   box-sizing: border-box;
 }
 
+/* PAGE BACKGROUND */
+body {
+  background: linear-gradient(135deg, #f1f5f9, #e2e8f0);
+}
 .allDiv {
   display: flex;
   flex-direction: column;
@@ -16,6 +20,7 @@
   /* Soft shadow */
   margin-left: 35px;
   border: double 4px black;
+  
 
   border-radius: 12px;
   margin-bottom: 20px;
@@ -138,7 +143,7 @@
 
   /*Small screens (phones upto 600px width)*/
   .allDiv {
-    max-width: 400px;
+    max-width: 500px;
     margin: 20px auto;
     padding: 15px;
     box-shadow: 4px 4px 12px rgba(8, 37, 142, 0.2);
@@ -169,7 +174,7 @@
   #regmobno,
   #regEmll {
     font-size: 10px;
-    width: 220px;
+    width: 180px;
     margin-left: 0;
   }
 
@@ -235,7 +240,7 @@
 
   .signupdiv {
     gap: 7px;
-    margin-left: 95px;
+    margin-left: 245px;
   }
 
   .divpss11 {
@@ -442,7 +447,7 @@
 
   .signupdiv {
     gap: 7px;
-    margin-left: 105px;
+    margin-left: 35px;
     margin-top: 15px;
   }
   .forgotdiv {
@@ -456,7 +461,7 @@
   }
 
   #btnSubmit {
-    font-size: 12px;
+    font-size: 14px;
     width: 120px;
   }
 }
