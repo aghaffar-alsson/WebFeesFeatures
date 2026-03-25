@@ -122,8 +122,9 @@
 }
 
 .curdt {
-  padding-bottom: 10px;
-  font-size: 11px;
+  padding-bottom: 10px !important;
+  font-size: 13px !important;
+  text-align: right !important;
 }
 
 /* .tbb{width: 1600;} */
@@ -296,9 +297,9 @@
     margin-bottom: 20px;
   }
   p{margin-bottom: 15px;}
-  .curdt {
+  /* .curdt {
     font-size: 10px !important;
-  }
+  } */
 
   /* 6️⃣ Optional: row striping */
   .even-row {
@@ -428,7 +429,7 @@
   .cont .ant-table-cell {
     font-size: 12px !important;
   }
-
+.func  {display:flex; flex-direction:row; align-items:flex-start ; justify-content:space-between; margin-bottom: 10px;}
  /* .cont .ant-table-thead > tr > th,
   .ant-table-tbody > tr > td {
     padding: 3px 4px !important;
@@ -484,10 +485,10 @@
     height: 35px;
   }
 
-  .curdt {
-    font-size: 10px;
+  /* .curdt {
+    font-size: 10px !important;
     text-align: right;
-  }
+  } */
 
   .cont h3 {
     font-size: 14px;

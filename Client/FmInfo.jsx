@@ -16,14 +16,15 @@ export default function FmInfo() {
   const [onlyout, setOnlyOut] = useState(false);
   const [studInfo, setstudInfo] = useState([]);
   const [fmDtt, setFmDtt] = useState({});
-  const CurFmNo = localStorage.getItem("curFmNo")
-  const CurFmNm = localStorage.getItem("curFmNm")
+  const CurFmNo = localStorage.getItem("loggedFamid")
+  const CurFmNm = localStorage.getItem("loggedFamNm")
   // const yrNo = '2025'
   const yrNo = import.meta.env.VITE_CUR_YEAR
   const { Meta } = Card;
   const Navigate = useNavigate()
   const REACT_PORT = import.meta.env.VITE_PORT || 3000;
   const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000/api";
+  //API base URL from environment variable
   const API_BASE = `${import.meta.env.VITE_API_URL}`;
   if (!API_BASE) {
     throw new Error("VITE_API_URL is not defined");
@@ -130,7 +131,8 @@ export default function FmInfo() {
                     title={<span className='crdtitle'>{stRec.fullname}</span>}
                     description={
                       <>
-                        <div className='crdinfo'>Student ID: {stRec.stid}</div>
+                        <div className='crdinfo'>Student App. ID: {stRec.APPID}</div>
+                        <div className='crdinfo'>Student Fees ID: {stRec.stid}</div>
                         <div className='crdinfo'>{stRec.schoolNm}</div>
                         <div className='crdinfo'>{stRec.ygpnm}</div>
                         <Checkbox className='chkk' checked={onlyout} onChange={(e) => setOnlyOut(e.target.checked)}>Outstanding Only</Checkbox>

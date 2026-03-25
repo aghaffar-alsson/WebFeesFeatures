@@ -4,6 +4,8 @@ import { Table, Typography, Spin, Alert, Button, message, Tooltip } from 'antd'
 import { useReactToPrint } from 'react-to-print'
 import { useNavigate } from 'react-router-dom';
 import Checkbox from 'antd/es/checkbox/Checkbox';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faHouse } from '@fortawesome/free-solid-svg-icons'
 
 export default function StFees() {
   //DECLARE GLOBAL VARIABLES
@@ -11,8 +13,8 @@ export default function StFees() {
   const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
   const { Title } = Typography;
   const [loading, setLoading] = useState(false);
-  const curFamilyNo = localStorage.getItem("curFmNo")
-  const curFamilyName = localStorage.getItem("curFmNm")
+  const curFamilyNo = localStorage.getItem("loggedFamid")
+  const curFamilyName = localStorage.getItem("loggedFamNm")
   const curStudID = localStorage.getItem("curstid")
   const curStudName = localStorage.getItem("curstname")
   const curYgpName = localStorage.getItem("ygp")
@@ -52,6 +54,7 @@ export default function StFees() {
   // let globStInfo = []
   const REACT_PORT = import.meta.env.VITE_PORT || 3000;
   const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000/api";
+  //API base URL from environment variable
   const API_BASE = `${import.meta.env.VITE_API_URL}`;
   if (!API_BASE) {
     throw new Error("VITE_API_URL is not defined");
@@ -463,7 +466,7 @@ const handleUserSelection = (record, index, checked) => {
         record.IsTotal === 1 ? <strong style={{ color: "#1e3a8a", display: "block", fontWeight: 700 }}>Totals:{text}</strong> : text,      // render: (status) => (
       width: 0,
     },
-    {
+    hidd && {
       title: 'Face Name',
       dataIndex: 'FACENAME',
       align: "left",
@@ -908,7 +911,17 @@ const getSelectedTotal = () => {
   return (
     <div className='cont' ref={feesReff} >
       {contextHolder}
-      <p className='curdt'>Date: {curDate}</p>
+      <Tooltip title="Back to Home">
+        <Button className="prntTb" style={{width:"10%" , height:"5vh", paddingTop:"8px"}}
+          key="home"
+          type="primary"
+          shape="circle"
+          icon={<FontAwesomeIcon icon={faHouse}/>}
+          
+          href="/fminfo"
+        ></Button>
+      </Tooltip>  
+      <p className='curdt' >Date: {curDate}</p>
       <h3 className="frmhdr" style={{ textAlign: "center" }}><u><b>{scnm}</b></u></h3>
       <h3 className="frmhdr" style={{ textAlign: "center", fontSize:"20px" , }}><u>Student Fees Report - {import.meta.env.VITE_CUR_YEAR_NAME}</u></h3>
       <br></br>
@@ -944,7 +957,19 @@ const getSelectedTotal = () => {
           />)
           : (<Alert message="No fee records found" type="info" showIcon />)
       }
-      <div>{loading ? (<></>) : (stfeesmtrx.length > 0 ? (<Button className="prntTb" onClick={tbPrnt}>Print / Save As PDF <i className="fa fa-print"></i></Button>) : (<></>))}</div>
+      <div className="func">
+        <div>{loading ? (<></>) : (stfeesmtrx.length > 0 ? (<Button className="prntTb" onClick={tbPrnt}>Print / Save As PDF <i className="fa fa-print"></i></Button>) : (<></>))}</div>
+        <Tooltip title="Back to Home">
+          <Button className="prntTb" style={{width:"10%" , height:"5vh", paddingTop:"8px"}}
+            key="home"
+            type="primary"
+            shape="circle"
+            icon={<FontAwesomeIcon icon={faHouse}/>}
+            
+            href="/fminfo"
+          ></Button>
+        </Tooltip>  
+      </div>
       {loading ? (<></>) :  (stfeesmtrx.length > 0 ? <div className='bnkdiv'><select className="bnkcmb" value={selectedBnk} id="bnkcmbID" onChange={handleBnkChange}>
         <option value="">-- Select Bank --</option>
         {bnks.map((opt) => (

@@ -75,27 +75,28 @@
   justify-content: flex-start;
 }
 
-/* .tmppss, .divpss1, .divpss2 {
+.tmppss, .divpss1, .divpss2 {
   display: flex;
-  flex-direction: row;
-  align-items:flex-start;
-  justify-content: flex-start;
+  flex-direction:column;align-items:flex-start;
+  justify-content:flex-start;
+  gap: 1px;
   margin: 0;
   padding:  0;
-} */
-
+}
+#tmppss {
+  width: 500px !important;}
 /* ✅ Label */
 .lbl {
-  font-size: 14px;
+  font-size: 12px;
   /* border: 1px solid #ccc; */
   background: transparent;
   outline: none;
-  width: 500px;
-  height: 3vh;
+  width: 300px !important;
+  height: 1vh !important;
   border-radius: 8px;
   margin-left: 35px;
   margin-top: 5px;
-  margin-bottom: 5px;
+  margin-bottom: 1px;
 }
 
 /* ✅ Input box */
@@ -115,13 +116,22 @@
   border-color: #007bff;
 }
 
+
+.inp-error {
+  border: 1px solid red !important;
+}
+
+.inp-error:focus {
+  border: 1px solid red !important;
+  box-shadow: 0 0 4px rgba(255, 0, 0, 0.3);
+}
 /* ✅ Warning label */
 .lblworn {
   color: red;
   font-size: 14px;
   font-weight: 700;
   /* padding-top: 5px; */
-  padding-bottom: 20px;
+  padding-bottom: 2px;
   display: inline-block;
   margin-left: 35px;
   /* margin-top: 5px;  */
@@ -213,30 +223,29 @@ button {
   margin-top: 10px;
 }
 
-#lbl1 {
+/* #lbl1 {
   padding-right: 10px;
-
 }
 
 #lbl2 {
   padding-right: 20px;
-
-}
+} */
 
 .pssfrm {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
   justify-content: center;
-  max-width: 450px;
-  padding-top: 5px;
-  margin-top: 5px;
-  margin-bottom: 5px;
-  margin-left: 85px;
+  width: 80%;
+  padding-top: 5px !important;
+  margin-top: 5px !important;
+  margin-bottom: 5px !important;
+  margin-left: 5px !important;
   box-shadow: 10px 8px 20px rgba(8, 37, 142, 0.34);
   /* Soft shadow */
   border: solid 2px #007bff;
   border-radius: 12px;
+  /* background-color: #15c049; */
 }
 
 .frmcont {
@@ -300,8 +309,8 @@ button {
 .psshints {
   font-size: 14px;
   color: grey;
-  margin-top: 7px;
-  margin-left: 45px;
+  margin-top: 2px;
+  margin-left: 20px !important;
 }
 
 .signin {
@@ -333,7 +342,7 @@ button {
   margin-top: 10px;
 }
 input#pss, input#pss{ font-size: 16px; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;}
-#btnSubmit{ font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; width: 100%; margin-top: 10px;}
+#btnSubmit{ font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; width: 100%; margin-top: 15px !important;}
 
 
 @media (max-width: 600px) {
@@ -365,7 +374,7 @@ input#pss, input#pss{ font-size: 16px; font-family: 'Segoe UI', Tahoma, Geneva, 
   .inp {
     width: 90%;
     margin-left: 8px !important;
-    font-size: 16px;
+    font-size: 12px !important;
 
   }
 
@@ -410,6 +419,7 @@ input#pss, input#pss{ font-size: 16px; font-family: 'Segoe UI', Tahoma, Geneva, 
     width: 90%;
     margin-left: 8px !important;
     text-align: left;
+    font-size: 11px !important;
   }
 
   .signin,
@@ -428,6 +438,12 @@ input#pss, input#pss{ font-size: 16px; font-family: 'Segoe UI', Tahoma, Geneva, 
     margin-left: 35px;
   }
 input#pss, input#pss1{ font-size: 12px; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;}
+.fminfo {
+  font-size: 20px !important;
+  margin-left: 8px !important;
+  color: darkgreen !important;
+  margin-bottom: 20px !important;
+}
 
 }
 
@@ -485,8 +501,9 @@ input#pss, input#pss1{ font-size: 12px; font-family: 'Segoe UI', Tahoma, Geneva,
 
   .fminfo {
     margin-left: 25px;
+    font-size: 0.6rem;
+    margin-left: 8px !important;
   }
-
   .signin,
   .signinlnk {
     margin-left: 0;

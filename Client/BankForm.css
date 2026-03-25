@@ -25,8 +25,8 @@
 }
 
 #schoolLogo {
-  width: 1000px;
-  padding-right: 150px;
+  width: 1000px !important;
+  /* padding-right: 150px; */
 }
 
 .divtitle {
@@ -83,6 +83,10 @@ h5 {
   background: dodgerblue;
 }
 
+.curdt {
+  font-size: 11px !important;
+  text-align: right !important;
+}
 .frmPrnt:hover {
   background: darkblue !important;
   color: #fff !important;
@@ -156,11 +160,11 @@ h5 {
     
     display: flex;
     flex-direction: row;
-    justify-content: space-between;
+    justify-content: center;
     align-items: flex-start;
     padding-bottom: 8px;
     margin-bottom: 15px;
-    gap: 250px;
+    gap: 50px;
   }
   /* #schoolLogo {
     width: 200px !important;
@@ -179,7 +183,8 @@ h5 {
   }
   
 #schoolLogo {
-  width: 400px;
+  width: 600px !important;
+
   padding-right: 150px;
 }
   /* .logo img {
@@ -195,7 +200,7 @@ h5 {
   }   */
   .frmtitle {font-size: 22px; }    
   .curdt {
-    font-size: 12px !important;
+    font-size: 11px !important;
     text-align: right 
 }
 }
@@ -203,6 +208,8 @@ h5 {
 @media screen {
   .bnkfrmcont {
     position: relative;
+  }
+.bnkfunc{display: none;
   }
 
   /* A4 preview box (shows visible border on screen only) */
@@ -237,6 +244,11 @@ h5 {
   } */
 }
 
+.bnkfunc{display: flex;
+flex-direction: row;
+justify-content: flex-start;
+align-items: flex-start;
+gap: 150px}
 
 
 /* --- Responsive adjustments for tablets (medium screens: 601px–1024px) --- */
@@ -319,14 +331,7 @@ h5 {
     height: auto;
     box-shadow: none;
   }
-
-  .logo {
-    flex-direction: row;
-    justify-content: space-between;
-    align-items: center;
-    gap: 8px;
-  }
-
+  
   .divtitle {
     text-align: center;
     align-items: center;
@@ -370,14 +375,21 @@ h5 {
 
   .logo {
     flex-direction: row;
-    justify-content: space-between;
+    justify-content: flex-start;
     align-items: flex-start;
-    gap: 250px;
+    gap: 100px;
   }
+  /* .logo {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+  } */
 
   #schoolLogo,
   #bankLogo {
-    max-width: 250px;
+    width: 75% !important;
+    height: 7vh !important;
   }
 
   .frmtitle {

@@ -120,9 +120,11 @@
 
 .paycurdt {
   padding-bottom: 10px;
-  font-size: 9px;
+  font-size: 13px !important;
+  text-align: right !important;
 }
 
+.payhistfunc  {display:flex; flex-direction:row; align-items:flex-start ; justify-content:space-between; margin-bottom: 10px;}
 .paydisprnt {
   cursor: none;
   display: none;

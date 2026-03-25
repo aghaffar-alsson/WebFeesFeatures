@@ -115,6 +115,14 @@
   border-color: #007bff;
 }
 
+.inp-error {
+  border: 1px solid red !important;
+}
+
+.inp-error:focus {
+  border: 1px solid red !important;
+  box-shadow: 0 0 4px rgba(255, 0, 0, 0.3);
+}
 /* ✅ Warning label */
 .lblworn {
   color: red;

@@ -3,7 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import './BankForm.css'
 import numberToWords from "number-to-words";
 import { useReactToPrint } from 'react-to-print';
-import { Button, message } from 'antd'; 
+import { Button, message , Tooltip} from 'antd'; 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faWhatsapp } from '@fortawesome/free-brands-svg-icons'
 import { faEnvelope } from '@fortawesome/free-solid-svg-icons'
@@ -81,6 +81,18 @@ export default function BankForm() {
           <img id="schoolLogo" src={schoolLogo} alt="School Logo" />
           <img id="bankLogo" src={bankLogo} alt="Bank Logo" />
         </div>
+      <Tooltip title="Back to Home">
+        <Button className="prntTb" style={{width:"10%" , height:"5vh", paddingTop:"8px"}}
+          key="home"
+          type="primary"
+          shape="circle"
+          icon={<FontAwesomeIcon icon={faHouse}/>}
+          
+          href="/fminfo"
+        ></Button>
+      </Tooltip> 
+
+          <p className='curdt'>Date: {curDate}</p>
         {/* <p>BankFORM</p> */}
         {/* <p className='frmtitle'>Fees Form for 2025-2026 - {schoolName}</p> */}
         <div className="divtitle">
@@ -88,7 +100,6 @@ export default function BankForm() {
           <p className="frmtitle">Bank Form - Academic Year: {YrNmm}</p>
         </div>
         <div className="hdr">
-          <p className='curdt'>Date: {curDate}</p>
           <h5 id='stinfotxt' className="graytxt"></h5>
           <h5 >Family Name: {curFamilyName}</h5>
           <h5 >Student ID: {curStudID}</h5>
@@ -116,7 +127,20 @@ export default function BankForm() {
             <h5 id='endforminfo'></h5>
           </div>
         </div>
-        <Button className="frmPrnt" onClick={() => {if (bnkName && trgtAccNo && trgtAccNm && trgtAccIBAN && trgtAccSwft) {frmPrnt();} else {messageApi.warning("Bank info is still loading, please wait a moment.");}}}>Print/Save As PDF <i className="fa fa-print"></i></Button>
+        <div className="bnkfunc">
+          <Button className="frmPrnt" onClick={() => {if (bnkName && trgtAccNo && trgtAccNm && trgtAccIBAN && trgtAccSwft) {frmPrnt();} else {messageApi.warning("Bank info is still loading, please wait a moment.");}}}>Print/Save As PDF <i className="fa fa-print"></i></Button>
+          <Tooltip title="Back to Home">
+            <Button className="prntTb" style={{width:"10%" , height:"5vh", paddingTop:"8px"}}
+              key="home"
+              type="primary"
+              shape="circle"
+              icon={<FontAwesomeIcon icon={faHouse}/>}
+              
+              href="/fminfo"
+            ></Button>
+          </Tooltip> 
+
+        </div>
         {/* <Button className="frmPrnt" onClick={frmPrnt}>Print/Save As PDF<i className="prntico" class="fa fa-print"></i></Button> */}
       </div>
       <div>

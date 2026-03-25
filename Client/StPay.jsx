@@ -1,14 +1,16 @@
 import React, { useEffect, useRef, useState } from 'react'
 import './StPay.css'
-import { Table, Typography, Spin, Alert, Button, message } from 'antd'
+import { Table, Typography, Spin, Alert, Button, message , Tooltip} from 'antd'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faHouse } from '@fortawesome/free-solid-svg-icons'
 import { useReactToPrint } from 'react-to-print'
 import { useNavigate } from 'react-router-dom';
 
 export default function StPay() {
   const { Title } = Typography;
   const [loading, setLoading] = useState(false);
-  const curFamilyNo = localStorage.getItem("curFmNo")
-  const curFamilyName = localStorage.getItem("curFmNm")
+  const curFamilyNo = localStorage.getItem("loggedFamid")
+  const curFamilyName = localStorage.getItem("loggedFamNm")
   const curStudID = localStorage.getItem("curstid")
   const curStudName = localStorage.getItem("curstname")
   const curYgpName = localStorage.getItem("ygp")
@@ -45,6 +47,7 @@ export default function StPay() {
   const hidd = false
   const REACT_PORT = import.meta.env.VITE_PORT || 3000;
   const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000/api";
+  //API base URL from environment variable
   const API_BASE = `${import.meta.env.VITE_API_URL}`;
   if (!API_BASE) {
     throw new Error("VITE_API_URL is not defined");
@@ -270,6 +273,16 @@ export default function StPay() {
   return (
     <div className='paycont' ref={payReff} >
       {contextHolder}
+      <Tooltip title="Back to Home">
+        <Button className="prntTb" style={{width:"10%" , height:"5vh", paddingTop:"8px"}}
+          key="home"
+          type="primary"
+          shape="circle"
+          icon={<FontAwesomeIcon icon={faHouse}/>}
+          
+          href="/fminfo"
+        ></Button>
+      </Tooltip>       
       <p className='paycurdt'>Date: {curDate}</p>
       <h3 className='hdrr' style={{ textAlign: "center" }}><u><b>{scnm} School</b></u></h3>
       <h3 className='hdrr' style={{ textAlign: "center" }}><u><b>Student Payment History Report - {import.meta.env.VITE_CUR_YEAR_NAME}</b></u></h3>
@@ -305,7 +318,19 @@ export default function StPay() {
           />)
           : (<Alert message="No fee records found" type="info" showIcon />)
       }
+      <div className="payhistfunc">
       <div>{loading ? (<p></p>) : (stpaymtrx.length > 0 ? (<Button id='btnn' className="payprntTb" onClick={payTbPrnt}>Print / Save As PDF <i class="fa fa-print"></i></Button>) : (<></>))}</div>
+      <Tooltip title="Back to Home">
+        <Button className="prntTb" style={{width:"10%" , height:"5vh", paddingTop:"8px"}}
+          key="home"
+          type="primary"
+          shape="circle"
+          icon={<FontAwesomeIcon icon={faHouse}/>}
+          
+          href="/fminfo"
+        ></Button>
+      </Tooltip> 
+      </div>
     </div>
   )
 }

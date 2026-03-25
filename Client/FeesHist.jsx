@@ -8,14 +8,15 @@ import { Table, Typography, Spin, Alert, Button, message } from 'antd'
 
 export default function FeesHist() {
   const [loading, setLoading] = useState(false);
-  const curFamilyNo = localStorage.getItem("curFmNo")
-  const curFamilyName = localStorage.getItem("curFmNm")
+  const curFamilyNo = localStorage.getItem("loggedFamid")
+  const curFamilyName = localStorage.getItem("loggedFamNm")
   const curStudID = localStorage.getItem("curstid")
   const curStudName = localStorage.getItem("curstname")
   const curYgpName = localStorage.getItem("ygp")
   const [payhistData, setPayHistData] = useState([]);
   const REACT_PORT = import.meta.env.VITE_PORT || 3000;
   const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000/api";
+  //API base URL from environment variable
   const API_BASE = `${import.meta.env.VITE_API_URL}`;
   if (!API_BASE) {
     throw new Error("VITE_API_URL is not defined");

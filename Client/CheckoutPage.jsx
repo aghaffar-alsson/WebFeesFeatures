@@ -1,130 +1,127 @@
+import React, { useMemo, useState } from "react";
 import { Button } from "@mui/material";
 import axios from "axios";
-import React, { useEffect, useRef, useState } from "react";
-import LockIcon from "@mui/icons-material/Lock";
+import "./CheckoutPage.css";
 
-import './CheckoutPage.css'
-import alsimgg from '../src/assets/newgiza-logo.jpg'
-import { Table, Typography, Spin, Alert, message, Tooltip  } from 'antd'
-import { LoadingOutlined } from '@ant-design/icons';
+import { Table, Spin, Tooltip } from "antd";
+import { LoadingOutlined } from "@ant-design/icons";
 import { useLocation } from "react-router-dom";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faHouse } from "@fortawesome/free-solid-svg-icons";
 
+function formatDec(value) {
+  if (value === null || value === undefined || Number.isNaN(Number(value))) return "-";
 
- 
-export default function CheckoutPage() {
-  const [loading, setLoading] = useState(false);
-  const whiteSpinner = (
-    <LoadingOutlined
-      style={{ fontSize: 18, color: '#ffffff' }}
-      spin
-    />
-  );  
-  // const { state } = useLocation();
-  // console.log("CheckoutPage state:", state);  
-  // if (!state) {
-  //   return <p>No checkout data available.</p>;
-  // }  
-  // const {
-  // paymentItems : initialPaymentItems  = [],
-  // installments = [],
-  // total = 0,
-  // curEmailAddress,
-  // curStudID,
-  // curStudName,
-  // curYgpName,
-  // curFamilyNo,
-  // curFamilyName,
-  // schoolNoo,
-  // schoolNmm,
-  // fullName
-  // } = state;
-  const { state } = useLocation();
-  const stored = sessionStorage.getItem("checkoutData");
-  const checkoutData = state || (stored ? JSON.parse(stored) : null);
-  if (!checkoutData) {
-    return <p>No checkout data available.</p>;
-  }
-  const {
-    paymentItems: initialPaymentItems = [],
-    installments = [],
-    total = 0,
-    curEmailAddress,
-    curStudID,
-    curStudName,
-    curYgpName,
-    curFamilyNo,
-    curFamilyName,
-    schoolNoo,
-    schoolNmm,
-    fullName
-  } = checkoutData;
-
-  const [paymentItems, setPaymentItems] = useState(initialPaymentItems);
-  console.log("Received:", paymentItems, installments, total, curEmailAddress, curStudID, curStudName, curYgpName, curFamilyNo, curFamilyName, schoolNoo, schoolNmm, fullName);
-  console.log("Received:", initialPaymentItems);
-  const INTEREST_RATE = 0.0075; // 0.75%
-  // Calculate interest value
-  var interestAmount = Number(total) * INTEREST_RATE;
-// const email = "aghaffar@alsson.com";
-
-const columns = [
-  {
-    title: "Item",
-    align: "right",
-    dataIndex: "name",
-  },
-  {
-    title: "Amount (EGP)",
-    dataIndex: "amount",
-    align: "right",
-    render: (val) => formatDec(val),
-  },
-];
-
-
-//format decimals with 2 places
-
-function formatDec(vll) {
-  if (vll === null || vll === undefined) return "-";
   return new Intl.NumberFormat("en-US", {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
-  }).format(vll);
+  }).format(Number(value));
 }
 
-function ApsMerchantPage({ cartItems, email, paymentItems }) {
+function ApsMerchantSection({ email, paymentItems, finalTotal, whiteSpinner }) {
   const [loading, setLoading] = useState(false);
+
+  // const handlePay = async () => {
+  //   try {
+  //     setLoading(true);
+
+  //     // Send EXACT displayed total (2 decimals max) to backend
+  //     const amount = Number(finalTotal.toFixed(2));
+  //     const currency = "EGP";
+  //     const schoolId = localStorage.getItem("schoolNoo") || "1";
+
+  //     console.log("=== FRONTEND APS DEBUG ===");
+  //     console.log("email:", email);
+  //     console.log("schoolId:", schoolId);
+  //     console.log("Displayed finalTotal (major units):", finalTotal);
+  //     console.log("Amount sent to backend (major units):", amount);
+  //     console.log("Amount sent to backend (minor units):", Math.round(amount * 100));
+  //     console.log("paymentItems:", paymentItems);
+
+  //     const res = await axios.post(
+  //       "https://my-payfort-backend.onrender.com/createFormPayLoad",
+  //       {
+  //         email,
+  //         amount,
+  //         currency,
+  //         schoolId,
+  //         paymentItems,
+  //         frontendOrigin: window.location.origin,
+  //       }
+  //     );
+
+  //     const payfortData = res.data;
+
+  //     console.log("=== PAYFORT PAYLOAD FROM BACKEND ===");
+  //     console.log(payfortData);
+
+  //     // Build form and submit to APS
+  //     const form = document.createElement("form");
+  //     form.method = "POST";
+  //     form.action = "https://sbcheckout.payfort.com/FortAPI/paymentPage";
+
+  //     Object.keys(payfortData).forEach((key) => {
+  //       const input = document.createElement("input");
+  //       input.type = "hidden";
+  //       input.name = key;
+  //       input.value = String(payfortData[key] ?? "");
+  //       form.appendChild(input);
+  //     });
+
+  //     document.body.appendChild(form);
+  //     form.submit();
+  //   } catch (err) {
+  //     console.error("=== PAYMENT INIT ERROR ===");
+  //     console.error("Error object:", err);
+  //     console.error("Error response data:", err?.response?.data);
+  //     console.error("Error status:", err?.response?.status);
+  //     alert("Failed to initiate payment. Please try again.");
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
+
   const handlePay = async () => {
-  try {
+    try {
       setLoading(true);
-      const totalAmount = cartItems.reduce((a, v) => a + Number(v.amount),0);    
-      const roundedTotal = Math.floor(totalAmount);    
-      const amount = roundedTotal ;
-      console.log("Total Amount for Payfort:", amount);
+
+      const totalAmount = paymentItems.reduce((a, v) => a + Number(v.amount), 0);
+      const amount = Number(totalAmount.toFixed(2)); // KEEP DECIMALS
+
       const currency = "EGP";
       const schoolId = localStorage.getItem("schoolNoo") || "1";
-      console.log(schoolId);
-      console.log(paymentItems);
-      // Call backend to get Payfort payload
+      const safeEmail = email || "noemail@example.com";
+
+      console.log("=== FRONTEND PAY DEBUG ===");
+      console.log("Total Amount for APS (major units):", amount);
+      console.log("Email:", safeEmail);
+      console.log("School ID:", schoolId);
+      console.log("paymentItems:", paymentItems);
+
       const res = await axios.post(
         "https://my-payfort-backend.onrender.com/createFormPayLoad",
-        { email, amount, currency, schoolId , paymentItems, frontendOrigin: window.location.origin }
+        {
+          email: safeEmail,
+          amount,
+          currency,
+          schoolId,
+          paymentItems,
+          frontendOrigin: window.location.origin
+        }
       );
 
-      const payfortData = res.data; // <-- directly
-      // Debug log
+      const payfortData = res.data;
       console.log("Payfort payload:", payfortData);
-      // Create temporary form
+
       const form = document.createElement("form");
       form.method = "POST";
       form.action = "https://sbcheckout.payfort.com/FortAPI/paymentPage";
 
-      // Add hidden inputs
       Object.keys(payfortData).forEach((key) => {
         const input = document.createElement("input");
         input.type = "hidden";
         input.name = key;
-        input.value = String(payfortData[key] || "");
+        input.value = String(payfortData[key] ?? "");
         form.appendChild(input);
       });
 
@@ -136,107 +133,168 @@ function ApsMerchantPage({ cartItems, email, paymentItems }) {
     } finally {
       setLoading(false);
     }
-  };
-
+  };  
   return (
     <div className="payfortpay">
-      {/* <Button
-        // style={{ marginTop: "10px", marginBottom: "15px" }}
-        variant="contained"
-        color="primary"
-        onClick={handlePay}
-        disabled={loading}
-      >
-        {loading ? "Redirecting..." : "Pay through PayFort (APS)"}
-      </Button> */}
       <Button
         className="payfort-btn"
         variant="contained"
         onClick={handlePay}
         disabled={loading}
-        startIcon={<i className="fas fa-lock"></i>}
+        startIcon={!loading ? <i className="fas fa-lock"></i> : null}
+        sx={{
+          backgroundColor: "red",
+          "&:hover": { backgroundColor: "#cc0000" },
+        }}
       >
-        {/* {loading ? ( <ConfigProvider theme={{token: {colorPrimary: '#fff', },}}><Spin className="payfortspin" tip="Loading Payfort Payment Screen..." size="large" /></ConfigProvider>) : (<></>)} */}
-        {loading && (<Spin indicator={whiteSpinner} style={{ marginRight: 8 }}/>)}
-        {/* {loading ? (<LoadingOutlined style={{color: '#fff',}}><Spin className="payfortspin" tip="Loading Payfort Payment Screen..." size="large" /></LoadingOutlined> ) : (<></>)} */}
-        {loading ? "Redirecting Please wait...(It may takes 2-3 minutes for the first time)" : "SECURE PAYMENT WITH PAYFORT (APS)"}
+        {loading && <Spin indicator={whiteSpinner} style={{ marginRight: 8 }} />}
+        {loading
+          ? "Redirecting... Please wait (first time may take 2–3 minutes)"
+          : "SECURE PAYMENT WITH PAYFORT (APS)"}
       </Button>
-      <p className="empty">Chekout Page</p>
+
+      <Tooltip title="Back to Home">
+        <Button
+          className="payfort-btn"
+          href="/fminfo"
+          startIcon={<FontAwesomeIcon icon={faHouse} />}
+          sx={{
+            width: "50%",
+            height: "8vh",
+            color: "#fff",
+            mt: 1,
+          }}
+        >
+          Back To Home
+        </Button>
+      </Tooltip>
+
+      <p className="empty">Checkout Page</p>
     </div>
   );
 }
 
-// const handleCheckoutClick = async () => {
-//   console.log("Checkout button clicked");
-//   try {
-//     setLoading(true);
+export default function CheckoutPage() {
+  const { state } = useLocation();
+  const stored = sessionStorage.getItem("checkoutData");
+  const checkoutData = state || (stored ? JSON.parse(stored) : null);
 
-//     await handleLogPayment();   // 1️⃣ log first
-//     //await handlePay();          // 2️⃣ then redirect to PayFort
+  if (!checkoutData) {
+    return <p>No checkout data available.</p>;
+  }
 
-//   } catch (err) {
-//     console.error(err);
-//     alert("Checkout failed");
-//   } finally {
-//     setLoading(false);
-//   }
-// };
+  const {
+    paymentItems: initialPaymentItems = [],
+    installments = [],
+    total = 0,
+    curEmailAddress = "",
+    curStudID = "",
+    curStudName = "",
+    curYgpName = "",
+    // kept available if you need later:
+    // curFamilyNo,
+    // curFamilyName,
+    // schoolNoo,
+    // schoolNmm,
+    // fullName,
+  } = checkoutData;
 
-// const cartItems = [
-//   { name: "April Installment", amount: 5000, currency: "EGP" },
-//   { name: "September Installment", amount: 15000, currency: "EGP" },
-//   { name: "November Installment", amount: 12500, currency: "EGP" },
-//   { name: "January Installment", amount: 8500, currency: "EGP" },
-// ];
+  const [paymentItems] = useState(initialPaymentItems);
 
-// const total = cartItems.reduce((a, v) => a + v.amount, 0);
-// Build final installments list
+  const whiteSpinner = (
+    <LoadingOutlined
+      style={{ fontSize: 18, color: "#ffffff" }}
+      spin
+    />
+  );
 
-const installmentsWithInterest = React.useMemo(() => {
-    if (!installments.length) return [];
+  // ===== FEES CALCULATION (deterministic & stable) =====
+  const BASE_INTEREST_RATE = 0.0075; // 0.75%
+  const EXTRA_FEE = 1.51;
+
+  // This reproduces your original logic:
+  // 1) interest = total * 0.75%
+  // 2) add 0.75% on the interest itself
+  // 3) add fixed 1.51
+  const baseInterest = Number(total) * BASE_INTEREST_RATE;
+  const interestWithHandling = baseInterest + baseInterest * BASE_INTEREST_RATE;
+  const feesAmount = Number((interestWithHandling + EXTRA_FEE).toFixed(2));
+
+  // final amount user sees and backend receives
+  const finalTotal = Number((Number(total) + feesAmount).toFixed(2));
+
+  const installmentsWithInterest = useMemo(() => {
+    if (!Array.isArray(installments) || installments.length === 0) return [];
 
     return [
       ...installments,
       {
         instCode: "INTEREST_FEE",
-        instName: "INTEREST & HANDLING FEES (0.75%) + EGP 1.51",
-        amount: interestAmount + (Number(interestAmount) * INTEREST_RATE) + 1.51,
+        instName: "INTEREST & HANDLING FEES (0.75%) + (CBE COMMISSION - EGP 1.51)",
+        amount: feesAmount,
       },
     ];
-  }, [installments, interestAmount]);
-  interestAmount = interestAmount + (Number(interestAmount) * INTEREST_RATE);
-  interestAmount = interestAmount +  1.51
-  const finalTotal = total + interestAmount ;
-  const finalFinalTotal = Math.floor(finalTotal);
+  }, [installments, feesAmount]);
+
+  // Debug logs for render-time issues
+  console.log("=== CHECKOUT PAGE DEBUG ===");
+  console.log("checkoutData:", checkoutData);
+  console.log("installments:", installments);
+  console.log("total:", total);
+  console.log("feesAmount:", feesAmount);
+  console.log("finalTotal:", finalTotal);
+  console.log("installmentsWithInterest:", installmentsWithInterest);
+  console.log("paymentItems:", paymentItems);
+
   return (
     <div>
-      <h1 className="alsh1">El Alsson British & American International School - Newgiza</h1>
-      <div className="alshdrr">
-        <h1 className="alsh1">Checkout Page</h1>
-        <img className="alsimghdrlft" src={alsimgg} alt="Placeholder" />
-      </div>
+      <h3 className="alsh1">El Alsson British & American International School - Newgiza</h3>
+      <h3 className="alsh1">Checkout Page</h3>
+
       <div className="crtt">
-        {/* <h3 className="crttt">Cart Details for: <strong>{curStudName}</strong>   ID: <strong>{curStudID}</strong> Year Group: <strong>{curYgpName}</strong></h3> */}
-        <h3 className="crttt">Student ID: <strong>{curStudID}</strong> </h3>
-        <h3 className="crttt">Student Name: <strong>{curStudName}</strong>  </h3>
-        <h3 className="crttt">Year Group: <strong>{curYgpName}</strong></h3>
+        <h3 className="crttt">
+          Student ID: <strong>{curStudID}</strong>
+        </h3>
+
+        <h3 className="crttt">
+          Student Name: <strong>{curStudName}</strong>
+        </h3>
+
+        <h3 className="crttt">
+          Year Group: <strong>{curYgpName}</strong>
+        </h3>
+
         <Table
           className="chkoutTbb"
           columns={[
             { title: "Installment Name", dataIndex: "instName" },
-            { title: "Amount",dataIndex: "amount", render: (value) => formatDec(Number(value)), align: "right" },
+            {
+              title: "Amount",
+              dataIndex: "amount",
+              align: "right",
+              render: (value) => formatDec(value),
+            },
           ]}
           dataSource={installmentsWithInterest}
           pagination={false}
           rowKey="instCode"
         />
+
         <br />
+
         <p className="totcrtt">
-          Total Amount: <span className="totamm">EGP {formatDec(((finalFinalTotal)))}</span>
+          Total Amount: <span className="totamm">EGP {formatDec(finalTotal)}</span>
         </p>
       </div>
+
       <br />
-      <ApsMerchantPage cartItems={installmentsWithInterest} email={curEmailAddress} paymentItems={paymentItems} />
+
+      <ApsMerchantSection
+        email={curEmailAddress}
+        paymentItems={paymentItems}
+        finalTotal={finalTotal}
+        whiteSpinner={whiteSpinner}
+      />
     </div>
   );
 }
