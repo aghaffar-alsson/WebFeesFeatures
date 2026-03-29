@@ -23,13 +23,16 @@ import rateLimit from "express-rate-limit";
 
 //import { getTransporter } from "./mailer.js"; // the above transporter file
 //******************OPEN CONNECTION & ESTABLISH SERVER************************/
+//const express = require("express");
+const cors = require("cors");
+const app = express();
+
 const require = createRequire(import.meta.url);
 //const nodemailer = require('nodemailer');
 const { google } = require('googleapis');
 //dotenv.config({ path: './config.env' });
 // dotenv.config({ path: './.env' });
 dotenv.config();
-const app = express();
 //const isProduction = process.env.NODE_ENV === "production";
 // Trust proxy for secure cookies if behind a reverse proxy (e.g., Vercel)
 app.set("trust proxy", 1);
@@ -57,11 +60,9 @@ console.log(sqlConfig)
 const allowedOrigins = [
   "http://localhost:5173",
   "http://localhost:5174",  
-  process.env.FRONTEND_URL
+  process.env.FRONTEND_URL,
+  process.env.SEC_FRONTEND_URL,
 ];
-// --- Security helmet middleware
-app.use(helmet());
-
 //CORS configuration to allow only our frontend origin and credentials (cookies) to be sent
 app.use(cors({
   origin: function (origin, callback) {
@@ -76,6 +77,11 @@ app.use(cors({
 // --- Body parser
 app.use(express.json());
 app.use("/receipts", express.static(path.join(process.cwd(), "public", "receipts")));
+
+// --- Security helmet middleware
+app.use(helmet());
+
+
 
 // console.log(process.env.SRVRNM)
 // console.log(process.env.DBNAME)

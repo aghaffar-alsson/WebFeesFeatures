@@ -64,7 +64,18 @@ html, body {
   padding: 0;
   overflow-x: hidden;
 }
+.tkt-lnk{
+  display: flex;
+  text-align: center;
+  margin-left: 35px;
+  margin-top: 8px;
+  font-size: 13px;
+  color: #00060b;
+  /* text-shadow: #8c82f7 1px 1px 2px; */
+  line-height: 2.5;
+  font-weight: 600;
 
+}
 @media (max-width: 768px) {
   .welcome-banner {
     padding: 10px 12px;

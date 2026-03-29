@@ -71,7 +71,6 @@ function App() {
       {contextHolder}
 
       <Head />
-
       {isAuthenticated && userData && (
         <div className="welcome-banner">
           <span className="welcome-text">
@@ -174,6 +173,14 @@ function App() {
           OTP verification is required. Please check your email.
         </div>
       )}
+      <div className="tckt">
+        <span className="tkt-lnk">For Help & Support, Please visit this link: 
+          <strong>
+            <a href="https://support.finance.alsson.app/guest/" target="_blank" 
+            rel="noopener noreferrer" style={{marginLeft:"10px"}}>Support Link</a>
+          </strong>
+        </span>
+      </div>
     </BrowserRouter>
   );
 }
