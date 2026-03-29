@@ -119,9 +119,7 @@ export default function CheckoutResult() {
             <i class="fa fa-envelope"></i>
           </button>
 
-          // <button class="print-btn" onclick="window.open('${whatsappHref}', '_blank')">
-          //   <i class="fa-brands fa-whatsapp"></i>
-          // </button>
+
         </div>
       </body>
       </html>

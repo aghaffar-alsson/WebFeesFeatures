@@ -14,6 +14,7 @@ import { useNavigate } from "react-router-dom";
 //const { Link } = Typography;
 import '../Client/SignUp.jsx'
 import '../Client/PssForgot.jsx'
+import { easing } from '@mui/material/styles';
 
 // import FmInfo from '../Client/FmInfo.jsx'
 
@@ -70,7 +71,11 @@ export default function SignIn({setIsAuthenticated, setUserData })
   //Define state variables for resend OTP 
   const [showOtpSection, setShowOtpSection] = useState(false);
   const [showResendOtp, setShowResendOtp] = useState(false);
-  const [isResendingOtp, setIsResendingOtp] = useState(false);  
+  const [isResendingOtp, setIsResendingOtp] = useState(false); 
+  const [mobileStatus, setMobileStatus] = useState(""); 
+  const [emailStatus, setEmailStatus] = useState("");  
+  const [lastCheckedMobile, setLastCheckedMobile] = useState("");
+
   //Define state variables to track OTP expiration and attempt limits (optional, can also rely on backend responses)
   const [otpExpiresAt, setOtpExpiresAt] = useState(null);   // ISO string from backend
   const [timeLeft, setTimeLeft] = useState(0);              // seconds remaining
@@ -94,9 +99,10 @@ export default function SignIn({setIsAuthenticated, setUserData })
       const yearValue = String(YrNmm || "").trim();
       console.log(mobileValue, yearValue);
       // 1) Empty field -> no API call, no error
-      if (mobileValue === "") {
+      if (!mobileValue || mobileValue === "") {
         setErrors((prev) => ({ ...prev, mobile: "" }));
         setFmMob("");
+        setMobileStatus("");
         return;
       }
 
@@ -104,6 +110,7 @@ export default function SignIn({setIsAuthenticated, setUserData })
       if (mobileValue.length < 11) {
         setErrors((prev) => ({ ...prev, mobile: "" }));
         setFmMob("");
+        setMobileStatus("invalid");
         return;
       }
 
@@ -111,6 +118,7 @@ export default function SignIn({setIsAuthenticated, setUserData })
       if (mobileValue.length > 11) {
         setErrors((prev) => ({ ...prev, mobile: "Invalid Mobile Number" }));
         setFmMob("");
+        setMobileStatus("invalid");
         return;
       }
 
@@ -118,6 +126,7 @@ export default function SignIn({setIsAuthenticated, setUserData })
       if (!MobRegExp.test(mobileValue)) {
         setErrors((prev) => ({ ...prev, mobile: "Invalid Mobile Number" }));
         setFmMob("");
+        setMobileStatus("invalid");
         return;
       }
 
@@ -125,11 +134,13 @@ export default function SignIn({setIsAuthenticated, setUserData })
       if (!yearValue) {
         setErrors((prev) => ({ ...prev, mobile: "Year is missing" }));
         setFmMob("");
+        setMobileStatus("invalid");
         return;
       }
 
       try {
         setErrors((prev) => ({ ...prev, mobile: "" }));
+        setMobileStatus("checking");
         const res = await fetch(`${API_BASE}/chkLoginByMob`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -144,12 +155,14 @@ export default function SignIn({setIsAuthenticated, setUserData })
           console.log(data.famid, data.famnm);
           setFmMob(data.famid);
           setFmDtt(data);
+          setMobileStatus("valid");
           setErrors((prev) => ({ ...prev, mobile: "" }));
           // focus email only after success
           setTimeout(() => emlRef.current?.focus(), 100);
         } else {
           setFmMob("");
           setFmDtt(null);
+          setMobileStatus("invalid");
           setErrors((prev) => ({
             ...prev,
             mobile: mobileValue !== "" ? (data.message || "Unregistered Mobile Number") : ""
@@ -160,6 +173,7 @@ export default function SignIn({setIsAuthenticated, setUserData })
         setFmMob("");
         setFmDtt(null);
         setErrors((prev) => ({ ...prev, mobile: "Server error" }));
+        setMobileStatus("invalid");
       }
     };
     handleMobileCheck();
@@ -181,10 +195,10 @@ export default function SignIn({setIsAuthenticated, setUserData })
   const handleMobileChange = (e) => {
     const onlyDigits = e.target.value.replace(/\D/g, "").slice(0, 11);
     setRegMob(onlyDigits);
-
     // clear dependent fields while editing
     setFmMob("");
     setFmDtt(null);
+    setMobileStatus("");
   };  
   //To format remaining time in mm:ss for display
   const formatTime = (seconds) => {
@@ -198,26 +212,35 @@ export default function SignIn({setIsAuthenticated, setUserData })
     const email = String(regEmll || "").trim();
     const year = String(YrNmm || "").trim();
 
-    if (!email) {
+    if (!email || email.trim() === "") {
       setErrors((prev) => ({ ...prev, email: "" }));
       setFmEml("");
+      setEmailStatus("");
       return;
     }
 
     if (!year) {
       console.log("YrNmm missing:", YrNmm);
+      setErrors((prev) => ({ ...prev, email: "Year is missing" }));
+      setEmailStatus("");
       return;
     }
 
     if (!EmlRegExp.test(email)) {
       setErrors((prev) => ({ ...prev, email: "Invalid Email Address" }));
       setFmEml("");
+      setEmailStatus("invalid");
       return;
     }
-
+    // optional: do not check DB until mobile is valid
+    if (!MobRegExp.test(regMob)) {
+      setErrors((prev) => ({ ...prev, email: "" }));
+      setEmailStatus("");
+      return;
+    }
     try {
       setErrors((prev) => ({ ...prev, email: "" }));
-
+      setEmailStatus("checking");
       const res = await fetch(`${API_BASE}/chkLoginByEml`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -232,6 +255,7 @@ export default function SignIn({setIsAuthenticated, setUserData })
       if (!res.ok) {
         console.error("Backend returned error:", data);
         setFmEml("");
+        setEmailStatus("invalid");
         setErrors((prev) => ({
           ...prev,
           email: data.message || "Server error",
@@ -244,6 +268,7 @@ export default function SignIn({setIsAuthenticated, setUserData })
         setFmDtt(data);
         console.log(data.famid, data.famnm);
         setErrors((prev) => ({ ...prev, email: "" }));
+        setEmailStatus("valid");
           // focus email only after success
         setTimeout(() => pswdRef.current?.focus(), 100);
 
@@ -253,10 +278,12 @@ export default function SignIn({setIsAuthenticated, setUserData })
           ...prev,
           email: "Unregistered Email Address",
         }));
+        setEmailStatus("invalid");
       }
     } catch (err) {
       console.error("Error fetching family data:", err);
       setErrors((prev) => ({ ...prev, email: "Server error" }));
+      setEmailStatus("invalid");
     }
   };
 
@@ -809,7 +836,20 @@ const handleResendOtp = async () => {
           <input
           type="tel" id="regmobno" maxLength={11} className={`inp ${isMobInvalid ? "inp-error" : ""}`} 
           placeholder="Write Registered Mobile Number" ref={mobRef} value={regMob} disabled={isOtpStep}
-          onChange={(e) => { setMobTouched(true);  handleMobileChange(e);}} onBlur={() => setMobTouched(true)}/>          
+          //onChange={(e) => { setMobTouched(true);  handleMobileChange(e);}} onBlur={() => setMobTouched(true)}
+          onChange={(e) => {const value = e.target.value.replace(/\D/g, "").slice(0, 11); setMobTouched(true);
+          setRegMob(value);setRegEmll(""); setEmailTouched(false); setEmailStatus(""); setSelectedFamid(""); setSelectedFamNM("");
+          setErrors((prev) => ({ ...prev, mobile: "", email: "" }));
+          if (value.length < 11) {
+            setMobileStatus("");
+            setLastCheckedMobile("");
+            return;
+          }
+          if (value.length === 11) {
+            setRegMob(value);
+            handleMobileChange(e);
+          }
+          }}          />          
           { !fmMob ? (<label className="lblworn">{errors.mobile}</label>) :
           (errors.mobile ? (
             <label className="lblworn" style={{ color: "red" }}>{errors.mobile}<FontAwesomeIcon icon={faXmark} /></label>) :
