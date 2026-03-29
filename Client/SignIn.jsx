@@ -834,22 +834,20 @@ const handleResendOtp = async () => {
         {/* Mobile */}
         <div className="mobb">
           <input
-          type="tel" id="regmobno" maxLength={11} className={`inp ${isMobInvalid ? "inp-error" : ""}`} 
-          placeholder="Write Registered Mobile Number" ref={mobRef} value={regMob} disabled={isOtpStep}
-          //onChange={(e) => { setMobTouched(true);  handleMobileChange(e);}} onBlur={() => setMobTouched(true)}
-          // onChange={(e) => {const value = e.target.value.replace(/\D/g, "").slice(0, 11); setMobTouched(true);
-          // setRegMob(value);setRegEmll(""); setEmailTouched(false); setEmailStatus(""); setSelectedFamid(""); setSelectedFamNM("");
-          // setErrors((prev) => ({ ...prev, mobile: "", email: "" }));
-          // if (value.length < 11) {
-          //   setMobileStatus("");
-          //   setLastCheckedMobile("");
-          //   return;
-          // }
-          // if (value.length === 11) {
-          //   setRegMob(value);
-          //   handleMobileChange(e);
-          // }
-          // }}          
+            type="tel"
+            id="regmobno"
+            maxLength={11}
+            className={`inp ${isMobInvalid ? "inp-error" : ""}`}
+            placeholder="Write Registered Mobile Number"
+            ref={mobRef}
+            value={regMob}
+            disabled={isOtpStep}
+            onChange={(e) => {
+              setMobTouched(true);
+              handleMobileChange(e);
+            }}
+            onBlur={() => setMobTouched(true)}
+            required
           />          
           { !fmMob ? (<label className="lblworn">{errors.mobile}</label>) :
           (errors.mobile ? (
