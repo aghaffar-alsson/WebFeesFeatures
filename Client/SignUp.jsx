@@ -22,7 +22,7 @@ var MobRegExp = /^01[0-2,5]{1}[0-9]{8}$/;
 var EmlRegExp = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
 var pswdRegExp = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!_@#$%^&*]).{10,}$/;
 
-function SignUp() {
+function SignUp({userData}) {
   useEffect(() => {
     localStorage.clear();
   }, []);
@@ -56,16 +56,16 @@ function SignUp() {
   const [lastCheckedMobile, setLastCheckedMobile] = useState("");
   // "", "checking", "valid", "invalid"  
   const navigate = useNavigate();
-  const REACT_PORT = import.meta.env.VITE_PORT || 3000;
-  const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000/api";
+  // const REACT_PORT = import.meta.env.VITE_PORT || 3000;
+  // const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000/api";
   //API base URL from environment variable
   const API_BASE = `${import.meta.env.VITE_API_URL}`;
   if (!API_BASE) {
     throw new Error("VITE_API_URL is not defined");
   }
 
-  localStorage.removeItem("curFmNo");
-  localStorage.removeItem("curFmNm");
+  // localStorage.removeItem("curFmNo");
+  // localStorage.removeItem("curFmNm");
 
   const handleChangeOnlyNo = (e) => {
     setRegMob(e.target.value)

@@ -5,7 +5,7 @@ import "./CheckoutPage.css";
 
 import { Table, Spin, Tooltip } from "antd";
 import { LoadingOutlined } from "@ant-design/icons";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faHouse } from "@fortawesome/free-solid-svg-icons";
 
@@ -18,85 +18,42 @@ function formatDec(value) {
   }).format(Number(value));
 }
 
-function ApsMerchantSection({ email, paymentItems, finalTotal, whiteSpinner }) {
+function ApsMerchantSection({
+  email,
+  paymentItems,
+  finalTotal,
+  whiteSpinner,
+  schoolNoo,
+  curStudID,
+  curStudName,
+  curYgpName,
+  curFamilyNo,
+  curFamilyName,
+  fullName,
+}) {
   const [loading, setLoading] = useState(false);
-
-  // const handlePay = async () => {
-  //   try {
-  //     setLoading(true);
-
-  //     // Send EXACT displayed total (2 decimals max) to backend
-  //     const amount = Number(finalTotal.toFixed(2));
-  //     const currency = "EGP";
-  //     const schoolId = localStorage.getItem("schoolNoo") || "1";
-
-  //     console.log("=== FRONTEND APS DEBUG ===");
-  //     console.log("email:", email);
-  //     console.log("schoolId:", schoolId);
-  //     console.log("Displayed finalTotal (major units):", finalTotal);
-  //     console.log("Amount sent to backend (major units):", amount);
-  //     console.log("Amount sent to backend (minor units):", Math.round(amount * 100));
-  //     console.log("paymentItems:", paymentItems);
-
-  //     const res = await axios.post(
-  //       "https://my-payfort-backend.onrender.com/createFormPayLoad",
-  //       {
-  //         email,
-  //         amount,
-  //         currency,
-  //         schoolId,
-  //         paymentItems,
-  //         frontendOrigin: window.location.origin,
-  //       }
-  //     );
-
-  //     const payfortData = res.data;
-
-  //     console.log("=== PAYFORT PAYLOAD FROM BACKEND ===");
-  //     console.log(payfortData);
-
-  //     // Build form and submit to APS
-  //     const form = document.createElement("form");
-  //     form.method = "POST";
-  //     form.action = "https://sbcheckout.payfort.com/FortAPI/paymentPage";
-
-  //     Object.keys(payfortData).forEach((key) => {
-  //       const input = document.createElement("input");
-  //       input.type = "hidden";
-  //       input.name = key;
-  //       input.value = String(payfortData[key] ?? "");
-  //       form.appendChild(input);
-  //     });
-
-  //     document.body.appendChild(form);
-  //     form.submit();
-  //   } catch (err) {
-  //     console.error("=== PAYMENT INIT ERROR ===");
-  //     console.error("Error object:", err);
-  //     console.error("Error response data:", err?.response?.data);
-  //     console.error("Error status:", err?.response?.status);
-  //     alert("Failed to initiate payment. Please try again.");
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
 
   const handlePay = async () => {
     try {
       setLoading(true);
 
-      const totalAmount = paymentItems.reduce((a, v) => a + Number(v.amount), 0);
-      const amount = Number(totalAmount.toFixed(2)); // KEEP DECIMALS
-
+      // Use finalTotal because this is what user sees and should pay
+      const amount = Number(finalTotal.toFixed(2));
       const currency = "EGP";
-      const schoolId = localStorage.getItem("schoolNoo") || "1";
+
+      // Use state value instead of localStorage
+      const schoolId = schoolNoo || "1";
       const safeEmail = email || "noemail@example.com";
 
       console.log("=== FRONTEND PAY DEBUG ===");
-      console.log("Total Amount for APS (major units):", amount);
+      console.log("Final Amount for APS (major units):", amount);
+      console.log("Final Amount for APS (minor units):", Math.round(amount * 100));
       console.log("Email:", safeEmail);
       console.log("School ID:", schoolId);
       console.log("paymentItems:", paymentItems);
+      console.log("Student ID:", curStudID);
+      console.log("Student Name:", curStudName);
+      console.log("Year Group:", curYgpName);
 
       const res = await axios.post(
         "https://my-payfort-backend.onrender.com/createFormPayLoad",
@@ -106,7 +63,15 @@ function ApsMerchantSection({ email, paymentItems, finalTotal, whiteSpinner }) {
           currency,
           schoolId,
           paymentItems,
-          frontendOrigin: window.location.origin
+          frontendOrigin: window.location.origin,
+
+          // NEW: student / family data for backend logging
+          studentId: curStudID || null,
+          studentName: curStudName || "",
+          curYgp: curYgpName || "",
+          familyNo: curFamilyNo || null,
+          familyName: curFamilyName || "",
+          fullName: fullName || "",
         }
       );
 
@@ -129,11 +94,13 @@ function ApsMerchantSection({ email, paymentItems, finalTotal, whiteSpinner }) {
       form.submit();
     } catch (err) {
       console.error("Payment Error:", err);
+      console.error("Error response:", err?.response?.data);
       alert("Failed to initiate payment. Please try again.");
     } finally {
       setLoading(false);
     }
-  };  
+  };
+
   return (
     <div className="payfortpay">
       <Button
@@ -176,11 +143,20 @@ function ApsMerchantSection({ email, paymentItems, finalTotal, whiteSpinner }) {
 
 export default function CheckoutPage() {
   const { state } = useLocation();
-  const stored = sessionStorage.getItem("checkoutData");
-  const checkoutData = state || (stored ? JSON.parse(stored) : null);
+  const navigate = useNavigate();
+
+  // IMPORTANT: state only (no sessionStorage fallback)
+  const checkoutData = state;
 
   if (!checkoutData) {
-    return <p>No checkout data available.</p>;
+    return (
+      <div style={{ padding: "20px" }}>
+        <p>No checkout data available.</p>
+        <Button variant="contained" onClick={() => navigate("/fminfo")}>
+          Back
+        </Button>
+      </div>
+    );
   }
 
   const {
@@ -191,12 +167,11 @@ export default function CheckoutPage() {
     curStudID = "",
     curStudName = "",
     curYgpName = "",
-    // kept available if you need later:
-    // curFamilyNo,
-    // curFamilyName,
-    // schoolNoo,
-    // schoolNmm,
-    // fullName,
+    curFamilyNo = "",
+    curFamilyName = "",
+    schoolNoo = "",
+    schoolNmm = "",
+    fullName = "",
   } = checkoutData;
 
   const [paymentItems] = useState(initialPaymentItems);
@@ -208,14 +183,10 @@ export default function CheckoutPage() {
     />
   );
 
-  // ===== FEES CALCULATION (deterministic & stable) =====
+  // ===== FEES CALCULATION =====
   const BASE_INTEREST_RATE = 0.0075; // 0.75%
   const EXTRA_FEE = 1.51;
 
-  // This reproduces your original logic:
-  // 1) interest = total * 0.75%
-  // 2) add 0.75% on the interest itself
-  // 3) add fixed 1.51
   const baseInterest = Number(total) * BASE_INTEREST_RATE;
   const interestWithHandling = baseInterest + baseInterest * BASE_INTEREST_RATE;
   const feesAmount = Number((interestWithHandling + EXTRA_FEE).toFixed(2));
@@ -236,7 +207,7 @@ export default function CheckoutPage() {
     ];
   }, [installments, feesAmount]);
 
-  // Debug logs for render-time issues
+  // Debug logs
   console.log("=== CHECKOUT PAGE DEBUG ===");
   console.log("checkoutData:", checkoutData);
   console.log("installments:", installments);
@@ -245,10 +216,11 @@ export default function CheckoutPage() {
   console.log("finalTotal:", finalTotal);
   console.log("installmentsWithInterest:", installmentsWithInterest);
   console.log("paymentItems:", paymentItems);
+  console.log("schoolNoo:", schoolNoo);
 
   return (
     <div>
-      <h3 className="alsh1">El Alsson British & American International School - Newgiza</h3>
+      <h3 className="alsh1">{schoolNmm || "El Alsson British & American International School - Newgiza"}</h3>
       <h3 className="alsh1">Checkout Page</h3>
 
       <div className="crtt">
@@ -294,6 +266,13 @@ export default function CheckoutPage() {
         paymentItems={paymentItems}
         finalTotal={finalTotal}
         whiteSpinner={whiteSpinner}
+        schoolNoo={schoolNoo}
+        curStudID={curStudID}
+        curStudName={curStudName}
+        curYgpName={curYgpName}
+        curFamilyNo={curFamilyNo}
+        curFamilyName={curFamilyName}
+        fullName={fullName}
       />
     </div>
   );

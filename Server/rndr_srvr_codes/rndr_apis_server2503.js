@@ -9,73 +9,31 @@ import sql from 'mssql'
 import path from 'path'
 import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
-//import { log } from 'console';
+import { log } from 'console';
 import { createRequire } from 'module';
 import bcrypt from "bcrypt";
 import fs from "fs-extra";
 import PDFDocument from "pdfkit";
 import crypto from "crypto";
-//import session from "express-session";
-//import MSSQLStore from "connect-mssql-v2";
-//const MSSQLStore = require('connect-mssql-v2')(session)
-import helmet from  "helmet";
-import rateLimit from "express-rate-limit";
-
-
+//import { getTransporter } from "./mailer.js"; // the above transporter file
 //******************OPEN CONNECTION & ESTABLISH SERVER************************/
 const require = createRequire(import.meta.url);
-const nodemailer = require('nodemailer');
-
+//const nodemailer = require('nodemailer');
+const { google } = require('googleapis');
+//dotenv.config({ path: './config.env' });
+// dotenv.config({ path: './.env' });
 dotenv.config();
-
 const app = express();
-//const isProduction = process.env.NODE_ENV === "production";
-// Trust proxy for secure cookies if behind a reverse proxy (e.g., Vercel)
-app.set("trust proxy", 1);
 
-//paths setup for static files
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const port = process.env.PORT || 3000;
-//server connection configuration
-const sqlConfig = {
-  server: process.env.SERVER_NAME,
-  database: process.env.DB_NAME,
-  user: process.env.USER_ID,
-  password: process.env.PSWD,
-  options: {
-    encrypt: false, // Use encryption as we are connecting to a remote server
-    trustServerCertificate: true, // Do not trust server certificate in production, ensure proper SSL setup
-  },
-  requestTimeout: 25000,
-};
-console.log(sqlConfig)
+const port = process.env.VITE_PORT || 3000;
 
-//app.use(cors());
-const allowedOrigins = [
-  "http://localhost:5173",
-  "http://localhost:5174",  
-  process.env.FRONTEND_URL
-];
-// --- Security helmet middleware
-app.use(helmet());
-
-//CORS configuration to allow only our frontend origin and credentials (cookies) to be sent
-app.use(cors({
-  origin: function (origin, callback) {
-    if (!origin) return callback(null, true); // allow Postman/server-to-server
-    if (allowedOrigins.includes(origin)) {
-      return callback(null, true);
-    }
-    return callback(new Error("Not allowed by CORS"));
-  },
-  credentials: true
-}));
-// --- Body parser
+app.use(cors());
 app.use(express.json());
-// --- Static files for receipts
 app.use("/receipts", express.static(path.join(process.cwd(), "public", "receipts")));
+
 // console.log(process.env.SRVRNM)
 // console.log(process.env.DBNAME)
 // console.log(process.env.UNM)
@@ -105,7 +63,104 @@ app.use("/receipts", express.static(path.join(process.cwd(), "public", "receipts
 //   },
 //   requestTimeout: 15000,
 // };
-// Create one shared connection pool
+const sqlConfig = {
+  server: process.env.VITE_SERVER_NAME,
+  database: process.env.VITE_DB_NAME,
+  user: process.env.VITE_USER_ID,
+  password: process.env.VITE_PSWD,
+  options: {
+    encrypt: false,
+    trustServerCertificate: true,
+  },
+  requestTimeout: 25000,
+};
+console.log(sqlConfig)
+
+// SQL Config
+// const sqlConfig = {
+//   server: "41.128.168.249",
+//   database: "feesweb",
+//   user: "sa",
+//   password: "Finance@2025",
+//   options: {
+//     encrypt: false,
+//     trustServerCertificate: true,
+//   },
+//   requestTimeout: 90000,
+// };
+
+// --- OAuth2 Setup ---
+//console.log(process.env.CLIENT_ID)
+//console.log(process.env.SECRET_TOKEN)
+//console.log(process.env.REFRESH_TOKEN)
+//console.log(process.env.SMTP_USER)
+const oAuth2Client = new google.auth.OAuth2(
+  process.env.CLIENT_ID,
+  process.env.SECRET_TOKEN,
+  "https://developers.google.com/oauthplayground"
+);
+
+oAuth2Client.setCredentials({ refresh_token: process.env.REFRESH_TOKEN });
+
+const gmail = google.gmail({
+  version: "v1",
+  auth: oAuth2Client,
+});
+
+async function sendEmail({ to, subject, html, attachments = [] }) {
+  const boundary = "boundary_xyz";
+
+  let messageParts = [
+    `From: "El Alsson School" <${process.env.SMTP_USER}>`,
+    `To: ${to}`,
+    `Subject: ${subject}`,
+    `MIME-Version: 1.0`,
+    `Content-Type: multipart/mixed; boundary=${boundary}`,
+    "",
+    `--${boundary}`,
+    `Content-Type: text/html; charset="UTF-8"`,
+    "",
+    html,
+  ];
+
+  for (const file of attachments) {
+    messageParts.push(
+      `--${boundary}`,
+      `Content-Type: ${file.mimeType}; name="${file.filename}"`,
+      `Content-Disposition: attachment; filename="${file.filename}"`,
+      `Content-Transfer-Encoding: base64`,
+      "",
+      file.content.toString("base64")
+    );
+  }
+
+  messageParts.push(`--${boundary}--`);
+
+  const raw = Buffer.from(messageParts.join("\n"))
+    .toString("base64")
+    .replace(/\+/g, "-")
+    .replace(/\//g, "_")
+    .replace(/=+$/, "");
+
+  await gmail.users.messages.send({
+    userId: "me",
+    requestBody: { raw },
+  });
+}
+
+// SQL Config
+// const sqlConfig = {
+//   server: "41.128.168.249",
+//   database: "feesweb",
+//   user: "sa",
+//   password: "Finance@2025",
+//   options: {
+//     encrypt: false,
+//     trustServerCertificate: true,
+//   },
+//   requestTimeout: 90000,
+// };
+// ✅ Create one shared connection pool
 let poolPromise = sql.connect(sqlConfig)
   .then(pool => {
     console.log("✅ Connected to SQL Server");
@@ -115,117 +170,10 @@ let poolPromise = sql.connect(sqlConfig)
     console.error("❌ Database Connection Failed!", err);
   });
 // // --- Start Server
-
-// // initialize MSSQL session store
-// // --- Session Store
-// let sessionStore;
-// try {
-//   sessionStore = new MSSQLStore({
-//     config: sqlConfig,
-//     table: "sessions",
-//     columnNames: {
-//       id: "sid",
-//       expires: "expires",
-//       data: "data",
-//     },
-//     ttl: 1000 * 60 * 30, // 30 minutes
-//   });
-// } catch (err) {
-//   console.error("Failed to initialize MSSQL session store:", err);
-//   throw err;
-// }
-
-
-// // session middleware
-// app.use(
-//   session({
-//     name: "alsson.sid",
-//     secret: process.env.SESSION_SECRET,
-//     resave: false,
-//     saveUninitialized: false,
-//     rolling: true,
-//     proxy: true,
-//     store: sessionStore,
-//     cookie: {
-//       httpOnly: true,
-//       secure: isProduction,
-//       sameSite: isProduction ? "none" : "lax",
-//       maxAge: 1000 * 60 * 30,
-//     },
-//   })
-// );
-
-// // --- Listen for session store errors
-// sessionStore.on("error", (err) => {
-//   console.error("MSSQL session store error:", err);
+// app.listen(port, () => {
+//   console.log(`🚀 Server is running on port ${process.env.VITE_PORT}`);
 // });
 
-// // --- Test Route
-// app.get("/test-session", (req, res) => {
-//   if (!req.session.views) {
-//     req.session.views = 1;
-//     return res.send("First visit, session created!");
-//   }
-
-//   req.session.views += 1;
-//   res.send(`You have visited this page ${req.session.views} times`);
-// });
-
-// --- Rate Limiter for auth endpoints
-
-const authLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 min
-  max: 10,
-  standardHeaders: true,
-  legacyHeaders: false,
-  message: {
-    success: false,
-    message: "Too many attempts. Please try again later."
-  }
-});
-app.use("/loginchk", authLimiter);
-app.use("/verify-login-otp", authLimiter);
-app.use("/resend-login-code", authLimiter);
-
-
-// --- Utility function to normalize database records with flexible field names
-function normalizeRecord(record, fallback = {}) {
-if (!record) return null;
-
-return {
-  famid: record.FAMID ?? record.famid ?? fallback.famid ?? null,
-  famnm: record.FAMNM ?? record.famnm ?? fallback.famnm ?? null,
-  email: record.EMAIL_ADDRESS ?? record.email_address ?? fallback.email ?? null,
-  mobile: record.MOBILE_NUMBER ?? record.mobile_number ?? fallback.mobile ?? null
-};
-}
-// // --- Middleware to protect routes
-// function requireAuth(req, res, next) {
-//   if (!req.session || !req.session.user || !req.session.user.authenticated) {
-//     return res.status(401).json({
-//       success: false,
-//       message: "Unauthorized"
-//     });
-//   }
-//   next();
-// }
-// // Optional: simple async wrapper
-function asyncHandler(fn) {
-  return (req, res, next) => Promise.resolve(fn(req, res, next)).catch(next);
-}
-// // --- Health Check Endpoint
-// app.get("/health", (req, res) => {
-//   res.json({
-//     success: true,
-//     message: "API is running",
-//     env: process.env.NODE_ENV || "development",
-//     session: !!req.session,
-//     user: req.session?.user ? {
-//       famid: req.session.user.famid,
-//       famnm: req.session.user.famnm
-//     } : null
-//   });
-// });
 // --- Test API
 app.get("/", (req, res) => {
   res.send("Server is running");
@@ -335,14 +283,29 @@ app.post("/sp_GetLoginDetByMob&Email", async (req, res) => {
   }
 });
 
-//Configure NODEMAILER
-const transporter = nodemailer.createTransport({
-  service: "gmail",
-  auth: {
-    user: 'fees@alsson.com',
-    pass: 'gwwowluzlabnfyqw',
-  },
-});
+
+// async function createTransporter() {
+//   const accessToken = await oAuth2Client.getAccessToken();
+
+//   return nodemailer.createTransport({
+//     service: "gmail",
+//     auth: {
+//       type: "OAuth2",
+//       user: process.env.SMTP_USER,
+//       clientId: process.env.CLIENT_ID,
+//       clientSecret: process.env.SECRET_TOKEN,
+//       refreshToken: process.env.REFRESH_TOKEN,
+//       accessToken: accessToken.token,
+//     },
+//     pool: true,
+//     // Force HTTPS transport (this is optional but avoids SMTP entirely)
+//     tls: {
+//       rejectUnauthorized: false
+//     }
+//   });
+// }
+
+//const transporter = await createTransporter();
 
 //create random temp password
 function generateTempPassword(length = 8) {
@@ -355,21 +318,35 @@ function generateTempPassword(length = 8) {
 }
 
 //CREATE NEW LOGIN
+
+
+// CREATE NEW LOGIN
 app.post('/signup', async (req, res) => {
-  const { yr,  famid, famnm, emll, mobb, pswd } = req.body;
-  console.log(req.body);
-  if (!yr || !famid || !famnm || !emll || !mobb || !pswd) {
+  const { yr, famid, famnm, emll, mobb } = req.body;
+
+  if (!yr || !famid || !famnm || !emll || !mobb) {
     return res.status(400).json({ message: 'Missing required fields' });
   }
 
   try {
+    // 1️⃣ Generate temporary password
+    console.log("Function type:", typeof generateTempPassword);
     const tempPswd = generateTempPassword(10);
-    console.log(tempPswd)
-    //const hashedPswd = await bcrypt.hash(tempPswd, 10);    
-    const hashedPswd = tempPswd;    
-    const pool = await sql.connect(sqlConfig);
-    const result = await pool
-      .request()
+    console.log("Generated password:", tempPswd);
+    console.log(tempPswd);
+    // 2️⃣ Hash password (DO NOT store plain text)
+    //const hashedPswd = await bcrypt.hash(tempPswd, 10);
+    const hashedPswd = tempPswd
+    console.log(hashedPswd);
+    // 3️⃣ Save to database
+    const pool = await poolPromise;
+    console.log(yr)
+    console.log(famid)
+    console.log(famnm)
+    console.log(emll)
+    console.log(mobb)
+    console.log(hashedPswd)
+    await pool.request()
       .input('yr', sql.Char(4), yr)
       .input('famid', sql.Int, famid)
       .input('famnm', sql.NVarChar(255), famnm)
@@ -378,38 +355,89 @@ app.post('/signup', async (req, res) => {
       .input('pswd', sql.NVarChar(255), hashedPswd)
       .execute('signup');
 
-      //SEND TEMP PASSWORD TO THE PARENT EMAIL
-      const mailOptions = {
-        from: process.env.FromEmailAddress,
-        to: emll,
-        subject: "Your Temporary Password For Parents' Fees Portal",
-        html: `
-          <font face="Calibri" size="3" color = "blue">
-          <h3>Dear Parent: ${famnm},</h3>
-          <br/>
-          <h3>Welcome to our portal,</h3>
-          <br/>
-          <p>Your login account has been created for the <strong>Parents' Fees Portal</strong>.</p>
-          <p>Here is your temporary password:</p><u><h2 style="color:#1a73e8;">${tempPswd}</h2></u>
-          <p>You can login using the email adress:</p><u><h2 style="color:#1a73e8;">${emll}</h2></u>
-          <p>and this mobile number:</p><u><h2 style="color:#1a73e8;">${mobb}</h2></u>
-          <br/>
-          <p>Please write this password when you login for the first time only.</p>
-          <p>You should change it by your own password immediately.</p>
-          <br/>
-          <p>Finance Department - Fees Section</p>
-          <p>El Alsson School- </p>
-          <p>Best regards,</p>
-        `,
-      };
-      await transporter.sendMail(mailOptions);
-      res.json({ message: 'Signup successful!' , tempPswd: tempPswd} , );
-      
+    // 4️⃣ Send email using Gmail API (NOT SMTP)
+    await sendEmail({
+      to: emll,
+      subject: "Your Temporary Password For Parents' Fees Portal",
+      html: `
+        <font face="Calibri" size="3" color = "blue">
+        <h3>Dear Parent: ${famnm},</h3>
+        <br/>
+        <h3>Welcome to our portal,</h3>
+        <br/>
+        <p>Your login account has been created for the <strong>Parents' Fees Portal</strong>.</p>
+        <p>Here is your temporary password:</p><u><h2 style="color:#1a73e8;">${tempPswd}</h2></u>
+        <p>You can login using the email adress:</p><u><h2 style="color:#1a73e8;">${emll}</h2></u>
+        <p>and this mobile number:</p><u><h2 style="color:#1a73e8;">${mobb}</h2></u>
+        <br/>
+        <p>Please write this password when you login for the first time only.</p>
+        <p>You should change it by your own password immediately.</p>
+        <br/>
+        <p>Finance Department - Fees Section</p>
+        <p>El Alsson School- </p>
+        <p>Best regards,</p>
+      `,
+    });
+
+    // 5️⃣ Do NOT return password in API response (security best practice)
+    res.json({ message: 'Signup successful!', tempPswd });
+
   } catch (err) {
-    console.error('Database Error:', err);
-    res.status(500).json({ message: 'Database Error', error: err.message });
+    console.error('Signup error:', err);
+    res.status(500).json({ 
+      message: 'Signup failed', 
+      error: err.message 
+    });
   }
 });
+
+// app.post('/signup', async (req, res) => {
+//   const { yr, famid, famnm, emll, mobb, pswd } = req.body;
+
+//   if (!yr || !famid || !famnm || !emll || !mobb || !pswd) {
+//     return res.status(400).json({ message: 'Missing required fields' });
+//   }
+
+//   try {
+//     const tempPswd = generateTempPassword(10);
+//     const hashedPswd = tempPswd;    
+
+//     const pool = await poolPromise;
+//     await pool.request()
+//       .input('yr', sql.Char(4), yr)
+//       .input('famid', sql.Int, famid)
+//       .input('famnm', sql.NVarChar(255), famnm)
+//       .input('emll', sql.NVarChar(255), emll)
+//       .input('mobb', sql.NVarChar(11), mobb)
+//       .input('pswd', sql.NVarChar(255), hashedPswd)
+//       .execute('signup');
+
+//     // SEND TEMP PASSWORD
+//     const transporter = await getTransporter();
+
+//     const mailOptions = {
+//       from: `"El Alsson School" <${process.env.SMTP_USER}>`,
+//       to: emll,
+//       subject: "Your Temporary Password For Parents' Fees Portal",
+//       html: `
+//         <h3>Dear Parent: ${famnm}</h3>
+//         <p>Your login account has been created.</p>
+//         <p><strong>Email:</strong> ${emll}</p>
+//         <p><strong>Mobile:</strong> ${mobb}</p>
+//         <p><strong>Temporary Password:</strong> ${tempPswd}</p>
+//         <p>Please change it after your first login.</p>
+//       `
+//     };
+
+//     //await transporter.sendMail(mailOptions);
+
+//     res.json({ message: 'Signup successful!', tempPswd });
+//   } catch (err) {
+//     console.error('Signup error:', err);
+//     res.status(500).json({ message: 'Signup failed', error: err.message });
+//   }
+// });
+
 
 //MODIFY AN EXISTING LOGIN BY RESETTING THE PASSWORD TO A NEW TEMPORARY ONE & SEND IT TO THE PARENT EMAIL ADDRESS
 app.post('/modifylogin', async (req, res) => {
@@ -424,7 +452,7 @@ app.post('/modifylogin', async (req, res) => {
     console.log(tempPswd)
     //const hashedPswd = await bcrypt.hash(tempPswd, 10);    
     const hashedPswd = tempPswd;    
-    const pool = await sql.connect(sqlConfig);
+    const pool = await poolPromise;
     const result = await pool
       .request()
       .input('yr', sql.Char(4), yr)
@@ -459,7 +487,35 @@ app.post('/modifylogin', async (req, res) => {
           <p>Best regards,</p>
         `,
       };
-      await transporter.sendMail(mailOptions);
+      //await transporter.sendMail(mailOptions);
+      await sendEmail({
+        to: emll,
+        subject: "Your Reset Password For Parents' Fees Portal",
+        //html: `
+        //  <h3>Dear Parent: ${famnm}</h3>
+        //  <p>Your password has been reset.</p>
+        //  <h2>${tempPswd}</h2>
+        //`
+        html: `
+          <font face="Calibri" size="3" color = "blue">
+          <h3>Dear Parent: ${famnm},</h3>
+          <br/>
+          <h3>Welcome again to our portal,</h3>
+          <br/>
+          <p>Your login account for the <strong>Parents' Fees Portal</strong> has been modified.</p>
+          <p>Here is your new temporary password:</p><u><h2 style="color:#1a73e8;">${tempPswd}</h2></u>
+          <p>You can login using the email adress:</p><u><h2 style="color:#1a73e8;">${emll}</h2></u>
+          <p>and this mobile number:</p><u><h2 style="color:#1a73e8;">${mobb}</h2></u>
+          <br/>
+          <p>Please write this password when you login for the first time only.</p>
+          <p>You should change it by your own password immediately.</p>
+          <br/>
+          <p>Finance Department - Fees Section</p>
+          <p>El Alsson School- </p>
+          <p>Best regards,</p>
+        `        
+      });
+    
       res.json({ message: 'Reset Password is successful!' , tempPswd: tempPswd} , );
       
   } catch (err) {
@@ -599,7 +655,7 @@ app.put('/updtLogin', async (req, res) => {
   }
 
   try {
-    const pool = await sql.connect(sqlConfig);
+    const pool = await poolPromise;
     const result = await pool
       .request()
       .input('yr', sql.Char(4), yr)
@@ -621,6 +677,7 @@ app.put('/updtLogin', async (req, res) => {
   }
 });
 
+
 //CHECK THE EXISTENCE OF FAMILY LOGIN USING THE SUPPLIED PSWD
 app.post('/chkLoginByPswd', async (req, res) => {
   const { yr, pswd, email_reg, phone_reg } = req.body;
@@ -634,7 +691,7 @@ app.post('/chkLoginByPswd', async (req, res) => {
   //console.log(pswd)
   //console.log(encryptedPswd)
   try {
-    const pool = await sql.connect(sqlConfig);
+    const pool = await poolPromise;
     const result = await pool
       .request()
       .input('yr', sql.Char(4), yr)
@@ -671,7 +728,7 @@ app.post('/sp_GetFmInfo', async (req, res) => {
   }
 
   try {
-    const pool = await sql.connect(sqlConfig);
+    const pool = await poolPromise;
     const result = await pool
       .request()
       .input('yrNo', sql.Char(4), yrNo)
@@ -708,7 +765,7 @@ app.post('/sp_GetFmInfo', async (req, res) => {
 app.get("/bankdet/:bnkId", async (req, res) => {
   const bnkId = parseInt(req.params.bnkId, 10);
   try {
-    const pool = await sql.connect(sqlConfig);
+    const pool = await poolPromise;
     const result = await pool.request()
       .input("bnkid", sql.Int, bnkId)
       .execute("sp_GetBnkDet");
@@ -719,76 +776,17 @@ app.get("/bankdet/:bnkId", async (req, res) => {
     res.status(500).send("Database error");
   }
 });
-
-//API to check login credentials and send OTP if valid, then return verification token to frontend
-// app.post("/loginchk", async (req, res) => {
-//   const { yr,emll, pswd, mobno } = req.body;
-
-//   try {
-//     // 1) check user credentials in DB
-//     const pool = await sql.connect(dbConfig);
-
-//     const result = await pool.request()
-//       .input("yr", sql.Char(4), yr)
-//       .input("emll", sql.VarChar, emll)
-//       .input("pswd", sql.VarChar, pswd)
-//       .input("mobno", sql.VarChar, mobno)
-//       .query(`
-//         SELECT TOP 1 famid, famnm, eml, mobb
-//         FROM dbo.FMLOGIN
-//         WHERE emll = @emll
-//           AND pswd = @pswd
-//           AND mobb = @mobno
-//       `);
-
-//     if (!result.recordset.length) {
-//       return res.status(401).json({
-//         success: false,
-//         message: "Invalid login credentials"
-//       });
-//     }
-
-//     const user = result.recordset[0];
-
-//     // 2) generate OTP & verification token
-//     const otp = generateOtp();
-//     const verificationToken = generateVerificationToken();
-
-//     // 3) store temporarily
-//     pendingLoginOtps[verificationToken] = {
-//       email: user.emll,
-//       famid: user.famid,
-//       famnm: user.famnm,
-//       mobile: user.mobb,
-//       otp,
-//       expiresAt: Date.now() + 5 * 60 * 1000, // OTP expires in 5 minutes
-//       attempts: 0
-//     };
-
-//     // 4) send email
-//     await sendVerificationCodeEmail(user.emll, otp, user.famnm);
-
-//     // 5) return token only
-//     return res.json({
-//       success: true,
-//       otpRequired: true,
-//       verificationToken,
-//       message: "Verification code sent to your email"
-//     });
-
-//   } catch (err) {
-//     console.error("loginchk error:", err);
-//     return res.status(500).json({
-//       success: false,
-//       message: "Server error"
-//     });
-//   }
-// });
-
+//Generate random OTP and verification token
+function generateOtp() {
+  return Math.floor(100000 + Math.random() * 900000).toString(); // 6 digits
+}
+function generateVerificationToken() {
+  return crypto.randomUUID();
+}
 // API to validate credentials, generate OTP, store it in DB, and send it by email
-app.post("/loginchk", asyncHandler (async (req, res) => {
+app.post("/loginchk", async (req, res) => {
   const { yr, emll, pswd, mobno } = req.body;
-
+  console.log("Login attempt:", { yr, emll, mobno });
   if (!yr || !emll || !pswd || !mobno) {
     return res.status(400).json({
       success: false,
@@ -808,7 +806,7 @@ app.post("/loginchk", asyncHandler (async (req, res) => {
       .input("phone_reg", sql.NVarChar(20), mobno)
       .execute("chkLoginByPswd");
     const record = result.recordset?.[0];
-
+    console.log("Credential check result:", record);
     if (!record || !record.famid || !record.famnm) {
       return res.status(401).json({
         success: false,
@@ -819,9 +817,13 @@ app.post("/loginchk", asyncHandler (async (req, res) => {
     const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
     // 3) Generate verification token
     const verificationToken = crypto.randomUUID();
+    console.log("Generated OTP:", otpCode);
+    console.log("Generated verification token:", verificationToken);
     // 4) Expiry = 5 minutes
     const expiresAt = new Date(Date.now() + 5 * 60 * 1000);
-    const otpHash = await bcrypt.hash(otpCode, 10);    
+    console.log("OTP expires at:", expiresAt);
+    const otpHash = await bcrypt.hash(otpCode, 10);
+    console.log("Hashed OTP:", otpHash);    
     console.log("OTP plain:", otpCode);
     console.log("OTP hash:", otpHash);    
     // 5) Invalidate previous unused OTPs for same user (optional but recommended)
@@ -851,28 +853,31 @@ app.post("/loginchk", asyncHandler (async (req, res) => {
         VALUES (@verificationToken,@famid,@famnm,@emll,@mobno,@otpCode,@expiresAt,0,0,GETDATE())
       `);
     // 7) Send OTP email
-    await transporter.sendMail({
-      from: process.env.MAIL_USER,
-      to: emll,
+    // 7) Send email
+    console.log("Sending OTP email to:", record.EMAIL_ADDRESS);
+    console.log("Family Name:", record.FAMNM);
+     sendEmail({
+      to: record.eml,
       subject: "Your Login Verification Code",
       html: `
-      <font face="Calibri" size="3" color = "blue">
-      <h3>Dear Parent: ${record.famnm},</h3>
-      <br/>
-      <h3>Welcome to our portal,</h3>
-      <br/>
-      <p>Your verification OTP code is:</p>
-      <h2 style="letter-spacing: 4px;">${otpCode}</h2>
-      <br/>
-      <p>This OTP code will expire in 5 minutes.</p>
-      <br/>
-      <p>Maximum 3 attempts allowed.</p>
-      <br/>
-      <p>Finance Department - Fees Section</p>
-      <p>El Alsson School- </p>
-      <p>Best regards,</p>
-    `,          
+        <font face="Calibri" size="3" color="blue">
+          <h3>Dear Parent: ${record.famnm},</h3>
+          <br/>
+          <h3>Welcome to our portal,</h3>
+          <br/>
+          <p>Your verification OTP code is:</p>
+          <h2 style="letter-spacing: 4px;">${otpCode}</h2>
+          <br/>
+          <p>This OTP code will expire in 5 minutes.</p>
+          <br/>
+          <p>Maximum 3 attempts allowed.</p>
+          <br/>
+          <p>Finance Department - Fees Section</p>
+          <p>El Alsson School</p>
+          <p>Best regards,</p>
+        </font>`,
     });
+
     return res.json({
       success: true,
       otpRequired: true,
@@ -889,208 +894,121 @@ app.post("/loginchk", asyncHandler (async (req, res) => {
       error: err.message
     });
   }
-}));
+});
 
 // API to resend OTP code if expired or attempts exceeded
-app.post("/resend-login-code", asyncHandler(async (req, res) => {
+app.post("/resend-login-code", async (req, res) => {
   const { verificationToken } = req.body;
   if (!verificationToken) {
-    return res.status(400).json({
-    success: false,
-    message: "Missing verification token"
-  });
+    return res.status(400).json({ success: false, message: "Missing verification token" });
   }
 
   try {
     const pool = await sql.connect(sqlConfig);
-  // 1) Load existing OTP request
-  const result = await pool
-  .request()
-  .input("verificationToken", sql.NVarChar(100), String(verificationToken).trim())
-  .query(`SELECT TOP 1 OTP_ID,FAMID,FAMNM,EMAIL_ADDRESS,MOBILE_NUMBER,EXPIRES_AT,IS_USED,ATTEMPTS ,  
-    case is_used when 1 then 'True' else 'False' end as ussdd
-    FROM LOGIN_OTP_VERIFICATIONS WHERE VERIFICATION_TOKEN = @verificationToken
-  `);
-  const record = result.recordset?.[0];
-  if (!record) {
-  return res.status(400).json({
-    success: false,
-    message: "Invalid verification request"
-  });
-  }
-  // 2) Decide if resend is allowed
-  const isExpired = new Date() > new Date(record.EXPIRES_AT);
-  const attemptsExceeded = record.ATTEMPTS >= 3;
-  if (!isExpired && !attemptsExceeded) {
-  return res.status(400).json({
-    success: false,
-    message: "You can request a new code only after expiry or after exceeding maximum attempts"
-  });
-  }
-  // 3) Mark old OTP as used
-  await pool
-  .request()
-  .input("otpId", sql.Int, record.OTP_ID)
-  .query(`UPDATE LOGIN_OTP_VERIFICATIONS SET IS_USED = 1,USED_AT = GETDATE() WHERE OTP_ID = @otpId`);
-  // 4) Generate new OTP
-  const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
-  const otpHash = await bcrypt.hash(otpCode, 10);
-  console.log("OTP plain:", otpCode);
-  console.log("OTP hash:", otpHash);    
 
-  // 5) New token + expiry
-  const newVerificationToken = crypto.randomUUID();
-  const expiresAt = new Date(Date.now() + 5 * 60 * 1000);
-  // 6) Insert new OTP record
-  await pool
-  .request()
-  .input("verificationToken", sql.NVarChar(100), newVerificationToken)
-  .input("famid", sql.Int, record.FAMID || record.famid)
-  .input("famnm", sql.NVarChar(255), record.FAMNM || record.famnm)
-  .input("emll", sql.NVarChar(255), record.EMAIL_ADDRESS || record.email_address)
-  .input("mobno", sql.NVarChar(20), record.MOBILE_NUMBER || record.mobile_number)
-  .input("otpCode", sql.NVarChar(255), otpHash)
-  .input("expiresAt", sql.DateTime, expiresAt)
-  .query(`INSERT INTO LOGIN_OTP_VERIFICATIONS (VERIFICATION_TOKEN,FAMID,FAMNM,EMAIL_ADDRESS,MOBILE_NUMBER,OTP_CODE,
-    EXPIRES_AT,IS_USED,ATTEMPTS,CREATED_AT) VALUES
-    (@verificationToken,@famid,@famnm,@emll,@mobno,@otpCode,@expiresAt,0,0,GETDATE())
-  `);
+    // 1) Load existing OTP request
+    const result = await pool.request()
+      .input("verificationToken", sql.NVarChar(100), String(verificationToken).trim())
+      .query(`SELECT TOP 1 OTP_ID, FAMID, FAMNM, EMAIL_ADDRESS, MOBILE_NUMBER, EXPIRES_AT, IS_USED, ATTEMPTS 
+              FROM LOGIN_OTP_VERIFICATIONS WHERE VERIFICATION_TOKEN = @verificationToken`);
 
-  // 7) Send email
-  await transporter.sendMail({
-  from: process.env.MAIL_USER,
-  to: record.EMAIL_ADDRESS || record.email_address,
-  subject: "Your New Login Verification Code",
-  html: `
-    <div style="font-family: Calibri, Arial, sans-serif; color: #1f3c88;">
-      <h3>Dear Parent: ${record.FAMNM || record.famnm},</h3>
-      <p>You requested a new verification code.</p>
-      <p>Your new OTP code is:</p>
-      <h2 style="letter-spacing: 4px;">${otpCode}</h2>
-      <p>This OTP code will expire in 5 minutes.</p>
-      <p>Maximum 3 attempts allowed.</p>
-      <br/>
-      <p>Finance Department - Fees Section</p>
-      <p>El Alsson School</p>
-      <p>Best regards,</p>
-    </div>
-  `
-  });
-    // return res.json({
-    //   success: true,
-    //   otpRequired: true,
-    //   newVerificationToken,
-    //   expiresAt: expiresAt.toISOString(),
-    //   maxAttempts: 3,
-    //   message: "A new verification code has been sent to your email"
-    // });
+    const record = result.recordset?.[0];
+    if (!record) {
+      return res.status(400).json({ success: false, message: "Invalid verification request" });
+    }
 
-  return res.json({
-    success: true,
-    message: "A new verification code has been sent to your email",
-    verificationToken: newVerificationToken,
-    otpRequired: true,
-    expiresAt: expiresAt.toISOString(),
-    maxAttempts: 3
-  });
+    // 2) Check if resend allowed
+    const isExpired = new Date() > new Date(record.EXPIRES_AT);
+    const attemptsExceeded = record.ATTEMPTS >= 3;
+    if (!isExpired && !attemptsExceeded) {
+      return res.status(400).json({
+        success: false,
+        message: "You can request a new code only after expiry or after exceeding maximum attempts"
+      });
+    }
+
+    // 3) Mark old OTP as used
+    await pool.request()
+      .input("otpId", sql.Int, record.OTP_ID)
+      .query(`UPDATE LOGIN_OTP_VERIFICATIONS SET IS_USED = 1, USED_AT = GETDATE() WHERE OTP_ID = @otpId`);
+
+    // 4) Generate new OTP
+    const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
+    const otpHash = await bcrypt.hash(otpCode, 10);
+
+    // 5) New token + expiry
+    const newVerificationToken = crypto.randomUUID();
+    const expiresAt = new Date(Date.now() + 5 * 60 * 1000);
+
+    // 6) Insert new OTP record
+    await pool.request()
+      .input("verificationToken", sql.NVarChar(100), newVerificationToken)
+      .input("famid", sql.Int, record.FAMID)
+      .input("famnm", sql.NVarChar(255), record.FAMNM)
+      .input("emll", sql.NVarChar(255), record.EMAIL_ADDRESS)
+      .input("mobno", sql.NVarChar(20), record.MOBILE_NUMBER)
+      .input("otpCode", sql.NVarChar(255), otpHash)
+      .input("expiresAt", sql.DateTime, expiresAt)
+      .query(`INSERT INTO LOGIN_OTP_VERIFICATIONS 
+              (VERIFICATION_TOKEN,FAMID,FAMNM,EMAIL_ADDRESS,MOBILE_NUMBER,OTP_CODE,EXPIRES_AT,IS_USED,ATTEMPTS,CREATED_AT)
+              VALUES (@verificationToken,@famid,@famnm,@emll,@mobno,@otpCode,@expiresAt,0,0,GETDATE())`);
+
+    // 7) Send email
+    await sendEmail({
+      to: record.EMAIL_ADDRESS,
+      subject: "Your New Login Verification Code",
+      html: `
+        <font face="Calibri" size="3" color="blue">
+          <h3>Dear Parent: ${record.FAMNM},</h3>
+          <br/>
+          <p>Your verification OTP code is:</p>
+          <h2 style="letter-spacing: 4px;">${otpCode}</h2>
+          <br/>
+          <p>This OTP code will expire in 5 minutes.</p>
+          <p>Maximum 3 attempts allowed.</p>
+          <p>Finance Department - Fees Section</p>
+          <p>El Alsson School</p>
+        </font>`,
+    });
+
+    return res.json({
+      success: true,
+      message: "A new verification code has been sent to your email",
+      verificationToken: newVerificationToken,
+      otpRequired: true,
+      expiresAt: expiresAt.toISOString(),
+      maxAttempts: 3
+    });
 
   } catch (err) {
-  console.error("resend-login-code error:", err);
-  return res.status(500).json({
-  success: false,
-  message: "Server error",
-  error: err.message
-  });
+    console.error("resend-login-code error:", err);
+    return res.status(500).json({
+      success: false,
+      message: "Server error",
+      error: err.message
+    });
   }
-}));
+});
 
 //API to verify the OTP code sent to email, then create session/JWT if valid
-// app.post("/verify-login-code", async (req, res) => {
-//   const { verificationToken, OTP_Code } = req.body;
-
-//   try {
-//     const pending = pendingLoginOtps[verificationToken];
-
-//     if (!pending) {
-//       return res.status(400).json({
-//         success: false,
-//         message: "Invalid or expired verification request"
-//       });
-//     }
-
-//     if (Date.now() > pending.expiresAt) {
-//       delete pendingLoginOtps[verificationToken];
-//       return res.status(400).json({
-//         success: false,
-//         message: "Verification code expired"
-//       });
-//     }
-
-//     pending.attempts += 1;
-
-//     if (pending.attempts > 5) {
-//       delete pendingLoginOtps[verificationToken];
-//       return res.status(429).json({
-//         success: false,
-//         message: "Number of attempts exceeded. Please request a new verification code."
-//       });
-//     }
-
-//     if (pending.otp !== String(OTP_Code).trim()) {
-//       return res.status(401).json({
-//         success: false,
-//         message: "Invalid verification code, please try again"
-//       });
-//     }
-
-//     // OTP correct -> create final login/session/JWT
-//     // Example response (replace with your real token/session logic)
-//     const authPayload = {
-//       famid: pending.famid,
-//       famnm: pending.famnm,
-//       emll: pending.email,
-//       mobb: pending.mobile,
-//     };
-
-//     delete pendingLoginOtps[verificationToken];
-
-//     return res.json({
-//       success: true,
-//       message: "Login successful",
-//       user: authPayload
-//     });
-
-//   } catch (err) {
-//     console.error("verify-login-code error:", err);
-//     return res.status(500).json({
-//       success: false,
-//       message: "Server error"
-//     });
-//   }
-// });
-app.post("/verify-login-code", asyncHandler(async (req, res) => {
+app.post("/verify-login-code", async (req, res) => {
   const { verificationToken, code } = req.body;
-  console.log("Verification request received:", { verificationToken, code });
   if (!verificationToken || !code) {
     return res.status(400).json({
       success: false,
       message: "Missing verification token or code"
     });
   }
-  //verificationToken = String(verificationToken).trim();
-  console.log("Received verification request:", { verificationToken, code });
   try {
     const pool = await sql.connect(sqlConfig);
-
     const result = await pool
       .request()
       .input("verificationToken", sql.NVarChar(100), String(verificationToken).trim())
-      .query(`SELECT TOP 1 OTP_ID,FAMID,FAMNM,EMAIL_ADDRESS,MOBILE_NUMBER,OTP_CODE,EXPIRES_AT,IS_USED,ATTEMPTS ,  
-        case is_used when 1 then 'True' else 'False' end as ussdd 
-        FROM LOGIN_OTP_VERIFICATIONS WHERE VERIFICATION_TOKEN = @verificationToken`);
-
+      .query(`
+        SELECT TOP 1 OTP_ID,FAMID,FAMNM,EMAIL_ADDRESS,MOBILE_NUMBER,OTP_CODE,EXPIRES_AT,IS_USED, ATTEMPTS 
+        FROM LOGIN_OTP_VERIFICATIONS WHERE VERIFICATION_TOKEN = @verificationToken
+      `);
     const record = result.recordset?.[0];
-    console.log("DB record for verification:", record);
     if (!record) {
       return res.status(400).json({
         success: false,
@@ -1098,10 +1016,7 @@ app.post("/verify-login-code", asyncHandler(async (req, res) => {
         reason: "INVALID_REQUEST"
       });
     }
-    console.log(record.IS_USED)
-    console.log(record.ussdd)
-    //if (record.IS_USED) {
-    if (record.ussdd === 'True') {
+    if (record.IS_USED) {
       return res.status(400).json({
         success: false,
         message: "This verification code is no longer valid",
@@ -1109,12 +1024,11 @@ app.post("/verify-login-code", asyncHandler(async (req, res) => {
         allowResend: true
       });
     }
-
     if (new Date() > new Date(record.EXPIRES_AT)) {
       await pool
         .request()
         .input("otpId", sql.Int, record.OTP_ID)
-        .query(`UPDATE LOGIN_OTP_VERIFICATIONS SET IS_USED = 1, USED_AT = GETDATE() WHERE OTP_ID = @otpId`);
+        .query(`UPDATE LOGIN_OTP_VERIFICATIONS SET IS_USED = 1,USED_AT = GETDATE() WHERE OTP_ID = @otpId`);
 
       return res.status(400).json({
         success: false,
@@ -1124,12 +1038,11 @@ app.post("/verify-login-code", asyncHandler(async (req, res) => {
       });
     }
 
-    if ((record.ATTEMPTS || 0) >= 3) {
+    if (record.ATTEMPTS >= 3) {
       await pool
         .request()
         .input("otpId", sql.Int, record.OTP_ID)
-        .query(`
-          UPDATE LOGIN_OTP_VERIFICATIONS SET IS_USED = 1, USED_AT = GETDATE() WHERE OTP_ID = @otpId`);
+        .query(`UPDATE LOGIN_OTP_VERIFICATIONS SET IS_USED = 1,USED_AT = GETDATE() WHERE OTP_ID = @otpId`);
 
       return res.status(429).json({
         success: false,
@@ -1138,171 +1051,76 @@ app.post("/verify-login-code", asyncHandler(async (req, res) => {
         allowResend: true
       });
     }
-    console.log("Comparing OTP code:", { inputCode: String(code).trim(), dbHash: String(record.OTP_CODE).trim() });
     const isMatch = await bcrypt.compare(String(code).trim(),String(record.OTP_CODE).trim());
+
     if (!isMatch) {
+      // increment + auto-lock on 3rd bad try
       await pool
         .request()
         .input("otpId", sql.Int, record.OTP_ID)
-        .query(`UPDATE LOGIN_OTP_VERIFICATIONS SET ATTEMPTS = ATTEMPTS + 1,
+        .query(`
+          UPDATE LOGIN_OTP_VERIFICATIONS SET ATTEMPTS = ATTEMPTS + 1,
           IS_USED = CASE WHEN ATTEMPTS + 1 >= 3 THEN 1 ELSE IS_USED END,
-          USED_AT = CASE WHEN ATTEMPTS + 1 >= 3 THEN GETDATE() ELSE USED_AT END WHERE OTP_ID = @otpId
+          USED_AT = CASE WHEN ATTEMPTS + 1 >= 3 THEN GETDATE() ELSE USED_AT END
+          WHERE OTP_ID = @otpId
         `);
 
-      const nextAttempts = (record.ATTEMPTS || 0) + 1;
-      const lockedNow = nextAttempts >= 3;
+        const nextAttempts = (record.ATTEMPTS || 0) + 1;
+        const lockedNow = nextAttempts >= 3;
 
-      return res.status(401).json({
-        success: false,
-        message: lockedNow
-          ? "Number of attempts exceeded. Please request a new verification code."
-          : "Invalid verification code, please try again",
-        reason: lockedNow ? "ATTEMPTS_EXCEEDED" : "INVALID_CODE",
-        allowResend: lockedNow,
-        attemptsLeft: Math.max(0, 3 - nextAttempts)
-      });
+        return res.status(401).json({
+          success: false,
+          message: lockedNow
+            ? "Number of attempts exceeded. Please request a new verification code."
+            : "Invalid verification code, please try again",
+          reason: lockedNow ? "ATTEMPTS_EXCEEDED" : "INVALID_CODE",
+          allowResend: lockedNow,
+          attemptsLeft: Math.max(0, 3 - nextAttempts)
+        });
+      // const nextAttempts = (record.ATTEMPTS || 0) + 1;
+      // const lockedNow = nextAttempts >= 3;
+
+      // return res.status(401).json({
+      //   success: false,
+      //   message: lockedNow
+      //     ? "Number of attempts exceeded. Please request a new verification code."
+      //     : "Invalid verification code, please try again",
+      //   reason: lockedNow ? "ATTEMPTS_EXCEEDED" : "INVALID_CODE",
+      //   allowResend: lockedNow,
+      //   attemptsLeft: Math.max(0, 3 - nextAttempts)
+      // });
     }
 
-    // Successful verification -> mark OTP as used
+    // successful verification -> create session (replace with your real token/session logic)
     await pool
       .request()
       .input("otpId", sql.Int, record.OTP_ID)
-      .query(`
-        UPDATE LOGIN_OTP_VERIFICATIONS
-        SET IS_USED = 1, USED_AT = GETDATE()
-        WHERE OTP_ID = @otpId
-      `);
+      .query(`UPDATE LOGIN_OTP_VERIFICATIONS SET IS_USED = 1,USED_AT = GETDATE() WHERE OTP_ID = @otpId`);
 
-    // Regenerate session to prevent session fixation
-    // req.session.regenerate((regenErr) => {
-    //   if (regenErr) {
-    //     console.error("Session regenerate error:", regenErr);
-    //     return res.status(500).json({
-    //       success: false,
-    //       message: "Unable to create session"
-    //     });
-    //   }
-
-      // // Set session data INSIDE regenerate callback
-      // req.session.isAuthenticated = true;
-      // req.session.user = {
-      //   famid: record.FAMID,
-      //   famnm: record.FAMNM,
-      //   email: record.EMAIL_ADDRESS,
-      //   mobile: record.MOBILE_NUMBER,
-      //   authenticated: true,
-      //   loginAt: new Date().toISOString()
-      // };
- 
-    //   // Save session before responding
-    //   req.session.save((saveErr) => {
-    //     if (saveErr) {
-    //       console.error("Session save error:", saveErr);
-    //       return res.status(500).json({
-    //         success: false,
-    //         message: "Failed to save session"
-    //       });
-    //     }
-
-    //     return res.status(200).json({
-    //       success: true,
-    //       message: "Login successful",
-    //       user: {
-    //         famid: record.FAMID,
-    //         famnm: record.FAMNM,
-    //         emll: record.EMAIL_ADDRESS,
-    //         mobno: record.MOBILE_NUMBER
-    //       }
-    //     });
-    //   });
-    // });
-    return res.status(200).json({
+    return res.json({
       success: true,
-      message: "Login successful (session bypass test)",
-      user: //req.session.user
-      {
+      message: "Login successful",
+      user: {
         famid: record.FAMID,
         famnm: record.FAMNM,
         emll: record.EMAIL_ADDRESS,
         mobno: record.MOBILE_NUMBER
       }
     });
-  //  return res.json({
-  //     success: true,
-  //     message: "Login verified successfully",
-  //     user: req.session.user
-  //   });    
+
   } catch (err) {
     console.error("verify-login-code error:", err);
-    console.error("verify-login-code stack:", err?.stack);
-    console.error("Request body:", req.body);    
     return res.status(500).json({
       success: false,
       message: "Server error"
     });
   }
-}));
-// //API to logout and destroy session
-// app.post("/logout", (req, res) => {
-//   if (!req.session) {
-//     return res.json({
-//       success: true,
-//       message: "Logged out"
-//     });
-//   }
+});
 
-//   req.session.destroy((err) => {
-//     if (err) {
-//       console.error("Logout error:", err);
-//       return res.status(500).json({
-//         success: false,
-//         message: "Logout failed"
-//       });
-//     }
-
-//     res.clearCookie("alsson.sid", {
-//       httpOnly: true,
-//       secure: isProduction,
-//       sameSite: isProduction ? "none" : "lax"
-//     });
-
-//     return res.json({
-//       success: true,
-//       message: "Logged out successfully"
-//     });
-//   });
-// });
-// //API to test protected route
-// app.get("/protected-test",  (req, res) => {
-//   res.json({
-//     success: true,
-//     message: "You are authenticated",
-//     //user: req.session.user
-//     user: {
-//       famid: record.FAMID,
-//       famnm: record.FAMNM,
-//       emll: record.EMAIL_ADDRESS,
-//       mobno: record.MOBILE_NUMBER
-//     }    
-
-//   });
-// });
-// //API to get current logged in user info 
-// app.get("/me",  (req, res) => {
-//   return res.json({
-//     success: true,
-//     user: {
-//       famid: req.session.user.famid,
-//       famnm: req.session.user.famnm,
-//       email: req.session.user.email,
-//       mobile: req.session.user.mobile
-//     }
-//   });
-// });
 // --- Banks API
 app.get("/banks", async (req, res) => {
   try {
-    const pool = await sql.connect(sqlConfig);
+    const pool = await poolPromise;
     const result = await pool.request().query(
       "SELECT BANKID, BANKNAME FROM [FEESFORMSSETUP] ORDER BY BANKNAME"
     );
@@ -1316,13 +1134,13 @@ app.get("/banks", async (req, res) => {
 //GET WHOLE FFES SITUATION FOR THE SELECTED STUDENT
 app.post('/getstfees', async (req, res) => {
   const { famid, curstid, onlyRem } = req.body;
-  console.log(req.body);
-  if (!famid || !curstid ) {
+
+  if (!famid || !curstid || !onlyRem) {
     return res.status(400).json({ message: 'Missing required fields' });
   }
 
   try {
-    const pool = await sql.connect(sqlConfig);
+    const pool = await poolPromise;
     const result = await pool
       .request()
       .input('famid', sql.Int, famid)
@@ -1330,7 +1148,6 @@ app.post('/getstfees', async (req, res) => {
       .input('onlyRem', sql.Int, onlyRem)
       .execute('sp_GetStFees');
       const records = result.recordset;      
-      console.log("records:", records);
       if (records && records.length > 0) {
         res.json(records); // ✅ sends array
       } else {
@@ -1351,7 +1168,7 @@ app.post('/getstpayhist', async (req, res) => {
     return res.status(400).json({ message: 'Missing required fields' });
   }
   try {
-    const pool = await sql.connect(sqlConfig);
+    const pool = await poolPromise;
     const result = await pool
       .request()
       .input('famid', sql.Int, famid)
@@ -1379,7 +1196,7 @@ app.post('/settlefees', async (req, res) => {
   }
 
   try {
-    const pool = await sql.connect(sqlConfig);
+    const pool = await poolPromise;
 
     // SETTLE FEES PAYMENTS FOR THE CURRENT STUDENT
     await pool
@@ -1592,6 +1409,9 @@ app.post("/generate-receipt", async (req, res) => {
   }
 });
 
+
+
+
 // Main endpoint to send email
 app.post("/send-receipt-email", async (req, res) => {
   try {
@@ -1677,7 +1497,19 @@ app.post("/send-receipt-email", async (req, res) => {
       ]
     };
 
-    await transporter.sendMail(mailOptions);
+    //await transporter.sendMail(mailOptions);
+    await sendEmail({
+      to: process.env.SMTP_USER,
+      subject: `Payment Receipt ${receiptData.merchant_reference}`,
+      html: emailHtml,
+      attachments: [
+        {
+          filename: `receipt-${receiptData.merchant_reference}.pdf`,
+          mimeType: "application/pdf",
+          content: pdfBuffer
+        }
+      ]
+    });
 
     res.json({ success: true });
   } catch (err) {
@@ -1685,144 +1517,6 @@ app.post("/send-receipt-email", async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
-
-
-// app.post("/send-receipt-email", async (req, res) => {
-//   try {
-//     const { receiptData } = req.body;
-
-//     if (!receiptData?.parentEmail || !receiptData?.amount) {
-//       return res.status(400).json({ error: "Invalid receiptData" });
-//     }
-
-//     const pdfBuffer = await generateReceiptPDF(receiptData);
-
-//     const mailOptions = {
-//       from: `"El Alsson School" <${process.env.VITE_SMTP_USER}>`,
-//       to: "fees@alsson.com",
-//       subject: `Payment Receipt ${receiptData.merchant_reference}`,
-//       text: "Please find the payment receipt attached.",
-//       attachments: [
-//         {
-//           filename: `receipt-${receiptData.merchant_reference}.pdf`,
-//           content: pdfBuffer,
-//           contentType: "application/pdf"
-//         }
-//       ]
-//     };
-
-//     await transporter.sendMail(mailOptions);
-
-//     res.json({ success: true });
-//   } catch (err) {
-//     console.error("Email error:", err);
-//     res.status(500).json({ error: err.message });
-//   }
-// });
-
-
-
-// export async function generateReceiptPDF(data) {
-//   console.log("Generating receipt PDF with data:", data);
-//   return new Promise((resolve, reject) => {
-//     try {
-//       const RECEIPTS_DIR = path.join(process.cwd(), "public", "receipts");
-//       if (!fs.existsSync(RECEIPTS_DIR)) fs.mkdirSync(RECEIPTS_DIR, { recursive: true });
-
-//       const filename = `receipt_${data.merchant_reference || data.fort_id}.pdf`;
-//       const filePath = path.join(RECEIPTS_DIR, filename);
-//       const publicUrl = `/receipts/${filename}`;
-
-//       const doc = new PDFDocument({
-//         size: "A4",
-//         margin: 10,
-//       });
-
-//       const stream = fs.createWriteStream(filePath);
-//       doc.pipe(stream);
-
-//       const primaryColor = "#0C3C78"; // School theme color
-
-//       // -----------------------------------------------------------
-//       // Header with Logo
-//       // -----------------------------------------------------------
-//       console.log("Logo path:", data.logoPath);
-//       if (data.logoPath && fs.existsSync(data.logoPath)) {
-//         doc.image(data.logoPath, 40, 40, { width: 90 });
-//       }
-
-//       doc
-//         .fontSize(20)
-//         .fillColor(primaryColor)
-//         .text("El Alsson School – Payment Receipt",  35, 45);
-
-//       doc
-//         .fontSize(10)
-//         .fillColor("black")
-//         .text(`Date: ${data.date}`, 35, 75);
-
-//       doc.moveDown(2);
-
-//       // -----------------------------------------------------------
-//       // Section Title
-//       // -----------------------------------------------------------
-//       doc
-//         .fontSize(16)
-//         .fillColor(primaryColor)
-//         .text("Receipt Details", { underline: true });
-
-//       doc.moveDown(1.5);
-
-//       // -----------------------------------------------------------
-//       // Summary Box
-//       // -----------------------------------------------------------
-//       drawBoxTitle(doc, "Payment Summary");
-
-//       doc
-//         .fontSize(12)
-//         .fillColor("black")
-//         .text(`Parent Email: ${data.parentEmail}`)
-//         .moveDown(0.3)
-//         .text(`Amount Paid: ${data.amount} EGP`)
-//         .moveDown(1);
-
-//       // -----------------------------------------------------------
-//       // Transaction Table
-//       // -----------------------------------------------------------
-//       drawBoxTitle(doc, "Transaction Information");
-
-//       const rows = [
-//         ["Transaction ID", data.fort_id],
-//         ["Order Reference", data.merchant_reference],
-//         ["Status", data.status],
-//         ["Message", data.response_message],
-//         ["Transaction Date", data.date],
-//       ];
-
-//       drawTable(doc, rows, 12);
-
-//       // -----------------------------------------------------------
-//       // Footer
-//       // -----------------------------------------------------------
-//       doc.moveDown(3);
-//       doc
-//         .fontSize(10)
-//         .fillColor("#555")
-//         .text("This receipt is automatically generated by El Alsson School - Online Fees Portal.",35, 400)
-//         // .moveDown(0.5)
-//         // .text("If you have questions, please contact: fees@alsson.com");
-
-//       doc.end();
-
-//       stream.on("finish", () => {
-//         resolve({ filePath, publicUrl });
-//       });
-//       stream.on("error", reject);
-//     } catch (err) {
-//       reject(err);
-//     }
-//   });
-// }
 
 export async function generateReceiptPDFWhatsApp(data) {
   return new Promise((resolve, reject) => {
@@ -1931,76 +1625,6 @@ function drawTable(doc, rows, fontSize = 12) {
   doc.moveDown(2);
 }
 
-// // ---------- LOG PAYMENT ACTION ----------
-// async function keepTrackPaymentAction(paymentItems) {
-//   const pool = await sql.connect(sqlConfig);
-//   const transaction = new sql.Transaction(pool);
-
-//   try {
-//     await transaction.begin();
-
-//     const request = new sql.Request(transaction);
-
-//     // DELETE first
-//     await request
-//       .input("CURYEAR", sql.VarChar, paymentItems.curyear)
-//       .input("S_CODE", sql.VarChar, paymentItems.stid)
-//       .input("FAMID", sql.Int, paymentItems.famid)
-//       .input("SCHOOLID", sql.Int, paymentItems.schoolId)
-//       .input("INSTCODE", sql.Int, paymentItems.instCode)
-//       .input("FACENAME", sql.VarChar, paymentItems.facename)
-//       .query(`
-//         DELETE FROM APSTRANS
-//         WHERE CURYEAR=@CURYEAR
-//           AND S_CODE=@S_CODE
-//           AND FAMID=@FAMID
-//           AND SCHOOLID=@SCHOOLID
-//           AND InstCode=@INSTCODE
-//           AND FACENAME=@FACENAME
-//           AND SETTLED=0
-//       `);
-
-//     // INSERT
-//     await request
-//       .input("PAIDAMOUNT", sql.Numeric, paymentItems.amount)
-//       .input("TRNSDT", sql.Date, new Date())
-//       .query(`
-//         INSERT INTO APSTRANS
-//           (CURYEAR,S_CODE,FAMID,SCHOOLID,InstCode,FACENAME,PAIDAMOUNT,TRNSDT,SETTLED)
-//         VALUES
-//           (@CURYEAR,@S_CODE,@FAMID,@SCHOOLID,@INSTCODE,@FACENAME,@PAIDAMOUNT,@TRNSDT,0)
-//       `);
-
-//     await transaction.commit();
-//     console.log("Payment logged:", paymentItems.instCode);
-//   } catch (err) {
-//     await transaction.rollback();
-//     console.error("SQL Error:", err);
-//     throw err;
-//   }
-// }
-
-// app.post("/log-payment", async (req, res) => {
-//   const { paymentItems } = req.body;
-
-//   console.log("Incoming items:", paymentItems);
-
-//   if (!Array.isArray(paymentItems) || !paymentItems.length) {
-//     return res.status(400).json({ message: "paymentItems array is required" });
-//   }
-
-//   try {
-//     for (const item of paymentItems) {
-//       await keepTrackPaymentAction(item);
-//     }
-
-//     res.json({ success: true });
-//   } catch (err) {
-//     res.status(500).json({ success: false, message: err.message });
-//   }
-// });
-
-
 // Endpoint to generate WhatsApp link
 app.post("/generate-whatsapp-link", (req, res) => {
   try {
@@ -2039,21 +1663,20 @@ app.post("/generate-whatsapp-link", (req, res) => {
   }
 });
 
-
+app.get("/health", (req, res) => {
+  res.json({ ok: true });
+});
 app.get("/hello", (req, res) => {
   res.json({ message: "Hello from Vercel!" });
 });
 // --- Start Server
-// if (process.env.NODE_ENV !== "production") {
-//   const PORT = process.env.VITE_PORT || 3000;
-//   app.listen(PORT, () => {
-//     console.log(`Server running on port ${PORT}`);
-//   });
-// }
-app.listen(port, () => {
-  console.log(`Server running on port ${port}`);
-  console.log(`Environment: ${process.env.NODE_ENV || "development"}`);
-  console.log(`Allowed origins:`, allowedOrigins);
+
+const PORT = process.env.VITE_PORT || 3000;
+
+app.listen(PORT, "0.0.0.0", () => {
+  console.log(`🚀 Server running on port ${PORT}`);
 });
 
-export default app;
+
+
+//export default app;

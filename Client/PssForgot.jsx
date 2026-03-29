@@ -63,8 +63,8 @@ function PssForgot() {
   }
 
 
-  localStorage.removeItem("curFmNo");
-  localStorage.removeItem("curFmNm");
+  // localStorage.removeItem("curFmNo");
+  // localStorage.removeItem("curFmNm");
 
   const handleChangeOnlyNo = (e) => {
     setRegMob(e.target.value)

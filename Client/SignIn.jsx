@@ -10,6 +10,7 @@ import { EyeInvisibleOutlined, EyeTwoTone } from '@ant-design/icons';
 import { Typography } from 'antd';
 import { Link } from 'react-router-dom'
 import { useNavigate } from "react-router-dom";
+
 //const { Link } = Typography;
 import '../Client/SignUp.jsx'
 import '../Client/PssForgot.jsx'
@@ -21,11 +22,14 @@ var EmlRegExp = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
 var pswdRegExp = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!_@#$%^&*]).{10,}$/;
 
 
-export default function SignIn() {
-  
+export default function SignIn({setIsAuthenticated, setUserData }) 
+{
   useEffect(() => {
     localStorage.clear();
   }, []);
+
+  const [otpDigits, setOtpDigits] = useState(["", "", "", "", "", ""]);
+  const otpRefs = useRef([]);  
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   // const [message, setMessage] = useState("");
@@ -51,13 +55,14 @@ export default function SignIn() {
   const navigate = useNavigate()
   const emlRef = useRef(null);
   const mobRef = useRef(null);
+  const pswdRef = useRef(null);
   const YrNmm = import.meta.env.VITE_CUR_YEAR
   // const REACT_PORT = import.meta.env.VITE_PORT || 3000;
   // const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000/api";
   //Define state variables for OTP login flow
   const [isOtpStep, setIsOtpStep] = useState(false);
   const [verificationToken, setVerificationToken] = useState("");
-  const [verificationCode, setVerificationCode] = useState("");
+  // const [verificationCode, setVerificationCode] = useState("");
   const [isSubmittingLogin, setIsSubmittingLogin] = useState(false);
   const [isVerifyingCode, setIsVerifyingCode] = useState(false);
   const [otpError, setOtpError] = useState("");  
@@ -71,7 +76,7 @@ export default function SignIn() {
   const [timeLeft, setTimeLeft] = useState(0);              // seconds remaining
   const [attemptsLeft, setAttemptsLeft] = useState(3);      // start with 3
   const [maxAttempts, setMaxAttempts] = useState(3);
-
+  const shouldRefocusOtp = useRef(false);
   const [messageApi, contextHolder] = antdMessage.useMessage();
   //API base URL from environment variable
   const API_BASE = `${import.meta.env.VITE_API_URL}`;
@@ -81,13 +86,13 @@ export default function SignIn() {
   // console.log(API_URL)
   // console.log(YrNmm)
   //console.log(API_BASE) 
+  
   //To check the family login using mobile number
-
   useEffect(() => {
     const handleMobileCheck = async () => {
       const mobileValue = String(regMob || "").trim();
       const yearValue = String(YrNmm || "").trim();
-
+      console.log(mobileValue, yearValue);
       // 1) Empty field -> no API call, no error
       if (mobileValue === "") {
         setErrors((prev) => ({ ...prev, mobile: "" }));
@@ -159,6 +164,19 @@ export default function SignIn() {
     };
     handleMobileCheck();
   }, [regMob, YrNmm]);
+  //To auto-focus first OTP input when OTP section is shown, and also refocus if user clears all OTP inputs
+  useEffect(() => {
+  const allEmpty = otpDigits.every((d) => d === "");
+
+  if (showOtpSection && allEmpty && shouldRefocusOtp.current) {
+    const timer = setTimeout(() => {
+      otpRefs.current[0]?.focus();
+      shouldRefocusOtp.current = false;
+    }, 0);
+
+    return () => clearTimeout(timer);
+  }
+}, [otpDigits, showOtpSection]);
   //To allow only digits in mobile input and auto-clear dependent fields while editing
   const handleMobileChange = (e) => {
     const onlyDigits = e.target.value.replace(/\D/g, "").slice(0, 11);
@@ -176,65 +194,74 @@ export default function SignIn() {
   };
   // To check the family login using email address
   useEffect(() => {
-    const handleEmailBlur = async () => {
-      if (regEmll === '') {
-        setErrors((prev) => ({ ...prev, email: "" }));
-      }
-      //if (!regEmll) return; // don’t run if empty
-      if (!EmlRegExp.test(regEmll) && regEmll !== '') {
-        setErrors((prev) => ({ ...prev, email: "Invalid Email Address" }));
-        setFmEml(""); // clear previous valid email
+  const handleEmailBlur = async () => {
+    const email = String(regEmll || "").trim();
+    const year = String(YrNmm || "").trim();
+
+    if (!email) {
+      setErrors((prev) => ({ ...prev, email: "" }));
+      setFmEml("");
+      return;
+    }
+
+    if (!year) {
+      console.log("YrNmm missing:", YrNmm);
+      return;
+    }
+
+    if (!EmlRegExp.test(email)) {
+      setErrors((prev) => ({ ...prev, email: "Invalid Email Address" }));
+      setFmEml("");
+      return;
+    }
+
+    try {
+      setErrors((prev) => ({ ...prev, email: "" }));
+
+      const res = await fetch(`${API_BASE}/chkLoginByEml`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          yr: year,
+          emll: email,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        console.error("Backend returned error:", data);
+        setFmEml("");
+        setErrors((prev) => ({
+          ...prev,
+          email: data.message || "Server error",
+        }));
         return;
-      } 
-      // else {
-      //   setFmEml("");
-      //   if (regEmll !== '') {
-      //   setErrors((prev) => ({ ...prev, email: "Unregistered Email Address" }));
-      //   }
-      //   else {
-      //     setErrors((prev) => ({ ...prev, email: "" }));
-      //   }
-      // }
-
-      try {
-        setErrors((prev) => ({ ...prev, email: "" }));
-        //const res = await fetch("http://localhost:3000/api/chkLoginByEml", {
-        const res = await fetch(`${API_BASE}/chkLoginByEml`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            yr: YrNmm,
-            emll: String(regEmll).trim(),
-          }),
-        });
-
-        const data = await res.json();
-        //console.log(data);
-
-        if (data && data.famid && data.famnm) {
-          setFmEml(data.famid);
-          setFmDtt(data)
-          console.log(data.famid, data.famnm);
-          setErrors((prev) => ({ ...prev, email: "" }));
-        } else {
-          setFmEml("");
-          console.log("Unregistered Email Address");
-          if (regEmll !== '') {
-          setErrors((prev) => ({ ...prev, email: "Unregistered Email Address" }));
-          }
-          else {
-            setErrors((prev) => ({ ...prev, email: "" }));
-          }          
-          // setErrors((prev) => ({ ...prev, email: "Unregistered Email Address" }));
-        }
-      } catch (err) {
-        console.error("Error fetching family data:", err);
-        setErrors((prev) => ({ ...prev, email: "Server error" }));
       }
-    };
 
-    handleEmailBlur();
-  }, [regEmll]); //  
+      if (data && data.famid && data.famnm) {
+        setFmEml(data.famid);
+        setFmDtt(data);
+        console.log(data.famid, data.famnm);
+        setErrors((prev) => ({ ...prev, email: "" }));
+          // focus email only after success
+        setTimeout(() => pswdRef.current?.focus(), 100);
+
+      } else {
+        setFmEml("");
+        setErrors((prev) => ({
+          ...prev,
+          email: "Unregistered Email Address",
+        }));
+      }
+    } catch (err) {
+      console.error("Error fetching family data:", err);
+      setErrors((prev) => ({ ...prev, email: "Server error" }));
+    }
+  };
+
+  handleEmailBlur();
+}, [regEmll, YrNmm]);
   //To manage OTP expiration countdown and auto-enable resend option when expired 
   useEffect(() => {
     if (!otpExpiresAt || !showOtpSection) {
@@ -421,7 +448,21 @@ export default function SignIn() {
   // console.log(fmEml)
   // console.log(fmMob)
   // console.log(pswdRegExp.test(pss))
+  const resetOtpAndFocusFirst = () => {
+    setOtpDigits(["", "", "", "", "", ""]);
+    setOtpError("");
 
+    setTimeout(() => {
+      setTimeout(() => {
+        otpRefs.current[0]?.focus();
+      }, 0);
+    }, 0);
+  };
+  // Handle resend OTP flow, with similar logic to initial login but only for OTP
+  const resetOtpAndFocus = () => {
+  shouldRefocusOtp.current = true;
+  setOtpDigits(["", "", "", "", "", ""]);
+};
   //Handle login submission using email, mobile and password, then trigger OTP flow if credentials are valid
   const handleLoginChk = async () => {
     if (isSubmittingLogin || !isFormValid) return;
@@ -433,6 +474,7 @@ export default function SignIn() {
         headers: {
           "Content-Type": "application/json"
         },
+        //credentials: "include",
         body: JSON.stringify({
           yr: YrNmm,
           emll: String(regEmll).trim(),
@@ -454,8 +496,9 @@ export default function SignIn() {
 
       if (data.otpRequired && data.verificationToken) {
         setVerificationToken(data.verificationToken);
+        console.log("Received verification token:", data.verificationToken);
         setIsOtpStep(true);
-        setVerificationCode("");
+        //setVerificationCode("");
         setOtpError("");
         setShowOtpSection(true);
         //setOtpCode("");
@@ -465,11 +508,13 @@ export default function SignIn() {
         setMaxAttempts(data.maxAttempts || 3);
         setAttemptsLeft(data.maxAttempts || 3);        
 
+        setTimeout(() => {
+          otpRefs.current[0]?.focus();
+        }, 100);
         messageApi.open({
           type: "success",
           content: "Verification code sent to your email"
         });
-
         // keep button disabled in OTP mode by design until verify/reload
         setIsSubmittingLogin(false);
         return;
@@ -491,76 +536,146 @@ export default function SignIn() {
     }
   };
 
-  //Handle OTP verification submission, then finalize login if OTP is valid
-  const handleVerifyCode = async () => {
-    if (isVerifyingCode) return;
+  //Unified handler for OTP input changes, auto-focus, and paste support
+  const handleOtpChange = (value, index) => {
+  const digit = value.replace(/\D/g, "").slice(-1);
 
-    if (!verificationCode || verificationCode.trim().length !== 6) {
-      setOtpError("Please enter the 6-digit verification code");
+  const newOtp = [...otpDigits];
+  newOtp[index] = digit;
+  setOtpDigits(newOtp);
+  setOtpError("");
+
+  if (digit && index < 5) {
+    otpRefs.current[index + 1]?.focus();
+  }
+
+  // if (digit && index === 5) {
+  //   const fullCode = newOtp.join("");
+
+  //   if (fullCode.length === 6 && !newOtp.includes("") && !isVerifyingCode) {
+  //     setTimeout(() => {
+  //       handleVerifyCode(fullCode);
+  //     }, 100);
+  //   }
+  // }
+if (digit && index === 5) {
+  const fullCode = newOtp.join("");
+
+  console.log("Last digit entered:", digit);
+  console.log("newOtp:", newOtp);
+  console.log("fullCode:", fullCode);
+  console.log("includes empty?", newOtp.includes(""));
+
+  if (!newOtp.includes("")) {
+    setTimeout(() => {
+      console.log("Triggering auto verify...");
+      handleVerifyCode(fullCode);
+    }, 150);
+  }
+}  
+};
+  // Handle backspace to move focus back
+  const handleOtpKeyDown = (e, index) => {
+    // if backspace on empty input, move to previous
+    if (e.key === "Backspace" && !otpDigits[index] && index > 0) {
+      otpRefs.current[index - 1]?.focus();
+    }
+  };
+  // Handle paste of full OTP code
+  const handleOtpPaste = (e) => {
+    e.preventDefault();
+    const pasted = e.clipboardData.getData("text").replace(/\D/g, "").slice(0, 6);
+
+    if (!pasted) return;
+
+    const newOtp = ["", "", "", "", "", ""];
+
+    for (let i = 0; i < pasted.length; i++) {
+      newOtp[i] = pasted[i];
+    }
+
+    setOtpDigits(newOtp);
+
+    const nextIndex = Math.min(pasted.length, 5);
+    otpRefs.current[nextIndex]?.focus();
+  };
+  // Combine OTP digits into a single code string for submission
+  const verificationCode = otpDigits.join("");
+  //Handle OTP verification submission, then finalize login if OTP is valid
+  const handleVerifyCode = async (codeOverride = null) => {
+  if (isVerifyingCode) return;
+
+  const codeToVerify = codeOverride || otpDigits.join("");
+
+  console.log("handleVerifyCode running with:", codeToVerify);
+
+  if (!codeToVerify || codeToVerify.trim().length !== 6) {
+    setOtpError("Please enter the 6-digit verification code");
+    return;
+  }
+
+  setIsVerifyingCode(true);
+  setOtpError("");
+
+  try {
+    const res = await fetch(`${API_BASE}/verify-login-code`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        verificationToken,
+        code: codeToVerify.trim()
+      })
+    });
+
+    const data = await res.json();
+
+    if (!res.ok || !data.success) {
+      setOtpError(data.message || "Invalid verification code");
+
+      if (typeof data.attemptsLeft === "number") {
+        setAttemptsLeft(data.attemptsLeft);
+      }
+
+      if (data.allowResend || data.reason === "ATTEMPTS_EXCEEDED") {
+        setShowResendOtp(true);
+      } else {
+        setShowResendOtp(false);
+      }
+
+      resetOtpAndFocus();
       return;
     }
 
-    setIsVerifyingCode(true);
     setOtpError("");
+    setOtpDigits(["", "", "", "", "", ""]);
+    setShowResendOtp(false);
+    setTimeLeft(0);
+    setIsOtpStep(false);
+    setShowOtpSection(false);
+    setVerificationToken("");
 
-    try {
-      const res = await fetch(`${API_BASE}/verify-login-code`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          verificationToken,
-          code: verificationCode.trim()
-        })
-      });
+    sessionStorage.setItem("isAuthenticated", "true");
+    sessionStorage.setItem("userData", JSON.stringify(data.user));
 
-      const data = await res.json();
+    setIsAuthenticated(true);
+    setUserData(data.user);
 
-      // ❌ Failed verification
-      if (!res.ok || !data.success) {
-        setOtpError(data.message || "Invalid verification code");
+    messageApi.open({
+      type: "success",
+      content: "Login to our portal is successful"
+    });
 
-        // IMPORTANT: update attempts left from backend
-        if (typeof data.attemptsLeft === "number") {
-          setAttemptsLeft(data.attemptsLeft);
-        }
-
-        // IMPORTANT: show resend immediately when attempts exceeded
-        if (data.allowResend || data.reason === "ATTEMPTS_EXCEEDED") {
-          setShowResendOtp(true);
-        } else {
-          setShowResendOtp(false);
-        }
-
-        setIsVerifyingCode(false);
-        return;
-      }
-
-      // ✅ SUCCESS: login approved only here
-      setOtpError("");
-      setShowResendOtp(false);
-      setTimeLeft(0);
-
-      localStorage.setItem("isAuthenticated", "true");
-      localStorage.setItem("loggedFamid", String(data.user.famid));
-      localStorage.setItem("loggedFamNm", data.user.famnm || "");
-      localStorage.setItem("loggedEmail", data.user.emll || "");
-      localStorage.setItem("loggedMobile", data.user.mobno || "");
-
-      messageApi.open({
-        type: "success",
-        content: "Login to our portal is successful"
-      });
-
-      navigate("/fminfo");
-
-    } catch (err) {
-      console.error("OTP verify error:", err);
-      setOtpError("Server error");
-      setIsVerifyingCode(false);
-    }
-  };
+    navigate("/fminfo");
+  } catch (err) {
+    console.error("OTP verify error:", err);
+    setOtpError("Server error");
+    resetOtpAndFocus();
+  } finally {
+    setIsVerifyingCode(false);
+  }
+};
   //Create a unified submit handler that checks the login credentials first, then triggers OTP verification if valid, or directly finalizes login if OTP step is not needed
   const handleSubmitAction = async () => {
   if (!isOtpStep) {
@@ -612,6 +727,8 @@ export default function SignIn() {
 // };
 
 const handleResendOtp = async () => {
+  console.log("verification token:", verificationToken);
+
   if (!verificationToken) return;
   try {
     setIsResendingOtp(true);
@@ -622,6 +739,8 @@ const handleResendOtp = async () => {
       headers: {
         "Content-Type": "application/json"
       },
+      //credentials: "include",
+
       body: JSON.stringify({
         verificationToken
       })
@@ -633,18 +752,26 @@ const handleResendOtp = async () => {
       setOtpError(data.message || "Unable to resend OTP");
       return;
     }
+    console.log("Received verification token:", data.verificationToken);
 
     // IMPORTANT: replace old token with NEW token
     setVerificationToken(data.verificationToken);
     //setOtpCode("");
-    setVerificationCode("");
+    //setVerificationCode("");
     setShowResendOtp(false);
 
     // reset countdown + attempts
     setOtpExpiresAt(data.expiresAt || null);
     setMaxAttempts(data.maxAttempts || 3);
     setAttemptsLeft(data.maxAttempts || 3);
-    setOtpError("A new verification code has been sent to your email");
+    //setOtpError("A new verification code has been sent to your email");
+    //clear OTP inputs
+    setOtpDigits(["", "", "", "", "", ""]);
+    messageApi.open({
+      type: "success",
+      content: "Verification code sent to your email"
+    });
+
   } catch (err) {
     console.error(err);
     setOtpError("Server error while resending OTP");
@@ -708,7 +835,7 @@ const handleResendOtp = async () => {
             iconRender={(visible) => visible ? <EyeTwoTone /> : <EyeInvisibleOutlined />}
             onChange={(e) => setPss(e.target.value)} onKeyUp={pswdExst} /> */}
           <Input.Password id="pss1" placeholder="password" disabled={isOtpStep} className={`inp_1 ${isPasswordInvalid ? "inp-password-error" : ""}`}
-          maxLength={10} value={pss} iconRender={(visible) => (visible ? <EyeTwoTone /> : <EyeInvisibleOutlined />)}
+          maxLength={10} ref={pswdRef} value={pss} iconRender={(visible) => (visible ? <EyeTwoTone /> : <EyeInvisibleOutlined />)}
           onChange={(e) => { setPssTouched(true); setPss(e.target.value);}} onBlur={() => setPssTouched(true)} onKeyUp={pswdExst}
           />
           { !fmpss ? (<label className="lblworn">{errors.password}</label>) :
@@ -719,10 +846,34 @@ const handleResendOtp = async () => {
         {/* OTP Code Input */}
         {isOtpStep && (
           <div className="otpdiv">
-            <input type="text" inputMode="numeric" maxLength={6} className={`inp ${otpError ? "inp-error" : ""}`}
+            {/* <input type="text" inputMode="numeric" maxLength={6} className={`inp ${otpError ? "inp-error" : ""}`}
             placeholder="Enter 6-digit verification code" value={verificationCode} disabled={timeLeft === 0 && showResendOtp}
             onChange={(e) => {const digitsOnly = e.target.value.replace(/\D/g, ""); setVerificationCode(digitsOnly); setOtpError("");}}
-            />
+            /> */}
+            <div style={{ display: "flex", gap: "8px", justifyContent: "center", marginBottom: "8px", marginLeft:"10px" }}>
+              {otpDigits.map((digit, index) => (
+                <input
+                  key={index}
+                  ref={(el) => (otpRefs.current[index] = el)}
+                  type="text"
+                  inputMode="numeric"
+                  maxLength={1}
+                  value={digit}
+                  onChange={(e) => handleOtpChange(e.target.value, index)}
+                  onKeyDown={(e) => handleOtpKeyDown(e, index)}
+                  onPaste={handleOtpPaste}
+                  style={{
+                    width: "35px",
+                    height: "35px",
+                    textAlign: "center",
+                    fontSize: "18px",
+                    border: "1px solid #ccc",
+                    borderRadius: "8px",
+                    outline: "none",
+                  }}
+                />
+              ))}
+            </div>            
             {otpError && (<label className="lblworn" style={{ color: "red" }}> {otpError}</label>)}
           </div>
         )}        

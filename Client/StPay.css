@@ -169,15 +169,15 @@
     position: absolute;
     top: 0;
     left: 0;
-    width: 100%;
-    transform: scale(0.9); /* adjust if needed: 0.7–0.75 usually fits */
+    max-width: 100%;
+    transform: scale(1) !important; /* adjust if needed: 0.7–0.75 usually fits */
     transform-origin: top left;
     font-size: 10pt;
     line-height: 1.1;
     overflow: visible !important;
     margin: 0 !important;
     padding: 0 !important;
-    size: A4 landscape !important;
+    size: A4 portrait !important;
    }
      @page {
     size: landscape;
@@ -200,7 +200,7 @@
   }
 
 .hdrr{margin-bottom: 20px; font-size: 20px;}
-.paytbb{width: 100% !important; font-size: 12px !important; }
+.paytbb{  width: 100% !important; font-size: 12px !important; }
 }
 
 /* .tbb{width: 1600;} */

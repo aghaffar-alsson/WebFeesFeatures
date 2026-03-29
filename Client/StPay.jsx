@@ -4,18 +4,41 @@ import { Table, Typography, Spin, Alert, Button, message , Tooltip} from 'antd'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faHouse } from '@fortawesome/free-solid-svg-icons'
 import { useReactToPrint } from 'react-to-print'
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 
-export default function StPay() {
+export default function StPay({userData}) {
+  const location = useLocation();
   const { Title } = Typography;
   const [loading, setLoading] = useState(false);
-  const curFamilyNo = localStorage.getItem("loggedFamid")
-  const curFamilyName = localStorage.getItem("loggedFamNm")
-  const curStudID = localStorage.getItem("curstid")
-  const curStudName = localStorage.getItem("curstname")
-  const curYgpName = localStorage.getItem("ygp")
-  const curYgpNo = localStorage.getItem("ygpno")
+  const curFamilyNo = userData?.famid 
+  const curFamilyName = userData?.famnm 
+  const curStudID = location.state?.curStID 
+  const curStudName = location.state?.curStNmm 
+  const curYgpName = location.state?.ygp 
+  const curYgpNo = location.state?.ygpno 
 
+  // const [selectedSt, setSelectedSt] = useState("");
+  const [famno, setFamNo] = useState("");
+  const [famnm, setFamNm] = useState("");
+  const [stID, setStID] = useState("");
+  const [fullName, setFullName] = useState("");
+  const [ygpNm, setYgpNm] = useState("");
+  const [stud, setStud] = useState([])
+  const [scnm, setScNm] = useState('')
+  const navigate = useNavigate();
+  const hidd = false
+  // const REACT_PORT = import.meta.env.VITE_PORT || 3000;
+  // const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000/api";
+  //API base URL from environment variable
+  const API_BASE = `${import.meta.env.VITE_API_URL}`;
+  if (!API_BASE) {
+    throw new Error("VITE_API_URL is not defined");
+  }
+
+
+
+  const [messageApi, contextHolder] = message.useMessage()
+  //console.log(curFamilyNo, curFamilyName, curStudID, curStudName, curYgpName)
   const [stpaymtrx, setstpaymtrx] = useState([])
 
   const payReff = useRef();
@@ -33,31 +56,6 @@ export default function StPay() {
       content: 'PDF successfully generated!',
     }),
   });
-
-
-  // const [selectedSt, setSelectedSt] = useState("");
-  const [famno, setFamNo] = useState("");
-  const [famnm, setFamNm] = useState("");
-  const [stID, setStID] = useState("");
-  const [fullName, setFullName] = useState("");
-  const [ygpNm, setYgpNm] = useState("");
-  const [stud, setStud] = useState([])
-  const [scnm, setScNm] = useState('')
-  const navigate = useNavigate();
-  const hidd = false
-  const REACT_PORT = import.meta.env.VITE_PORT || 3000;
-  const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000/api";
-  //API base URL from environment variable
-  const API_BASE = `${import.meta.env.VITE_API_URL}`;
-  if (!API_BASE) {
-    throw new Error("VITE_API_URL is not defined");
-  }
-
-
-
-  const [messageApi, contextHolder] = message.useMessage()
-  //console.log(curFamilyNo, curFamilyName, curStudID, curStudName, curYgpName)
-
 
   const getstpaymtrx = async () => {
     if (!curFamilyNo || !curStudID || !curYgpNo) {
@@ -298,7 +296,7 @@ export default function StPay() {
         <p>Student ID: {curStudID}</p>
         <p>Student Name: {curStudName}</p>
         <p>Year Group: {curYgpName}</p>
-      </div>
+      </div >
       {loading ? (<Spin tip="Loading history..." size="large" />)
         : stpaymtrx.length > 0 ? (
           <Table

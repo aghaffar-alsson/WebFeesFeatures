@@ -11,10 +11,10 @@ const logoPath = path.join(process.cwd(), "assets", "newgiza-logo.jpg");
 console.log("Logo exists?", fs.existsSync(logoPath));
 //SQL SERVER CONNECTION STRING
 const sqlConfig = {
-  server: process.env.VITE_SERVER_NAME,
-  database: process.env.VITE_DB_NAME,
-  user: process.env.VITE_USER_ID,
-  password: process.env.VITE_PSWD,
+  server: process.env.SERVER_NAME,
+  database: process.env.DB_NAME,
+  user: process.env.USER_ID,
+  password: process.env.PSWD,
   options: {
     encrypt: false,
     trustServerCertificate: true,
@@ -48,6 +48,8 @@ const transporter = nodemailer.createTransport({
 
 // Run every minute
 cron.schedule("*/1 * * * *", async () => {
+  console.log("Cron job started: Checking for new payments to email...");
+  console.log("Connecting to SQL Server...", sqlConfig);
   const pool = await sql.connect(sqlConfig);
   const result = await pool.request()
     .query(`SELECT * FROM OnlinePayfortLog WHERE emlsnt = 0 order by iden`);

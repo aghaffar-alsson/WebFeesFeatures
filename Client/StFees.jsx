@@ -2,24 +2,37 @@ import React, { useEffect, useMemo, useRef, useState } from 'react'
 import './StFees.css'
 import { Table, Typography, Spin, Alert, Button, message, Tooltip } from 'antd'
 import { useReactToPrint } from 'react-to-print'
-import { useNavigate } from 'react-router-dom';
+import { useNavigate ,useLocation } from 'react-router-dom';
 import Checkbox from 'antd/es/checkbox/Checkbox';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faHouse } from '@fortawesome/free-solid-svg-icons'
 
-export default function StFees() {
+export default function StFees({ userData }) {
   //DECLARE GLOBAL VARIABLES
   //TO DELAY THE EXECUTION OF THE STORED PROCEDURE CALL
-  const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
-  const { Title } = Typography;
+  //const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+  //const { Title } = Typography;
   const [loading, setLoading] = useState(false);
-  const curFamilyNo = localStorage.getItem("loggedFamid")
-  const curFamilyName = localStorage.getItem("loggedFamNm")
-  const curStudID = localStorage.getItem("curstid")
-  const curStudName = localStorage.getItem("curstname")
-  const curYgpName = localStorage.getItem("ygp")
-  const onlyRem = localStorage.getItem("onlyout")
-  const curEmailAddress = localStorage.getItem("curEmailAddress")
+
+  // const curFamilyNo = localStorage.getItem("loggedFamid")
+  const curFamilyNo = userData?.famid //|| localStorage.getItem("loggedFamid")
+  // const curFamilyName = localStorage.getItem("loggedFamNm")
+  const curFamilyName = userData?.famnm //|| localStorage.getItem("loggedFamNm")
+  
+  // const curStudID = localStorage.getItem("curstid")
+  // const curStudName = localStorage.getItem("curstname")
+  // const curYgpName = localStorage.getItem("ygp")
+  // const onlyRem = localStorage.getItem("onlyout")
+  //const curEmailAddress = localStorage.getItem("curEmailAddress")
+
+  const location = useLocation();
+  // console.log("Location state:", location.state);
+  const curStudID = location.state?.curStID;
+  const curStudName = location.state?.curStNmm;
+  const curYgpName = location.state?.ygp;
+  const onlyRem = location.state?.onlyout === "true" ?  1 : 0;
+  const curEmailAddress = location.state?.curEmailAddress;
+
   const [selectedRows, setSelectedRows] = useState([]);
 
   const [stfeesmtrx, setStFeesMtrx] = useState([])
@@ -49,11 +62,12 @@ export default function StFees() {
   const [swft, setSwft] = useState("");
   const [bnknmm, setBnkNmm] = useState("");
   const [messageApi, contextHolder] = message.useMessage()
+
   //define global arrays for student & banks
   // let globBnkDet = []
   // let globStInfo = []
-  const REACT_PORT = import.meta.env.VITE_PORT || 3000;
-  const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000/api";
+  // const REACT_PORT = import.meta.env.VITE_PORT || 3000;
+  // const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000/api";
   //API base URL from environment variable
   const API_BASE = `${import.meta.env.VITE_API_URL}`;
   if (!API_BASE) {
@@ -92,11 +106,11 @@ export default function StFees() {
   
   //Collect fees matrix for the selected student through stored procedure
   const getStFeesMtrx = async () => {
-    if (!curFamilyNo || !curStudID || !onlyRem) {
+    if (!curFamilyNo || !curStudID ) {
       return
     }
     //console.log(CurFmNo , CurFmNm)
-    // console.log(onlyRem)
+    console.log(onlyRem)
     setLoading(true);
     try {
       // const res = await fetch("http://localhost:3000/api/getstfees", {
@@ -106,14 +120,17 @@ export default function StFees() {
         body: JSON.stringify({
           famid: curFamilyNo,
           curstid: curStudID,
-          onlyRem: onlyRem,
+          onlyRem: onlyRem ,//=== true ? 1 : 0,
         }),
       });
+      //console.log(req.body)
       const data = await res.json();
-      //console.log(Array.isArray(data))
+      console.log(Array.isArray(data))
+      console.log(data)
       if (Array.isArray(data)) {
         //console.log(1)
         setStFeesMtrx(data);
+        console.log(data)
         //console.log(data[0].schoolId)
         const schoolId = data[0].schoolId;
         const schoolName = schoolId === 1 ? "American School" : "British School";        
@@ -124,10 +141,10 @@ export default function StFees() {
         setScID(schoolId)
         // console.log(data[0]?.schoolId)
         // console.log(scid)
-        localStorage.removeItem("schoolNoo")
-        localStorage.setItem("schoolNoo", schoolId)
-        localStorage.removeItem("schoolNmm")
-        localStorage.setItem("schoolNmm", schoolName)
+        // localStorage.removeItem("schoolNoo")
+        // localStorage.setItem("schoolNoo", schoolId)
+        // localStorage.removeItem("schoolNmm")
+        // localStorage.setItem("schoolNmm", schoolName)
       } else if (data && data.stid) {
         //console.log(2)
         setStFeesMtrx([data]);
@@ -165,6 +182,7 @@ export default function StFees() {
 
   //Use UseEffect to collect the data for only one time
   useEffect(() => {
+    console.log("Fetching fees data for student:", curStudID, "in family:", curFamilyNo,"Year:" , import.meta.env.VITE_CUR_YEAR_NAME,"only remaining:", onlyRem);
     getStFeesMtrx();
   }, []);
 
@@ -303,7 +321,7 @@ const handleUserSelection = (record, index, checked) => {
     facename: r.facename,
     amount: Math.round(r.amount), // PayFort-safe
   }));
-  console.log("Payment Items:", paymentItems);  
+  //console.log("Payment Items:", paymentItems);  
   //Declare COLUMNS OF THE TABLE
   const columns = [
     //ROW NUMBER
@@ -998,9 +1016,26 @@ const getSelectedTotal = () => {
           const studentIdd = curStudID;
           const fullName = `${curStudName} - ${curYgpName} - ${scnm}`;
           console.log(studNmm + " " + studentIdd)
-          sessionStorage.setItem(
-            "checkoutData",
-            JSON.stringify({
+          // sessionStorage.setItem(
+          //   "checkoutData",
+          //   JSON.stringify({
+          //     paymentItems,
+          //     installments,
+          //     total,
+          //     curEmailAddress,
+          //     curStudID,
+          //     curStudName,
+          //     curYgpName,
+          //     curFamilyNo,
+          //     curFamilyName,
+          //     schoolNoo,
+          //     schoolNmm,
+          //     fullName
+          //   })
+          // );
+          // navigate("/checkoutpage");
+          navigate("/checkoutpage", {
+            state: {
               paymentItems,
               installments,
               total,
@@ -1013,26 +1048,8 @@ const getSelectedTotal = () => {
               schoolNoo,
               schoolNmm,
               fullName
-            })
-          );
-          navigate("/checkoutpage");
-
-          // navigate("/checkoutpage", {
-          //   state: {
-          //     paymentItems,
-          //     installments,
-          //     total,
-          //     curEmailAddress,
-          //     curStudID,
-          //     curStudName,
-          //     curYgpName,
-          //     curFamilyNo,
-          //     curFamilyName,
-          //     schoolNoo,
-          //     schoolNmm,
-          //     fullName,
-          //     }
-          // });
+            }
+          });
         }}
       >
       Redirect to PayFort (APS)

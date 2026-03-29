@@ -3,25 +3,28 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCheck, faCheckDouble, faGreaterThan } from "@fortawesome/free-solid-svg-icons";
 import { faXmark } from "@fortawesome/free-solid-svg-icons";
 import 'antd/dist/reset.css';
-import { Button, Alert, Spin, Table, Tag, Input, message, Avatar, Card, Row, Col, Checkbox } from "antd";
+import { Button, Alert, Spin, Table, Tag, Input, message, Avatar, Card, Row, Col, Checkbox, Tooltip } from "antd";
 import { EyeInvisibleOutlined, EyeTwoTone } from '@ant-design/icons';
 import { Typography } from 'antd';
 import { useNavigate } from "react-router-dom";
 import { UserOutlined } from "@ant-design/icons";
 import './FmInfo.css'
 
-export default function FmInfo() {
+
+export default function FmInfo({userData , setIsAuthenticated, setUserData}) {
   const [selectedFamid, setSelectedFamid] = useState("");
   const [selectedFamNm, setSelectedFamNM] = useState("");
   const [onlyout, setOnlyOut] = useState(false);
   const [studInfo, setstudInfo] = useState([]);
   const [fmDtt, setFmDtt] = useState({});
-  const CurFmNo = localStorage.getItem("loggedFamid")
-  const CurFmNm = localStorage.getItem("loggedFamNm")
+  // const CurFmNo = localStorage.getItem("loggedFamid")
+  // const CurFmNm = localStorage.getItem("loggedFamNm")
+  const CurFmNo = userData?.famid //|| localStorage.getItem("loggedFamid");
+  const CurFmNm = userData?.famnm //|| localStorage.getItem("loggedFamNm");
   // const yrNo = '2025'
   const yrNo = import.meta.env.VITE_CUR_YEAR
   const { Meta } = Card;
-  const Navigate = useNavigate()
+  const navigate = useNavigate()
   const REACT_PORT = import.meta.env.VITE_PORT || 3000;
   const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000/api";
   //API base URL from environment variable
@@ -79,37 +82,74 @@ export default function FmInfo() {
     getFmInfo();
   }, []);
 
-  const gotoStPayHist = (curStID, curStNmm, ygpp, ygpp_no) => {
-    console.log(curStID, curStNmm, ygpp, ygpp_no)
-    localStorage.removeItem("curstid")
-    localStorage.setItem("curstid", curStID)
-    localStorage.removeItem("curstname")
-    localStorage.setItem("curstname", curStNmm)
-    localStorage.removeItem("ygp")
-    localStorage.setItem("ygp", ygpp)
-    localStorage.removeItem("ygpno")
-    localStorage.setItem("ygpno", ygpp_no)
+// const gotoStPayHist = (curStID, curStNmm, ygpp, ygpp_no) => {
+//   console.log(curStID, curStNmm, ygpp, ygpp_no)
+//   localStorage.removeItem("curstid")
+//   localStorage.setItem("curstid", curStID)
+//   localStorage.removeItem("curstname")
+//   localStorage.setItem("curstname", curStNmm)
+//   localStorage.removeItem("ygp")
+//   localStorage.setItem("ygp", ygpp)
+//   localStorage.removeItem("ygpno")
+//   localStorage.setItem("ygpno", ygpp_no)
 
-    Navigate('/stpayhist')
-  }
+//   Navigate('/stpayhist')
+// }
+const gotoStPayHist = (curStID, curStNmm, ygpp, ygpp_no) => {
+  navigate('/stpayhist', {
+    state: {
+      curStID,
+      curStNmm,
+      ygp: ygpp,
+      ygpno: ygpp_no
+    }
+  });
+}
 
 
-  const gotoStFees = (curStID, curStNmm, ygpp, onlyout) => {
-    localStorage.removeItem("curstid")
-    localStorage.setItem("curstid", curStID)
-    localStorage.removeItem("curstname")
-    localStorage.setItem("curstname", curStNmm)
-    localStorage.removeItem("ygp")
-    localStorage.setItem("ygp", ygpp)
-    //console.log(onlyout)
-    localStorage.removeItem("onlyout")
-    localStorage.setItem("onlyout", onlyout ? 1 : 0);
+const handleLogout = () => {
+  localStorage.removeItem("isAuthenticated");
+  localStorage.removeItem("userData");
 
-    Navigate('/stfees')
-  }
+  setIsAuthenticated(false);
+  setUserData(null);
+
+  navigate("/signin");
+};
+// const gotoStFees = (curStID, curStNmm, ygpp, onlyout) => {
+//   localStorage.removeItem("curstid")
+//   localStorage.setItem("curstid", curStID)
+//   localStorage.removeItem("curstname")
+//   localStorage.setItem("curstname", curStNmm)
+//   localStorage.removeItem("ygp")
+//   localStorage.setItem("ygp", ygpp)
+//   //console.log(onlyout)
+//   localStorage.removeItem("onlyout")
+//   localStorage.setItem("onlyout", onlyout ? 1 : 0);
+
+//   Navigate('/stfees')
+// }
+const gotoStFees = (curStID, curStNmm, ygpp, onlyout, curEmailAddress) => {
+  //console.log(curStID, curStNmm, ygpp, onlyout)
+
+  navigate("/stfees", {
+    state: {
+      curStID,
+      curStNmm,
+      ygp: ygpp,
+      onlyout: onlyout ? 1 : 0,
+      curEmailAddress: userData?.eml || curEmailAddress
+    }
+  });
+};
   return (
     <div className="crds">
       <div className="fmm">
+      <div className="logout" style={{display: "flex", alignItems: "flex-end", marginLeft: "auto", justifyContent: "flex-end"}}>
+        <Tooltip title="Logout">
+          <Button type="primary"  onClick={() => {handleLogout()}}><i className="fa-solid fa-right-from-bracket"></i></Button>
+        </Tooltip>
+      </div>
         <strong>Family ID: {CurFmNo} </strong>
         <strong>Family Name:  {CurFmNm}</strong>
       </div >
