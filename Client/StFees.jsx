@@ -1117,7 +1117,7 @@ const getSelectedTotal = () => {
       {loading ? <></> :
       (selectedTotal > 0 && (
         <div className="selected-total">
-          <strong>Total Selected Amount:</strong> {formatDec(selectedTotal)} LE
+          <strong>Total Selected Amount:</strong> {formatDec(selectedTotal)} EGP
         </div>
       ))}
       </div> }

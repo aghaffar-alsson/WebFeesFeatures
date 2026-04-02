@@ -10,7 +10,7 @@
   flex-direction: row;
   /* Vertically align image + text */
   justify-content: flex-start;
-  gap: 300px;
+  gap: 450px;
   /* Space between image and text */
   padding: 1rem;
   /* Breathing room */
@@ -52,7 +52,7 @@
   /*box-shadow: 10px 8px 20px rgba(8, 37, 142, 0.34); /* Soft shadow */
   margin-right: 50px;
   height: 140px !important;
-  width: 30% !important;
+  width: 10% !important;
   margin-top: 20px;
 
 }
@@ -70,7 +70,7 @@
 .container {
   display: flex;
   align-items: flex-start;
-  flex-direction: column;
+  flex-direction: row;
   gap: 8px;
   }
   .container h1,
@@ -82,6 +82,6 @@
 
   .imghdrlft {
     max-height: 140px !important;
-    width: 80% !important;
+    width: 60% !important;
   }
 }
