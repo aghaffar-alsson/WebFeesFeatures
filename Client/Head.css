@@ -71,13 +71,13 @@
   display: flex;
   align-items: flex-start;
   flex-direction: row;
-  gap: 8px;
+  gap: 0px;
   }
   .container h1,
   .container h2 {
     font-size: 0.9rem;
     font-weight: 600;
-    text-shadow: #232323  0px 1px 1px;
+    font-family: Verdana, Geneva, Tahoma, sans-serif;
   }
 
   .imghdrlft {
