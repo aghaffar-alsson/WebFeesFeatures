@@ -147,9 +147,9 @@ export default function BankForm() {
           <Button className="frmPrnt" onClick={() => { if (bnkName && trgtAccNo && trgtAccNm && trgtAccIBAN && trgtAccSwft) { frmPrnt(); } else { messageApi.warning("Bank info is still loading, please wait a moment."); } }}>Print/Save As PDF <i className="fa fa-print"></i></Button>
           {isSmallScreen ? (
             <Tooltip title="Back to Home">
-              <Button
+              <Button 
                 className="prntTb"
-                style={{ width: "40px", height: "40px", paddingTop: "8px" }}
+                style={{ width: "80px", height: "80px", paddingTop: "8px" }}
                 key="home"
                 type="primary"
                 shape="circle"
