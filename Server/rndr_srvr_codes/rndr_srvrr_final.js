@@ -44,7 +44,7 @@ const sqlConfig = {
     encrypt: false,
     trustServerCertificate: true,
   },
-  requestTimeout: 15000,
+  requestTimeout: 25000,
 };
 
 // ---------- NODEMAILER ----------
@@ -83,35 +83,66 @@ function getMerchantCredentials(schoolId) {
 
 
 // ---------- SIGNATURE HELPERS ----------
+//function createSignature(params, schoolId) {
+//  // Resolve credentials dynamically
+//  const { request_phrase } = getMerchantCredentials(schoolId);  
+//  const sorted = Object.keys(params).sort();
+//  const concatenated = sorted.map((key) => `${key}=${params[key]}`).join("");
+//  //const toHash = `${process.env.AM_RequestPhrase}${concatenated}${process.env.AM_RequestPhrase}`;
+//  const toHash = `${request_phrase}${concatenated}${request_phrase}`;
+//  
+//  return crypto.createHash("sha256").update(toHash).digest("hex");
+//}
+//CREATE PAYFORT SIGNATURE
 function createSignature(params, schoolId) {
-  // Resolve credentials dynamically
-  const { request_phrase } = getMerchantCredentials(schoolId);  
+  const { request_phrase } = getMerchantCredentials(schoolId);
   const sorted = Object.keys(params).sort();
-  const concatenated = sorted.map((key) => `${key}=${params[key]}`).join("");
-  //const toHash = `${process.env.AM_RequestPhrase}${concatenated}${process.env.AM_RequestPhrase}`;
+
+  const concatenated = sorted
+    .map((key) => `${key}=${String(params[key]).trim()}`)
+    .join("");
+
   const toHash = `${request_phrase}${concatenated}${request_phrase}`;
-  
+
+  console.log("=== SIGNATURE DEBUG ===");
+  console.log("Signature base string:", toHash);
+
   return crypto.createHash("sha256").update(toHash).digest("hex");
 }
 
 function verifySignature(params, schoolId) {
-  // Resolve credentials dynamically
-  const { response_phrase } = getMerchantCredentials(schoolId);  
-  
-  const { signature, ...data } = params;
+  const { response_phrase } = getMerchantCredentials(schoolId);
+
+  const phrase = String(response_phrase || "").trim();
+
+  const data = { ...params };
+  const receivedSignature = String(data.signature || "").trim().toLowerCase();
+  delete data.signature;
+
   const sortedKeys = Object.keys(data).sort();
-  let base = response_phrase;
 
-  sortedKeys.forEach((key) => {
-    if (data[key] !== null && data[key] !== "") {
-      base += `${key}=${data[key]}`;
-    }
-  });
+  const concatenated = sortedKeys
+    .map((key) => `${key}=${data[key]}`)
+    .join("");
 
-  base += response_phrase;
-  const hash = crypto.createHash("sha256").update(base).digest("hex");
-  return hash === signature;
+  const stringToHash = `${phrase}${concatenated}${phrase}`;
+
+  const generatedSignature = crypto
+    .createHash("sha256")
+    .update(stringToHash, "utf8")
+    .digest("hex")
+    .toLowerCase();
+
+  console.log("=== APS VERIFY DEBUG ===");
+  console.log("Sorted Keys:", sortedKeys);
+  console.log("Concatenated:", concatenated);
+  console.log("String To Hash:", stringToHash);
+  console.log("Generated Signature:", generatedSignature);
+  console.log("Received Signature:", receivedSignature);
+
+  return generatedSignature === receivedSignature;
 }
+
 
 function generateMerchantReference(length = 12) {
   const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
@@ -121,98 +152,315 @@ function generateMerchantReference(length = 12) {
   }
   return `TXN-${result}`;
 }
-
 // ---------- CREATE FORM PAYLOAD ----------
 app.post("/createFormPayLoad", async (req, res) => {
   try {
-    const { amount, currency, email, schoolId,  paymentItems = [] } = req.body;    
+const {
+  amount,
+  currency,
+  email,
+  schoolId,
+  paymentItems = [],
+  frontendOrigin,
+
+  // STUDENT DATA
+  studentId,
+  studentName,
+  curYgp,
+  familyNo,
+  familyName,
+  fullName
+} = req.body;
+
     const schoolCode = Number(schoolId);
+
     if (![1, 2].includes(schoolCode)) {
       return res.status(400).json({ error: "Invalid schoolId" });
-    }    
+    }
+
+    if (!frontendOrigin) {
+      return res.status(400).json({ error: "frontendOrigin is required" });
+    }
+
+    // 🔐 Optional security whitelist
+    const allowedOrigins = [
+      "http://localhost:5173",
+      "http://localhost:5174",
+      "https://alsson-web-fees-features-2pr9.vercel.app",
+      "https://fees.family.alsson.app",
+    ];
+
+    if (!allowedOrigins.includes(frontendOrigin)) {
+      return res.status(400).json({ error: "Invalid frontend origin" });
+    }
+
+    // Validate amount
+    const numericAmount = Number(amount);
+    if (!Number.isFinite(numericAmount) || numericAmount <= 0) {
+      return res.status(400).json({ error: "Invalid amount" });
+    }
+
+    // APS requires MINOR UNITS as INTEGER STRING
+    // Example: 61784.86 EGP => "6178486"
+    const apsAmount = String(Math.round(numericAmount * 100));
+
+    // Safe email fallback
+    const safeEmail = String(email || "noemail@example.com").trim();
+
     const orderID = generateMerchantReference();
+
     // Resolve credentials dynamically
-    const { merchant_identifier, access_code } = getMerchantCredentials(schoolCode);    
+    const { merchant_identifier, access_code } = getMerchantCredentials(schoolCode);
+
     let formPayLoad = {
       command: "PURCHASE",
       language: "en",
-      merchant_identifier: merchant_identifier,
-      access_code: access_code,
+      merchant_identifier: String(merchant_identifier).trim(),
+      access_code: String(access_code).trim(),
       merchant_reference: orderID,
-      amount: req.body.amount * 100,
-      currency: req.body.currency,
-      customer_email: req.body.email,
+      amount: apsAmount, // IMPORTANT: string integer
+      currency: String(currency).trim(),
+      customer_email: safeEmail,
       eci: "ECOMMERCE",
       return_url: `${PUBLIC_URL}/payfort-callback`,
     };
 
-    formPayLoad.signature = createSignature(formPayLoad, schoolCode);
-    console.log(formPayLoad)
-    //here insert a record to keeptrack the merchant reference and the school id
-    const pool = await sql.connect(sqlConfig);    
-    await pool.request()
-      .input("merchant_reference", sql.VarChar(50), orderID)
-      .input("school_id", sql.Int, schoolCode)
-      .input("amount", sql.Int, req.body.amount * 100)
-      .input("currency", sql.Char(3), req.body.currency)
-      .input("customer_email", sql.NVarChar(255), req.body.email)
-      .query(`
-        INSERT INTO PayfortTransactions
-        (merchant_reference, school_id, amount, currency, customer_email, status)
-        VALUES
-        (@merchant_reference, @school_id, @amount, @currency, @customer_email, 'PENDING')
-      `);
+    console.log("=== CREATE FORM PAYLOAD DEBUG ===");
+    console.log("Frontend amount (major units):", amount);
+    console.log("Numeric amount:", numericAmount);
+    console.log("APS amount (minor units):", apsAmount);
+    console.log("schoolCode:", schoolCode);
+    console.log("safeEmail:", safeEmail);
+    console.log("Payload BEFORE signature:", formPayLoad);
 
-    //Save detailed items as JSON ON TEMPORARY TABLE
+    formPayLoad.signature = createSignature(formPayLoad, schoolCode);
+
+    console.log("Generated signature:", formPayLoad.signature);
+    console.log("Payload AFTER signature:", formPayLoad);
+
+    // here insert a record to keep track the merchant reference and the school id
+    const pool = await sql.connect(sqlConfig);
+await pool.request()
+  .input("merchant_reference", sql.VarChar(50), orderID)
+  .input("school_id", sql.Int, schoolCode)
+  .input("amount", sql.Int, Number(apsAmount)) // IMPORTANT: minor units
+  .input("currency", sql.Char(3), String(currency).trim())
+  .input("customer_email", sql.NVarChar(255), safeEmail)
+  .input("frontend_origin", sql.NVarChar(255), frontendOrigin)
+
+  // NEW student/family info
+  .input("student_id", sql.Int, studentId ? Number(studentId) : null)
+  .input("student_name", sql.NVarChar(255), String(studentName || "").trim())
+  .input("cur_ygp", sql.NVarChar(100), String(curYgp || "").trim())
+  .input("family_no", sql.Int, familyNo ? Number(familyNo) : null)
+  .input("family_name", sql.NVarChar(255), String(familyName || "").trim())
+  .input("full_name", sql.NVarChar(255), String(fullName || "").trim())
+  .query(`
+    INSERT INTO PayfortTransactions
+    (
+      merchant_reference,
+      school_id,
+      amount,
+      currency,
+      customer_email,
+      status,
+      frontend_origin,
+      student_id,
+      student_name,
+      cur_ygp,
+      family_no,
+      family_name,
+      full_name
+    )
+    VALUES
+    (
+      @merchant_reference,
+      @school_id,
+      @amount,
+      @currency,
+      @customer_email,
+      'PENDING',
+      @frontend_origin,
+      @student_id,
+      @student_name,
+      @cur_ygp,
+      @family_no,
+      @family_name,
+      @full_name
+    )
+  `);
+
+    // Save detailed items as JSON ON TEMPORARY TABLE
     await pool.request()
       .input("merchant_reference", sql.VarChar(50), orderID)
       .input("paymentItems", sql.NVarChar(sql.MAX), JSON.stringify(paymentItems))
-      .input("created_at", sql.DateTime2, new Date())      
+      .input("created_at", sql.DateTime2, new Date())
       .query(`
         INSERT INTO PayfortTempPaymentItems
-        (merchant_reference, paymentItems,created_at)
+        (merchant_reference, paymentItems, created_at)
         VALUES
         (@merchant_reference, @paymentItems, @created_at)
-      `);      
-    //end of keep tracking
+      `);
+
     res.json(formPayLoad);
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: "Error creating Payfort payload" });
+    console.error("createFormPayLoad error:", error);
+    res.status(500).json({
+      error: "Error creating Payfort payload",
+      details: error.message
+    });
   }
 });
 
+// ---------- LOG PAYMENT ACTION ----------
 // ---------- LOG PAYMENT ACTION ----------
 async function logPaymentAction(payload) {
   try {
     const pool = await sql.connect(sqlConfig);
 
+    // Read student/family data from master transaction row
+    const trxResult = await pool.request()
+      .input("merchant_reference", sql.VarChar(50), payload.merchant_reference)
+      .query(`
+        SELECT
+          student_id,
+          student_name,
+          cur_ygp,
+          family_no,
+          family_name,
+          full_name
+        FROM PayfortTransactions
+        WHERE merchant_reference = @merchant_reference
+      `);
+
+    if (!trxResult.recordset.length) {
+      throw new Error(`No PayfortTransactions row found for merchant_reference=${payload.merchant_reference}`);
+    }
+
+    const trx = trxResult.recordset[0];
+
     await pool.request()
-      .input("fort_id", sql.VarChar, payload.fort_id)
-      .input("merchant_reference", sql.VarChar, payload.merchant_reference)
-      .input("amount", sql.Int, payload.amount)
-      .input("customer_email", sql.VarChar, payload.customer_email)
-      .input("payment_option", sql.VarChar, payload.payment_option)
-      .input("response_message", sql.VarChar, payload.response_message)
+      .input("fort_id", sql.VarChar(50), payload.fort_id || null)
+      .input("merchant_reference", sql.VarChar(50), payload.merchant_reference || null)
+      .input("amount", sql.Int, payload.amount ? Number(payload.amount) : null) // minor units from APS
+      .input("customer_email", sql.NVarChar(255), payload.customer_email || null)
+      .input("payment_option", sql.VarChar(50), payload.payment_option || null)
+      .input("response_message", sql.NVarChar(500), payload.response_message || null)
       .input("actiondate", sql.Date, new Date())
       .input("emlsnt", sql.Int, 0)
+
+      // Student/family fields
+      .input("student_id", sql.Int, trx.student_id || null)
+      .input("student_name", sql.NVarChar(255), trx.student_name || null)
+      .input("cur_ygp", sql.NVarChar(100), trx.cur_ygp || null)
+      .input("family_no", sql.Int, trx.family_no || null)
+      .input("family_name", sql.NVarChar(255), trx.family_name || null)
+      .input("full_name", sql.NVarChar(255), trx.full_name || null)
+
       .query(`
         INSERT INTO OnlinePayfortLog (
-          fort_id, merchant_reference, amount, customer_email,
-          payment_option, response_message, actiondate, emlsnt
+          fort_id,
+          merchant_reference,
+          amount,
+          customer_email,
+          payment_option,
+          response_message,
+          actiondate,
+          emlsnt,
+          student_id,
+          student_name,
+          cur_ygp,
+          family_no,
+          family_name,
+          full_name
         )
         VALUES (
-          @fort_id, @merchant_reference, @amount, @customer_email,
-          @payment_option, @response_message, @actiondate, @emlsnt
+          @fort_id,
+          @merchant_reference,
+          @amount,
+          @customer_email,
+          @payment_option,
+          @response_message,
+          @actiondate,
+          @emlsnt,
+          @student_id,
+          @student_name,
+          @cur_ygp,
+          @family_no,
+          @family_name,
+          @full_name
         )
       `);
 
-    console.log("Payment logged to SQL Server");
+    console.log("Payment logged to OnlinePayfortLog with student/family info");
   } catch (err) {
-    console.error("SQL Error:", err);
+    console.error("SQL Error in logPaymentAction:", err);
+    throw err; // IMPORTANT: bubble up so callback knows it failed
   }
 }
 
+// ---------- LOG PAYMENT ACTION ----------
+async function keepTrackPaymentAction(paymentItem, merchant_reff, fortIDD) {
+  const pool = await sql.connect(sqlConfig);
+  const transaction = new sql.Transaction(pool);
+
+  try {
+    await transaction.begin();
+    const request = new sql.Request(transaction);
+    // DELETE pending record for same item
+    await request
+      .input("CURYEAR", sql.Int, paymentItem.curyear)
+      .input("S_CODE", sql.VarChar, paymentItem.stid)
+      .input("FAMID", sql.Int, paymentItem.famid)
+      .input("SCHOOLID", sql.Int, paymentItem.schoolId)
+      .input("INSTCODE", sql.Int, paymentItem.instCode)
+      .input("FACENAME", sql.VarChar, paymentItem.facename)
+      .input("MERCHANTREFF_1", sql.VarChar, merchant_reff)
+      .input("FORT_IDD_1", sql.VarChar, fortIDD)
+      .query(`
+        DELETE FROM APSTRANS
+        WHERE CURYEAR=@CURYEAR
+          AND S_CODE=@S_CODE
+          AND FAMID=@FAMID
+          AND SCHOOLID=@SCHOOLID
+          AND InstCode=@INSTCODE
+          AND FACENAME=@FACENAME
+          AND SETTLED=0
+          AND merchant_reference=@MERCHANTREFF_1
+          AND FORT_ID=@FORT_IDD_1
+      `);
+
+    // INSERT confirmed payment
+    await request
+      .input("PAIDAMOUNT", sql.Numeric(18,2), paymentItem.amount)
+      .input("TRNSDT", sql.DateTime2, new Date())
+      .input("MERCHANT_REFF", sql.VarChar, merchant_reff)
+      .input("FORT_IDD", sql.VarChar, fortIDD)
+      .query(`
+        INSERT INTO APSTRANS
+          (
+            CURYEAR, S_CODE, FAMID, SCHOOLID,
+            InstCode, FACENAME,
+            PAIDAMOUNT, TRNSDT, SETTLED,
+            merchant_reference, fort_id,confrmd, emll
+          )
+        VALUES
+          (
+            @CURYEAR, @S_CODE, @FAMID, @SCHOOLID,
+            @INSTCODE, @FACENAME,
+            @PAIDAMOUNT, @TRNSDT, 0,
+            @MERCHANT_REFF, @FORT_IDD, 0, 'aghaffar@alsson.com'
+          )
+      `);
+
+    await transaction.commit();
+    console.log("Payment item settled:", paymentItem.facename);
+  } catch (err) {
+    await transaction.rollback();
+    console.error("SQL Error:", err);
+    throw err;
+  }
+}
 // ---------- CALLBACK HANDLER ----------
 async function handlePayfortCallback(req, res) {
   try {
@@ -226,90 +474,190 @@ async function handlePayfortCallback(req, res) {
 
     // DB lookup
     const pool = await sql.connect(sqlConfig);
-
     const result = await pool.request()
       .input("merchant_reference", sql.VarChar(50), payload.merchant_reference)
       .query(`
-        SELECT school_id
+        SELECT
+          school_id,
+          frontend_origin,
+          student_id,
+          student_name,
+          cur_ygp,
+          family_no,
+          family_name,
+          full_name
         FROM PayfortTransactions
         WHERE merchant_reference = @merchant_reference
       `);
-
     if (result.recordset.length === 0) {
       return res.status(400).send("Unknown merchant_reference");
     }
-
+    
     const schoolId = result.recordset[0].school_id;
-
+    const FRONTEND_URL = result.recordset[0].frontend_origin;
+    
+    const student_id = result.recordset[0].student_id || "";
+    const student_name = result.recordset[0].student_name || "";
+    const cur_ygp = result.recordset[0].cur_ygp || "";
+    const family_name = result.recordset[0].family_name || "";
+    const family_no = result.recordset[0].family_no || 0;
+    const full_name = result.recordset[0].full_name || "";
+    
+    
     // Verify signature with correct response phrase
     if (!verifySignature(payload, schoolId)) {
       return res.status(400).send("Invalid signature");
     }
 
-    const success = payload.status === "14";
+const success = payload.status === "14";
+const finalStatus = success ? "SUCCESS" : "FAILED";
 
-    if (success) {
-      logPaymentAction(payload);
+// Always update transaction final status
+await pool.request()
+  .input("merchant_reference", sql.VarChar(50), payload.merchant_reference)
+  .input("status", sql.VarChar(20), finalStatus)
+  .input("fort_id", sql.VarChar(50), payload.fort_id || null)
+  .query(`
+    UPDATE PayfortTransactions
+    SET
+      status = @status,
+      fort_id = @fort_id,
+      updated_at = SYSDATETIME()
+    WHERE merchant_reference = @merchant_reference
+  `);
 
-      await pool.request()
-        .input("merchant_reference", sql.VarChar(50), payload.merchant_reference)
-        .input("status", sql.VarChar(20), "SUCCESS")
-        .input("fort_id", sql.VarChar(50), payload.fort_id || null)
-        .query(`
-          UPDATE PayfortTransactions
-          SET
-            status = @status,
-            fort_id = @fort_id,
-            updated_at = SYSDATETIME()
-          WHERE merchant_reference = @merchant_reference
-        `);
+if (success) {
+  await logPaymentAction(payload);
 
-        const merchant_reff = payload.merchant_reference;
-        const fortIDD = payload.fort_id;
+  const merchant_reff = payload.merchant_reference;
+  const fortIDD = payload.fort_id;
 
-        const itemsResult = await pool.request()
-            .input("merchantreff", sql.VarChar(50), merchant_reff)
-            .query(`
-            SELECT paymentItems 
-            FROM PayfortTempPaymentItems
-            WHERE merchant_reference=@merchantreff 
-            `);
+  const itemsResult = await pool.request()
+    .input("merchantreff", sql.VarChar(50), merchant_reff)
+    .query(`
+      SELECT paymentItems 
+      FROM PayfortTempPaymentItems
+      WHERE merchant_reference = @merchantreff
+    `);
 
-        if (!itemsResult.recordset.length) {
-            throw new Error("Payment items not found");
-        }
+  console.log("Payment items fetched from DB:", itemsResult.recordset);
 
-        const paymentItems = JSON.parse(itemsResult.recordset[0].paymentItems);
-        console.log("Payment Items to log:", paymentItems);
-                
-        for (const item of paymentItems) {
-            await keepTrackPaymentAction(item, merchant_reff, fortIDD);
-        }
-      // Here to Settle all paid transactions 
-      await pool.request()
-        .input("famid", sql.Int, paymentItems[0].famid)
-        .input("stid", sql.Int, paymentItems[0].stid)
+  if (!itemsResult.recordset.length) {
+    throw new Error("Payment items not found");
+  }
+
+  const paymentItems = JSON.parse(itemsResult.recordset[0].paymentItems);
+  console.log("Parsed paymentItems:", JSON.stringify(paymentItems, null, 2));
+  console.log("Merchant Reference:", merchant_reff);
+
+  // 1) Process each payment item individually
+  for (let i = 0; i < paymentItems.length; i++) {
+    const item = paymentItems[i];
+    console.log(`keepTrackPaymentAction START [${i}]`, item);
+
+    await keepTrackPaymentAction(item, merchant_reff, fortIDD);
+
+    console.log(`keepTrackPaymentAction DONE [${i}]`, item);
+  }
+
+  console.log("All payment items processed for merchant reference:", merchant_reff);
+
+  // 2) Build unique settlement groups
+  const uniqueSettlements = new Map();
+
+  for (let i = 0; i < paymentItems.length; i++) {
+    const item = paymentItems[i];
+
+    const famId = Number(item.famid);
+    const stId = Number(item.stid);
+    const year = Number(item.curyear);
+
+    console.log(`Settlement candidate [${i}]`, {
+      raw: item,
+      famId,
+      stId,
+      year,
+      isFamInt: Number.isInteger(famId),
+      isStInt: Number.isInteger(stId),
+      isYearInt: Number.isInteger(year),
+    });
+
+    if (!Number.isInteger(famId)) {
+      throw new Error(`Invalid FAMID: ${item.famid}`);
+    }
+
+    if (!Number.isInteger(stId)) {
+      throw new Error(`Invalid STID: ${item.stid}`);
+    }
+
+    if (!Number.isInteger(year)) {
+      throw new Error(`Invalid CURYEAR: ${item.curyear}`);
+    }
+
+    const key = `${famId}_${stId}_${year}`;
+
+    if (!uniqueSettlements.has(key)) {
+      uniqueSettlements.set(key, { famId, stId, year });
+      console.log("Added unique settlement:", key);
+    } else {
+      console.log("Skipped duplicate settlement:", key);
+    }
+  }
+
+  const settlements = [...uniqueSettlements.values()];
+  console.log("Unique settlement groups FINAL:", settlements);
+
+  // 3) Execute settlement for each unique group
+  for (let i = 0; i < settlements.length; i++) {
+    const settlement = settlements[i];
+
+    console.log(`sp_GetStFeesDetDue_2 START [${i}]`, settlement);
+
+    try {
+      const spResult = await pool.request()
+        .input("famid", sql.Int, settlement.famId)
+        .input("stid", sql.Int, settlement.stId)
+        .input("trgtYr", sql.Int, settlement.year)
         .execute("sp_GetStFeesDetDue_2");
-      
 
-  // 🧹 cleanup
-  // await pool.request()
-  //   .input("merchant_reference", sql.VarChar(50), merchant_reference)
-  //   .query(`
-  //     DELETE FROM PayfortTempPaymentItems
-  //     WHERE merchant_reference=@merchant_reference
-  //   `);
-}    
+      console.log(`sp_GetStFeesDetDue_2 DONE [${i}]`, {
+        settlement,
+        recordsetsCount: spResult?.recordsets?.length,
+        rowsAffected: spResult?.rowsAffected,
+        returnValue: spResult?.returnValue,
+      });
+    } catch (spErr) {
+      console.error(`sp_GetStFeesDetDue_2 FAILED [${i}]`, settlement, spErr);
+      throw spErr;
+    }
+  }
+
+  console.log("All settlements completed successfully");
+}
+
+    //const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:5173";
+
+    // const redirectUrl =
+    //   `${FRONTEND_URL}/checkout-result?status=${success ? "success" : "failed"}` +
+    //   `&amount=${payload.amount}` +
+    //   `&fort_id=${payload.fort_id}` +
+    //   `&merchant_reference=${payload.merchant_reference}` +
+    //   `&response_message=${encodeURIComponent(payload.response_message || "")}` +
+    //   `&customer_email=${encodeURIComponent(payload.customer_email || "")}`;   
 
 const redirectUrl =
-  `http://localhost:5173/checkout-result?status=${success ? "success" : "failed"}` +
-  `&amount=${payload.amount}` +
-  `&fort_id=${payload.fort_id}` +
-  `&merchant_reference=${payload.merchant_reference}` +
+  `${FRONTEND_URL}/checkout-result?status=${success ? "success" : "failed"}` +
+  `&amount=${payload.amount || ""}` +
+  `&fort_id=${payload.fort_id || ""}` +
+  `&merchant_reference=${payload.merchant_reference || ""}` +
   `&response_message=${encodeURIComponent(payload.response_message || "")}` +
-  `&customer_email=${encodeURIComponent(payload.customer_email || "")}`;
+  `&customer_email=${encodeURIComponent(payload.customer_email || "")}` +
+  `&student_id=${encodeURIComponent(student_id)}` +
+  `&student_name=${encodeURIComponent(student_name)}` +
+  `&cur_ygp=${encodeURIComponent(cur_ygp)}`;
+    
 
-return res.redirect(302, redirectUrl);
+    return res.redirect(302, redirectUrl);
 
   } catch (err) {
     console.error("Callback error:", err);
@@ -449,68 +797,6 @@ Download receipt: ${publicUrl}`;
   }
 });
 
-// ---------- LOG PAYMENT ACTION ----------
-async function keepTrackPaymentAction(paymentItem, merchant_reff, fortIDD) {
-  const pool = await sql.connect(sqlConfig);
-  const transaction = new sql.Transaction(pool);
-
-  try {
-    await transaction.begin();
-    const request = new sql.Request(transaction);
-    // DELETE pending record for same item
-    await request
-      .input("CURYEAR", sql.VarChar, paymentItem.curyear)
-      .input("S_CODE", sql.VarChar, paymentItem.stid)
-      .input("FAMID", sql.Int, paymentItem.famid)
-      .input("SCHOOLID", sql.Int, paymentItem.schoolId)
-      .input("INSTCODE", sql.Int, paymentItem.instCode)
-      .input("FACENAME", sql.VarChar, paymentItem.facename)
-      .input("MERCHANTREFF_1", sql.VarChar, merchant_reff)
-      .input("FORT_IDD_1", sql.VarChar, fortIDD)
-      .query(`
-        DELETE FROM APSTRANS
-        WHERE CURYEAR=@CURYEAR
-          AND S_CODE=@S_CODE
-          AND FAMID=@FAMID
-          AND SCHOOLID=@SCHOOLID
-          AND InstCode=@INSTCODE
-          AND FACENAME=@FACENAME
-          AND SETTLED=0
-          AND merchant_reference=@MERCHANTREFF_1
-          AND FORT_ID=@FORT_IDD_1
-      `);
-
-    // INSERT confirmed payment
-    await request
-      .input("PAIDAMOUNT", sql.Numeric(18,2), paymentItem.amount)
-      .input("TRNSDT", sql.DateTime2, new Date())
-      .input("MERCHANT_REFF", sql.VarChar, merchant_reff)
-      .input("FORT_IDD", sql.VarChar, fortIDD)
-      .query(`
-        INSERT INTO APSTRANS
-          (
-            CURYEAR, S_CODE, FAMID, SCHOOLID,
-            InstCode, FACENAME,
-            PAIDAMOUNT, TRNSDT, SETTLED,
-            merchant_reference, fort_id
-          )
-        VALUES
-          (
-            @CURYEAR, @S_CODE, @FAMID, @SCHOOLID,
-            @INSTCODE, @FACENAME,
-            @PAIDAMOUNT, @TRNSDT, 0,
-            @MERCHANT_REFF, @FORT_IDD
-          )
-      `);
-
-    await transaction.commit();
-    console.log("Payment item settled:", paymentItem.facename);
-  } catch (err) {
-    await transaction.rollback();
-    console.error("SQL Error:", err);
-    throw err;
-  }
-}
 
 //API ENDPOINT TO LOG PAYMENT ITEMS
 app.post("/api/log-payment", async (req, res) => {
@@ -540,4 +826,5 @@ app.post("/payfort-callback", handlePayfortCallback);
 // ---------- START SERVER ----------
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+
 // ---------- END OF FILE ----------

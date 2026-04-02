@@ -3,11 +3,12 @@ import { Button } from "@mui/material";
 import axios from "axios";
 import "./CheckoutPage.css";
 
-import { Table, Spin, Tooltip } from "antd";
+import { Table, Spin, Tooltip, Grid } from "antd";
 import { LoadingOutlined } from "@ant-design/icons";
 import { useLocation, useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faHouse } from "@fortawesome/free-solid-svg-icons";
+const { useBreakpoint } = Grid;
 
 function formatDec(value) {
   if (value === null || value === undefined || Number.isNaN(Number(value))) return "-";
@@ -31,8 +32,12 @@ function ApsMerchantSection({
   curFamilyName,
   fullName,
 }) {
-  const [loading, setLoading] = useState(false);
 
+  const screens = useBreakpoint();
+  const isSmallScreen = !screens.md;
+  
+  const [loading, setLoading] = useState(false);
+  console.log("ApsMerchantSection props:", { email, paymentItems, finalTotal, schoolNoo, curStudID, curStudName, curYgpName, curFamilyNo, curFamilyName, fullName });
   const handlePay = async () => {
     try {
       setLoading(true);
@@ -120,34 +125,64 @@ function ApsMerchantSection({
           : "SECURE PAYMENT WITH PAYFORT (APS)"}
       </Button>
 
-      <Tooltip title="Back to Home">
+      <Tooltip title="Back to Home" placement="top">
         <Button
-          className="payfort-btn"
+          className="home-btn"
+          style={{fontSize:"9px !important"}}
           href="/fminfo"
           startIcon={<FontAwesomeIcon icon={faHouse} />}
           sx={{
             width: "50%",
-            height: "8vh",
+            height: "5vh",
             color: "#fff",
-            mt: 1,
+            sahape: "rounded",
+            fontSize: "12px",
+            mt: 0,
+            backgroundColor: "#0177b9 !important",
+              "&:hover": { backgroundColor: "#015f86 !important" },
+            rounded: "10px",
+            borderRadius: "10px",
           }}
         >
           Back To Home
         </Button>
       </Tooltip>
-
+      {/* {isSmallScreen ? (
+        <Tooltip title="Back to Home">
+          <Button
+            className="payfort-btn"
+            style={{ width: "40px", height: "40px", paddingTop: "8px" }}
+            key="home"
+            type="primary"
+            shape="circle"
+            icon={<FontAwesomeIcon icon={faHouse} />}
+            href="/fminfo"
+          />
+        </Tooltip>
+      ) : (
+        <Button
+          className="payfort-btn"
+          style={{ width: "15%", height: "5vh" }}
+          key="home"
+          type="primary"
+          shape="default"
+          icon={<FontAwesomeIcon icon={faHouse} />}
+          href="/fminfo"
+        >
+          Back to Home
+        </Button>
+      )} */}
       <p className="empty">Checkout Page</p>
     </div>
   );
 }
 
-export default function CheckoutPage() {
+export default function CheckoutPage(userData = { userData }) {
   const { state } = useLocation();
   const navigate = useNavigate();
-
+  console.log("CheckoutPage received state:", state);
   // IMPORTANT: state only (no sessionStorage fallback)
   const checkoutData = state;
-
   if (!checkoutData) {
     return (
       <div style={{ padding: "20px" }}>
@@ -158,7 +193,7 @@ export default function CheckoutPage() {
       </div>
     );
   }
-
+  console.log("Received checkoutData:", checkoutData);
   const {
     paymentItems: initialPaymentItems = [],
     installments = [],
@@ -201,7 +236,7 @@ export default function CheckoutPage() {
       ...installments,
       {
         instCode: "INTEREST_FEE",
-        instName: "INTEREST & HANDLING FEES (0.75%) + (CBE COMMISSION - EGP 1.51)",
+        instName: "INTEREST & HANDLING FEES (0.75%) + CBE COMMISSION (EGP 1.51)",
         amount: feesAmount,
       },
     ];

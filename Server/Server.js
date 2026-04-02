@@ -18,17 +18,16 @@ import crypto from "crypto";
 //import session from "express-session";
 //import MSSQLStore from "connect-mssql-v2";
 //const MSSQLStore = require('connect-mssql-v2')(session)
-import helmet from  "helmet";
+import helmet from "helmet";
 import rateLimit from "express-rate-limit";
 
-
+const app = express();
 //******************OPEN CONNECTION & ESTABLISH SERVER************************/
 const require = createRequire(import.meta.url);
 const nodemailer = require('nodemailer');
 
 dotenv.config();
 
-const app = express();
 //const isProduction = process.env.NODE_ENV === "production";
 // Trust proxy for secure cookies if behind a reverse proxy (e.g., Vercel)
 app.set("trust proxy", 1);
@@ -48,18 +47,16 @@ const sqlConfig = {
     encrypt: false, // Use encryption as we are connecting to a remote server
     trustServerCertificate: true, // Do not trust server certificate in production, ensure proper SSL setup
   },
-  requestTimeout: 25000,
+  requestTimeout: 35000,
 };
 console.log(sqlConfig)
 
 //app.use(cors());
 const allowedOrigins = [
   "http://localhost:5173",
-  "http://localhost:5174",  
+  "http://localhost:5174",
   process.env.FRONTEND_URL
 ];
-// --- Security helmet middleware
-app.use(helmet());
 
 //CORS configuration to allow only our frontend origin and credentials (cookies) to be sent
 app.use(cors({
@@ -74,6 +71,8 @@ app.use(cors({
 }));
 // --- Body parser
 app.use(express.json());
+// --- Security helmet middleware
+app.use(helmet());
 // --- Static files for receipts
 app.use("/receipts", express.static(path.join(process.cwd(), "public", "receipts")));
 // console.log(process.env.SRVRNM)
@@ -190,14 +189,14 @@ app.use("/resend-login-code", authLimiter);
 
 // --- Utility function to normalize database records with flexible field names
 function normalizeRecord(record, fallback = {}) {
-if (!record) return null;
+  if (!record) return null;
 
-return {
-  famid: record.FAMID ?? record.famid ?? fallback.famid ?? null,
-  famnm: record.FAMNM ?? record.famnm ?? fallback.famnm ?? null,
-  email: record.EMAIL_ADDRESS ?? record.email_address ?? fallback.email ?? null,
-  mobile: record.MOBILE_NUMBER ?? record.mobile_number ?? fallback.mobile ?? null
-};
+  return {
+    famid: record.FAMID ?? record.famid ?? fallback.famid ?? null,
+    famnm: record.FAMNM ?? record.famnm ?? fallback.famnm ?? null,
+    email: record.EMAIL_ADDRESS ?? record.email_address ?? fallback.email ?? null,
+    mobile: record.MOBILE_NUMBER ?? record.mobile_number ?? fallback.mobile ?? null
+  };
 }
 // // --- Middleware to protect routes
 // function requireAuth(req, res, next) {
@@ -228,36 +227,42 @@ function asyncHandler(fn) {
 // });
 // --- Test API
 app.get("/", (req, res) => {
-  res.send("Server is running");
+  res.send("API Server is running on Port: " + port);
 });
 //***************************APIs START**************************************************/
 // --- Get family ID by mobile number Stored Procedure 
-app.get("/spgetfmdet/:mobno", async (req, res) => {
-  const mobno = req.params.mobno ? String(req.params.mobno).trim() : null;
-  //console.log("Received mobno:", mobno);
 
-  if (!mobno) {
-    return res.status(400).json({ error: "Missing or invalid mobile number" });
+app.post("/spgetfmdet", async (req, res) => {
+  const { yr, mobno } = req.body;
+
+  console.log("Received mobno:", mobno);
+  console.log("Received yr:", yr);
+
+  if (!mobno || !yr) {
+    return res.status(400).json({ error: "Missing or invalid mobile number or year" });
   }
 
   try {
     const pool = await poolPromise;
-    const result = await pool.request()
+
+    const result = await pool
+      .request()
+      .input("yr", sql.VarChar, yr)
       .input("mob", sql.VarChar, mobno)
       .execute("sp_GetFmDet");
 
     if (result.recordset.length > 0) {
-      res.json(result.recordset);
+      return res.json(result.recordset);
     } else {
-      res.json({ data: null });
+      return res.json([]);
+      // or return res.json({ data: null });
+      // but [] is easier for frontend because you're checking data[0]
     }
-
   } catch (err) {
     console.error("Database error:", err);
-    res.status(500).send("Database error");
+    return res.status(500).json({ error: "Database error" });
   }
 });
-
 // --- Get family ID by mobile number from FMLOGIN TABLE Stored Procedure 
 app.get("/spgetlogindet/:mobno", async (req, res) => {
   const mobno = req.params.mobno ? String(req.params.mobno).trim() : null;
@@ -285,8 +290,13 @@ app.get("/spgetlogindet/:mobno", async (req, res) => {
 });
 // --- Get family ID by email Address & Mobile No. Stored Procedure 
 app.post("/sp_GetFmDetByMob&Email", async (req, res) => {
-  const { mobno = req.params.mobno ? String(req.params.mobno).trim() : null, 
-    emll  = req.params.emll ? String(req.params.emll).trim() : null } = req.body;
+  const { yrNo = req.params.yrNo ? String(req.params.yrNo).trim() : null,
+    mobno = req.params.mobno ? String(req.params.mobno).trim() : null,
+    emll = req.params.emll ? String(req.params.emll).trim() : null
+  } = req.body;
+  if (!yrNo) {
+    return res.status(400).json({ error: "Missing or invalid academic year" });
+  }
   if (!mobno) {
     return res.status(400).json({ error: "Missing or invalid mobile number" });
   }
@@ -297,6 +307,7 @@ app.post("/sp_GetFmDetByMob&Email", async (req, res) => {
     const pool = await poolPromise;
     const result = await pool.request()
       // .request()
+      .input("yr", sql.Char(4), yrNo)
       .input("mob", sql.VarChar, mobno)
       .input("emll", sql.VarChar, emll)
       .execute("sp_GetFmDetByMob&Email");
@@ -311,8 +322,8 @@ app.post("/sp_GetFmDetByMob&Email", async (req, res) => {
 
 // --- Get family ID by email Address & Mobile No. Stored Procedure 
 app.post("/sp_GetLoginDetByMob&Email", async (req, res) => {
-  const { mobno = req.params.mobno ? String(req.params.mobno).trim() : null, 
-    emll  = req.params.emll ? String(req.params.emll).trim() : null } = req.body;
+  const { mobno = req.params.mobno ? String(req.params.mobno).trim() : null,
+    emll = req.params.emll ? String(req.params.emll).trim() : null } = req.body;
   if (!mobno) {
     return res.status(400).json({ error: "Missing or invalid mobile number" });
   }
@@ -356,7 +367,7 @@ function generateTempPassword(length = 8) {
 
 //CREATE NEW LOGIN
 app.post('/signup', async (req, res) => {
-  const { yr,  famid, famnm, emll, mobb, pswd } = req.body;
+  const { yr, famid, famnm, emll, mobb, pswd } = req.body;
   console.log(req.body);
   if (!yr || !famid || !famnm || !emll || !mobb || !pswd) {
     return res.status(400).json({ message: 'Missing required fields' });
@@ -366,7 +377,7 @@ app.post('/signup', async (req, res) => {
     const tempPswd = generateTempPassword(10);
     console.log(tempPswd)
     //const hashedPswd = await bcrypt.hash(tempPswd, 10);    
-    const hashedPswd = tempPswd;    
+    const hashedPswd = tempPswd;
     const pool = await sql.connect(sqlConfig);
     const result = await pool
       .request()
@@ -378,12 +389,12 @@ app.post('/signup', async (req, res) => {
       .input('pswd', sql.NVarChar(255), hashedPswd)
       .execute('signup');
 
-      //SEND TEMP PASSWORD TO THE PARENT EMAIL
-      const mailOptions = {
-        from: process.env.FromEmailAddress,
-        to: emll,
-        subject: "Your Temporary Password For Parents' Fees Portal",
-        html: `
+    //SEND TEMP PASSWORD TO THE PARENT EMAIL
+    const mailOptions = {
+      from: process.env.FromEmailAddress,
+      to: emll,
+      subject: "Your Temporary Password For Parents' Fees Portal",
+      html: `
           <font face="Calibri" size="3" color = "blue">
           <h3>Dear Parent: ${famnm},</h3>
           <br/>
@@ -401,10 +412,10 @@ app.post('/signup', async (req, res) => {
           <p>El Alsson School- </p>
           <p>Best regards,</p>
         `,
-      };
-      await transporter.sendMail(mailOptions);
-      res.json({ message: 'Signup successful!' , tempPswd: tempPswd} , );
-      
+    };
+    await transporter.sendMail(mailOptions);
+    res.json({ message: 'Signup successful!', tempPswd: tempPswd },);
+
   } catch (err) {
     console.error('Database Error:', err);
     res.status(500).json({ message: 'Database Error', error: err.message });
@@ -413,7 +424,7 @@ app.post('/signup', async (req, res) => {
 
 //MODIFY AN EXISTING LOGIN BY RESETTING THE PASSWORD TO A NEW TEMPORARY ONE & SEND IT TO THE PARENT EMAIL ADDRESS
 app.post('/modifylogin', async (req, res) => {
-  const { yr,  famid, famnm, emll, mobb, pswd } = req.body;
+  const { yr, famid, famnm, emll, mobb, pswd } = req.body;
   console.log(req.body);
   if (!yr || !famid || !famnm || !emll || !mobb || !pswd) {
     return res.status(400).json({ message: 'Missing required fields' });
@@ -423,7 +434,7 @@ app.post('/modifylogin', async (req, res) => {
     const tempPswd = generateTempPassword(10);
     console.log(tempPswd)
     //const hashedPswd = await bcrypt.hash(tempPswd, 10);    
-    const hashedPswd = tempPswd;    
+    const hashedPswd = tempPswd;
     const pool = await sql.connect(sqlConfig);
     const result = await pool
       .request()
@@ -435,12 +446,12 @@ app.post('/modifylogin', async (req, res) => {
       .input('pswd', sql.NVarChar(255), hashedPswd)
       .execute('ModifyLogin');
 
-      //SEND TEMP PASSWORD TO THE PARENT EMAIL
-      const mailOptions = {
-        from: process.env.FromEmailAddress,
-        to: emll,
-        subject: "Your Reset Password For Parents' Fees Portal",
-        html: `
+    //SEND TEMP PASSWORD TO THE PARENT EMAIL
+    const mailOptions = {
+      from: process.env.FromEmailAddress,
+      to: emll,
+      subject: "Your Reset Password For Parents' Fees Portal",
+      html: `
           <font face="Calibri" size="3" color = "blue">
           <h3>Dear Parent: ${famnm},</h3>
           <br/>
@@ -458,10 +469,10 @@ app.post('/modifylogin', async (req, res) => {
           <p>El Alsson School- </p>
           <p>Best regards,</p>
         `,
-      };
-      await transporter.sendMail(mailOptions);
-      res.json({ message: 'Reset Password is successful!' , tempPswd: tempPswd} , );
-      
+    };
+    await transporter.sendMail(mailOptions);
+    res.json({ message: 'Reset Password is successful!', tempPswd: tempPswd },);
+
   } catch (err) {
     console.error('Database Error:', err);
     res.status(500).json({ message: 'Database Error', error: err.message });
@@ -515,7 +526,7 @@ app.post('/chkLoginByMob', async (req, res) => {
 app.post('/chkLoginByEml', async (req, res) => {
   const { yr, emll } = req.body;
 
-  if (!yr   || !emll  ) {
+  if (!yr || !emll) {
     return res.status(400).json({ message: 'Missing required fields' });
   }
 
@@ -526,14 +537,14 @@ app.post('/chkLoginByEml', async (req, res) => {
       .input('yr', sql.Char(4), yr)
       .input('emll', sql.NVarChar(255), emll)
       .execute('chkLoginByEml');
-      const record = result.recordset?.[0];
-      //console.log(record)
-      if (record) {
-        res.json({ famid: record.famid, famnm: record.famnm });
-      } else {
-        res.json({ message: 'Unregistered Email Address' });
-      }
-      
+    const record = result.recordset?.[0];
+    //console.log(record)
+    if (record) {
+      res.json({ famid: record.famid, famnm: record.famnm });
+    } else {
+      res.json({ message: 'Unregistered Email Address' });
+    }
+
   } catch (err) {
     console.error('Database Error:', err);
     res.status(500).json({ message: 'Database Error', error: err.message });
@@ -588,7 +599,7 @@ app.post('/chkLogin', async (req, res) => {
 
 //CHECK THE EXISTENCE OF FAMILY LOGIN USING THE EMAIL ADDRESS & MOBILE NUMBER
 app.put('/updtLogin', async (req, res) => {
-  const { yr,  famid, emll, mobb, pswd } = req.body;
+  const { yr, famid, emll, mobb, pswd } = req.body;
   console.log(req.body);
   //console.log(pswd)
   //const hashedPswd1 = await bcrypt.hash(pswd, 10);
@@ -625,11 +636,11 @@ app.put('/updtLogin', async (req, res) => {
 app.post('/chkLoginByPswd', async (req, res) => {
   const { yr, pswd, email_reg, phone_reg } = req.body;
 
-  if (!yr   || !pswd  ) {
+  if (!yr || !pswd) {
     return res.status(400).json({ message: 'Missing required fields' });
   }
   // const encryptedPswd = await bcrypt.hash(pswd , 10);
-  const encryptedPswd = pswd ;
+  const encryptedPswd = pswd;
   //console.log('hi')
   //console.log(pswd)
   //console.log(encryptedPswd)
@@ -642,20 +653,20 @@ app.post('/chkLoginByPswd', async (req, res) => {
       .input('email_reg', sql.NVarChar(255), email_reg)
       .input('phone_reg', sql.NVarChar(255), phone_reg)
       .execute('chkLoginByPswd');
-      const record = result.recordset?.[0];
-      //console.log(record)
-      //console.log(record)
-      if (record) {
-        res.json({ pswd: record.pswd ,famid: record.famid, famnm: record.famnm });
-      } else {
-        res.json({ message: 'Unregistered Mobile Number or Email Address' });
-      }      
-      // if (record  && result.recordset.length>0) {
-      //   res.json({ famid:  pswd: pswd });
-      // } else {
-      //   res.json({ message: 'Incorrect password' });
-      // }
-      
+    const record = result.recordset?.[0];
+    //console.log(record)
+    //console.log(record)
+    if (record) {
+      res.json({ pswd: record.pswd, famid: record.famid, famnm: record.famnm });
+    } else {
+      res.json({ message: 'Unregistered Mobile Number or Email Address' });
+    }
+    // if (record  && result.recordset.length>0) {
+    //   res.json({ famid:  pswd: pswd });
+    // } else {
+    //   res.json({ message: 'Incorrect password' });
+    // }
+
   } catch (err) {
     console.error('Database Error:', err);
     res.status(500).json({ message: 'Database Error', error: err.message });
@@ -677,27 +688,27 @@ app.post('/sp_GetFmInfo', async (req, res) => {
       .input('yrNo', sql.Char(4), yrNo)
       .input('famid', sql.Int, CurFmNo)
       .execute('sp_GetFmInfo');
-    const records = result.recordset;      
+    const records = result.recordset;
     if (records && records.length > 0) {
       res.json(records); // ✅ sends array
     } else {
       res.json([]);
-    }      
+    }
 
-// const record = result.recordset?.[0];
+    // const record = result.recordset?.[0];
 
-// if (record) {
-//   res.json({
-//     schoolNm: record.schoolNm,
-//     stid: record.stid,
-//     fullname: record.fullname,
-//     famnm: record.famnm,
-//     ygpnm: record.ygpnm,
-//     famid: record.famid,
-//   });
-// } else {
-//   res.json({ message: 'Unregistered Mobile Number' });
-// }
+    // if (record) {
+    //   res.json({
+    //     schoolNm: record.schoolNm,
+    //     stid: record.stid,
+    //     fullname: record.fullname,
+    //     famnm: record.famnm,
+    //     ygpnm: record.ygpnm,
+    //     famid: record.famid,
+    //   });
+    // } else {
+    //   res.json({ message: 'Unregistered Mobile Number' });
+    // }
   } catch (err) {
     console.error('Database Error:', err);
     res.status(500).json({ message: 'Database Error', error: err.message });
@@ -786,7 +797,7 @@ app.get("/bankdet/:bnkId", async (req, res) => {
 // });
 
 // API to validate credentials, generate OTP, store it in DB, and send it by email
-app.post("/loginchk", asyncHandler (async (req, res) => {
+app.post("/loginchk", asyncHandler(async (req, res) => {
   const { yr, emll, pswd, mobno } = req.body;
 
   if (!yr || !emll || !pswd || !mobno) {
@@ -821,9 +832,9 @@ app.post("/loginchk", asyncHandler (async (req, res) => {
     const verificationToken = crypto.randomUUID();
     // 4) Expiry = 5 minutes
     const expiresAt = new Date(Date.now() + 5 * 60 * 1000);
-    const otpHash = await bcrypt.hash(otpCode, 10);    
+    const otpHash = await bcrypt.hash(otpCode, 10);
     console.log("OTP plain:", otpCode);
-    console.log("OTP hash:", otpHash);    
+    console.log("OTP hash:", otpHash);
     // 5) Invalidate previous unused OTPs for same user (optional but recommended)
     await pool
       .request()
@@ -871,7 +882,7 @@ app.post("/loginchk", asyncHandler (async (req, res) => {
       <p>Finance Department - Fees Section</p>
       <p>El Alsson School- </p>
       <p>Best regards,</p>
-    `,          
+    `,
     });
     return res.json({
       success: true,
@@ -896,72 +907,72 @@ app.post("/resend-login-code", asyncHandler(async (req, res) => {
   const { verificationToken } = req.body;
   if (!verificationToken) {
     return res.status(400).json({
-    success: false,
-    message: "Missing verification token"
-  });
+      success: false,
+      message: "Missing verification token"
+    });
   }
 
   try {
     const pool = await sql.connect(sqlConfig);
-  // 1) Load existing OTP request
-  const result = await pool
-  .request()
-  .input("verificationToken", sql.NVarChar(100), String(verificationToken).trim())
-  .query(`SELECT TOP 1 OTP_ID,FAMID,FAMNM,EMAIL_ADDRESS,MOBILE_NUMBER,EXPIRES_AT,IS_USED,ATTEMPTS ,  
+    // 1) Load existing OTP request
+    const result = await pool
+      .request()
+      .input("verificationToken", sql.NVarChar(100), String(verificationToken).trim())
+      .query(`SELECT TOP 1 OTP_ID,FAMID,FAMNM,EMAIL_ADDRESS,MOBILE_NUMBER,EXPIRES_AT,IS_USED,ATTEMPTS ,  
     case is_used when 1 then 'True' else 'False' end as ussdd
     FROM LOGIN_OTP_VERIFICATIONS WHERE VERIFICATION_TOKEN = @verificationToken
   `);
-  const record = result.recordset?.[0];
-  if (!record) {
-  return res.status(400).json({
-    success: false,
-    message: "Invalid verification request"
-  });
-  }
-  // 2) Decide if resend is allowed
-  const isExpired = new Date() > new Date(record.EXPIRES_AT);
-  const attemptsExceeded = record.ATTEMPTS >= 3;
-  if (!isExpired && !attemptsExceeded) {
-  return res.status(400).json({
-    success: false,
-    message: "You can request a new code only after expiry or after exceeding maximum attempts"
-  });
-  }
-  // 3) Mark old OTP as used
-  await pool
-  .request()
-  .input("otpId", sql.Int, record.OTP_ID)
-  .query(`UPDATE LOGIN_OTP_VERIFICATIONS SET IS_USED = 1,USED_AT = GETDATE() WHERE OTP_ID = @otpId`);
-  // 4) Generate new OTP
-  const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
-  const otpHash = await bcrypt.hash(otpCode, 10);
-  console.log("OTP plain:", otpCode);
-  console.log("OTP hash:", otpHash);    
+    const record = result.recordset?.[0];
+    if (!record) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid verification request"
+      });
+    }
+    // 2) Decide if resend is allowed
+    const isExpired = new Date() > new Date(record.EXPIRES_AT);
+    const attemptsExceeded = record.ATTEMPTS >= 3;
+    if (!isExpired && !attemptsExceeded) {
+      return res.status(400).json({
+        success: false,
+        message: "You can request a new code only after expiry or after exceeding maximum attempts"
+      });
+    }
+    // 3) Mark old OTP as used
+    await pool
+      .request()
+      .input("otpId", sql.Int, record.OTP_ID)
+      .query(`UPDATE LOGIN_OTP_VERIFICATIONS SET IS_USED = 1,USED_AT = GETDATE() WHERE OTP_ID = @otpId`);
+    // 4) Generate new OTP
+    const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
+    const otpHash = await bcrypt.hash(otpCode, 10);
+    console.log("OTP plain:", otpCode);
+    console.log("OTP hash:", otpHash);
 
-  // 5) New token + expiry
-  const newVerificationToken = crypto.randomUUID();
-  const expiresAt = new Date(Date.now() + 5 * 60 * 1000);
-  // 6) Insert new OTP record
-  await pool
-  .request()
-  .input("verificationToken", sql.NVarChar(100), newVerificationToken)
-  .input("famid", sql.Int, record.FAMID || record.famid)
-  .input("famnm", sql.NVarChar(255), record.FAMNM || record.famnm)
-  .input("emll", sql.NVarChar(255), record.EMAIL_ADDRESS || record.email_address)
-  .input("mobno", sql.NVarChar(20), record.MOBILE_NUMBER || record.mobile_number)
-  .input("otpCode", sql.NVarChar(255), otpHash)
-  .input("expiresAt", sql.DateTime, expiresAt)
-  .query(`INSERT INTO LOGIN_OTP_VERIFICATIONS (VERIFICATION_TOKEN,FAMID,FAMNM,EMAIL_ADDRESS,MOBILE_NUMBER,OTP_CODE,
+    // 5) New token + expiry
+    const newVerificationToken = crypto.randomUUID();
+    const expiresAt = new Date(Date.now() + 5 * 60 * 1000);
+    // 6) Insert new OTP record
+    await pool
+      .request()
+      .input("verificationToken", sql.NVarChar(100), newVerificationToken)
+      .input("famid", sql.Int, record.FAMID || record.famid)
+      .input("famnm", sql.NVarChar(255), record.FAMNM || record.famnm)
+      .input("emll", sql.NVarChar(255), record.EMAIL_ADDRESS || record.email_address)
+      .input("mobno", sql.NVarChar(20), record.MOBILE_NUMBER || record.mobile_number)
+      .input("otpCode", sql.NVarChar(255), otpHash)
+      .input("expiresAt", sql.DateTime, expiresAt)
+      .query(`INSERT INTO LOGIN_OTP_VERIFICATIONS (VERIFICATION_TOKEN,FAMID,FAMNM,EMAIL_ADDRESS,MOBILE_NUMBER,OTP_CODE,
     EXPIRES_AT,IS_USED,ATTEMPTS,CREATED_AT) VALUES
     (@verificationToken,@famid,@famnm,@emll,@mobno,@otpCode,@expiresAt,0,0,GETDATE())
   `);
 
-  // 7) Send email
-  await transporter.sendMail({
-  from: process.env.MAIL_USER,
-  to: record.EMAIL_ADDRESS || record.email_address,
-  subject: "Your New Login Verification Code",
-  html: `
+    // 7) Send email
+    await transporter.sendMail({
+      from: process.env.MAIL_USER,
+      to: record.EMAIL_ADDRESS || record.email_address,
+      subject: "Your New Login Verification Code",
+      html: `
     <div style="font-family: Calibri, Arial, sans-serif; color: #1f3c88;">
       <h3>Dear Parent: ${record.FAMNM || record.famnm},</h3>
       <p>You requested a new verification code.</p>
@@ -975,7 +986,7 @@ app.post("/resend-login-code", asyncHandler(async (req, res) => {
       <p>Best regards,</p>
     </div>
   `
-  });
+    });
     // return res.json({
     //   success: true,
     //   otpRequired: true,
@@ -985,22 +996,22 @@ app.post("/resend-login-code", asyncHandler(async (req, res) => {
     //   message: "A new verification code has been sent to your email"
     // });
 
-  return res.json({
-    success: true,
-    message: "A new verification code has been sent to your email",
-    verificationToken: newVerificationToken,
-    otpRequired: true,
-    expiresAt: expiresAt.toISOString(),
-    maxAttempts: 3
-  });
+    return res.json({
+      success: true,
+      message: "A new verification code has been sent to your email",
+      verificationToken: newVerificationToken,
+      otpRequired: true,
+      expiresAt: expiresAt.toISOString(),
+      maxAttempts: 3
+    });
 
   } catch (err) {
-  console.error("resend-login-code error:", err);
-  return res.status(500).json({
-  success: false,
-  message: "Server error",
-  error: err.message
-  });
+    console.error("resend-login-code error:", err);
+    return res.status(500).json({
+      success: false,
+      message: "Server error",
+      error: err.message
+    });
   }
 }));
 
@@ -1139,7 +1150,7 @@ app.post("/verify-login-code", asyncHandler(async (req, res) => {
       });
     }
     console.log("Comparing OTP code:", { inputCode: String(code).trim(), dbHash: String(record.OTP_CODE).trim() });
-    const isMatch = await bcrypt.compare(String(code).trim(),String(record.OTP_CODE).trim());
+    const isMatch = await bcrypt.compare(String(code).trim(), String(record.OTP_CODE).trim());
     if (!isMatch) {
       await pool
         .request()
@@ -1183,17 +1194,17 @@ app.post("/verify-login-code", asyncHandler(async (req, res) => {
     //     });
     //   }
 
-      // // Set session data INSIDE regenerate callback
-      // req.session.isAuthenticated = true;
-      // req.session.user = {
-      //   famid: record.FAMID,
-      //   famnm: record.FAMNM,
-      //   email: record.EMAIL_ADDRESS,
-      //   mobile: record.MOBILE_NUMBER,
-      //   authenticated: true,
-      //   loginAt: new Date().toISOString()
-      // };
- 
+    // // Set session data INSIDE regenerate callback
+    // req.session.isAuthenticated = true;
+    // req.session.user = {
+    //   famid: record.FAMID,
+    //   famnm: record.FAMNM,
+    //   email: record.EMAIL_ADDRESS,
+    //   mobile: record.MOBILE_NUMBER,
+    //   authenticated: true,
+    //   loginAt: new Date().toISOString()
+    // };
+
     //   // Save session before responding
     //   req.session.save((saveErr) => {
     //     if (saveErr) {
@@ -1227,15 +1238,15 @@ app.post("/verify-login-code", asyncHandler(async (req, res) => {
         mobno: record.MOBILE_NUMBER
       }
     });
-  //  return res.json({
-  //     success: true,
-  //     message: "Login verified successfully",
-  //     user: req.session.user
-  //   });    
+    //  return res.json({
+    //     success: true,
+    //     message: "Login verified successfully",
+    //     user: req.session.user
+    //   });    
   } catch (err) {
     console.error("verify-login-code error:", err);
     console.error("verify-login-code stack:", err?.stack);
-    console.error("Request body:", req.body);    
+    console.error("Request body:", req.body);
     return res.status(500).json({
       success: false,
       message: "Server error"
@@ -1317,7 +1328,7 @@ app.get("/banks", async (req, res) => {
 app.post('/getstfees', async (req, res) => {
   const { famid, curstid, onlyRem } = req.body;
   console.log(req.body);
-  if (!famid || !curstid ) {
+  if (!famid || !curstid) {
     return res.status(400).json({ message: 'Missing required fields' });
   }
 
@@ -1329,13 +1340,13 @@ app.post('/getstfees', async (req, res) => {
       .input('stid', sql.NVarChar(255), curstid)
       .input('onlyRem', sql.Int, onlyRem)
       .execute('sp_GetStFees');
-      const records = result.recordset;      
-      console.log("records:", records);
-      if (records && records.length > 0) {
-        res.json(records); // ✅ sends array
-      } else {
-        res.json([]);
-      }      
+    const records = result.recordset;
+    console.log("records:", records);
+    if (records && records.length > 0) {
+      res.json(records); // ✅ sends array
+    } else {
+      res.json([]);
+    }
   } catch (err) {
     console.error('Database Error:', err);
     res.status(500).json({ message: 'Database Error', error: err.message });
@@ -1358,12 +1369,12 @@ app.post('/getstpayhist', async (req, res) => {
       .input('stid', sql.NVarChar(255), curstid)
       .input('ygpno', sql.Int, ygpno)
       .execute('sp_GetStPay');
-      const records = result.recordset;      
-      if (records && records.length > 0) {
-        res.json(records); // ✅ sends array
-      } else {
-        res.json([]);
-      }      
+    const records = result.recordset;
+    if (records && records.length > 0) {
+      res.json(records); // ✅ sends array
+    } else {
+      res.json([]);
+    }
   } catch (err) {
     console.error('Database Error:', err);
     res.status(500).json({ message: 'Database Error', error: err.message });
@@ -1449,7 +1460,7 @@ async function generateReceiptPDF(data) {
       doc
         .fontSize(20)
         .fillColor(primaryColor)
-        .text("El Alsson School – Payment Receipt",  35, 85);
+        .text("El Alsson School – Payment Receipt", 35, 85);
 
       doc
         .fontSize(10)
@@ -1519,9 +1530,9 @@ async function generateReceiptPDF(data) {
       doc
         .fontSize(10)
         .fillColor("#555")
-        .text("This receipt is automatically generated by El Alsson School - Online Fees Portal.",35, 580)
-        // .moveDown(0.5)
-        // .text("If you have questions, please contact: fees@alsson.com");
+        .text("This receipt is automatically generated by El Alsson School - Online Fees Portal.", 35, 580)
+      // .moveDown(0.5)
+      // .text("If you have questions, please contact: fees@alsson.com");
 
       doc.end();
 
@@ -2039,9 +2050,13 @@ app.post("/generate-whatsapp-link", (req, res) => {
   }
 });
 
-
+// --- Health Check & Test Endpoint
+app.get("/health", (req, res) => {
+  res.json({ ok: true });
+});
+//Greeting endpoint to test server functionality
 app.get("/hello", (req, res) => {
-  res.json({ message: "Hello from Vercel!" });
+  res.json({ message: "Hello from VSCode!" });
 });
 // --- Start Server
 // if (process.env.NODE_ENV !== "production") {

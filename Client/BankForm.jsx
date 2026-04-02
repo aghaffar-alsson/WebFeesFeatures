@@ -3,16 +3,17 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import './BankForm.css'
 import numberToWords from "number-to-words";
 import { useReactToPrint } from 'react-to-print';
-import { Button, message , Tooltip} from 'antd'; 
+import { Button, message, Tooltip, Grid } from 'antd';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faWhatsapp } from '@fortawesome/free-brands-svg-icons'
 import { faEnvelope } from '@fortawesome/free-solid-svg-icons'
 import { faHouse } from '@fortawesome/free-solid-svg-icons'
 import { faReceipt } from '@fortawesome/free-solid-svg-icons'
-
+const { useBreakpoint } = Grid;
 
 export default function BankForm() {
-  const formReff = useRef();
+  const screens = useBreakpoint();
+  const isSmallScreen = !screens.md; const formReff = useRef();
   const navigate = useNavigate();
   const { state } = useLocation();
   const {
@@ -81,18 +82,33 @@ export default function BankForm() {
           <img id="schoolLogo" src={schoolLogo} alt="School Logo" />
           <img id="bankLogo" src={bankLogo} alt="Bank Logo" />
         </div>
-      <Tooltip title="Back to Home">
-        <Button className="prntTb" style={{width:"10%" , height:"5vh", paddingTop:"8px"}}
-          key="home"
-          type="primary"
-          shape="circle"
-          icon={<FontAwesomeIcon icon={faHouse}/>}
-          
-          href="/fminfo"
-        ></Button>
-      </Tooltip> 
+        {isSmallScreen ? (
+          <Tooltip title="Back to Home">
+            <Button
+              className="prntTb"
+              style={{ width: "40px", height: "40px", paddingTop: "8px" }}
+              key="home"
+              type="primary"
+              shape="circle"
+              icon={<FontAwesomeIcon icon={faHouse} />}
+              href="/fminfo"
+            />
+          </Tooltip>
+        ) : (
+          <Button
+            className="prntTb"
+            style={{ width: "15%", height: "5vh" }}
+            key="home"
+            type="primary"
+            shape="default"
+            icon={<FontAwesomeIcon icon={faHouse} />}
+            href="/fminfo"
+          >
+            Back to Home
+          </Button>
+        )}
 
-          <p className='curdt'>Date: {curDate}</p>
+        <p className='curdt'>Date: {curDate}</p>
         {/* <p>BankFORM</p> */}
         {/* <p className='frmtitle'>Fees Form for 2025-2026 - {schoolName}</p> */}
         <div className="divtitle">
@@ -106,7 +122,7 @@ export default function BankForm() {
           <h5 >Student Name: {curStudName}</h5>
           <h5 >Year Group: {curYgpName}</h5>
           <h5 >Installment Name: {instName}</h5>
-          <h5 id='amt' className="evdd"><u>Amount: LE {instAm.toLocaleString("en-us")}</u></h5>
+          <h5 id='amt' className="evdd"><u>Amount: EGP {instAm.toLocaleString("en-us")}</u></h5>
           <h5 >ONLY {(numberToWords.toWords(instAm)).toUpperCase()} LE</h5>
           <hr></hr>
           <h5 id='bnkinfotxt' className="graytxt"></h5>
@@ -123,22 +139,38 @@ export default function BankForm() {
           </div>
           <div className="graytxt">
             <hr></hr>
-            <h5 id='evdd1' className="evdd">Please send the payment evidance to <strong><u>fees@alsson.com</u></strong></h5>
+            <h5 id='evdd1' className="evdd">Please send the payment receipt to <strong><u>fees@alsson.com</u></strong></h5>
             <h5 id='endforminfo'></h5>
           </div>
         </div>
         <div className="bnkfunc">
-          <Button className="frmPrnt" onClick={() => {if (bnkName && trgtAccNo && trgtAccNm && trgtAccIBAN && trgtAccSwft) {frmPrnt();} else {messageApi.warning("Bank info is still loading, please wait a moment.");}}}>Print/Save As PDF <i className="fa fa-print"></i></Button>
-          <Tooltip title="Back to Home">
-            <Button className="prntTb" style={{width:"10%" , height:"5vh", paddingTop:"8px"}}
+          <Button className="frmPrnt" onClick={() => { if (bnkName && trgtAccNo && trgtAccNm && trgtAccIBAN && trgtAccSwft) { frmPrnt(); } else { messageApi.warning("Bank info is still loading, please wait a moment."); } }}>Print/Save As PDF <i className="fa fa-print"></i></Button>
+          {isSmallScreen ? (
+            <Tooltip title="Back to Home">
+              <Button
+                className="prntTb"
+                style={{ width: "40px", height: "40px", paddingTop: "8px" }}
+                key="home"
+                type="primary"
+                shape="circle"
+                icon={<FontAwesomeIcon icon={faHouse} />}
+                href="/fminfo"
+              />
+            </Tooltip>
+          ) : (
+            <Button
+              className="prntTb"
+              style={{ width: "15%", height: "5vh" }}
               key="home"
               type="primary"
-              shape="circle"
-              icon={<FontAwesomeIcon icon={faHouse}/>}
-              
+              shape="default"
+              icon={<FontAwesomeIcon icon={faHouse} />}
               href="/fminfo"
-            ></Button>
-          </Tooltip> 
+            >
+              Back to Home
+            </Button>
+          )}
+
 
         </div>
         {/* <Button className="frmPrnt" onClick={frmPrnt}>Print/Save As PDF<i className="prntico" class="fa fa-print"></i></Button> */}

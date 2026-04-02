@@ -131,14 +131,15 @@ const handleLogout = () => {
 // }
 const gotoStFees = (curStID, curStNmm, ygpp, onlyout, curEmailAddress) => {
   //console.log(curStID, curStNmm, ygpp, onlyout)
-
+  console.log(userData)
+  console.log("Navigating to StFees with:", { curStID, curStNmm, ygpp, onlyout, curEmailAddress });
   navigate("/stfees", {
     state: {
       curStID,
       curStNmm,
       ygp: ygpp,
       onlyout: onlyout ? 1 : 0,
-      curEmailAddress: userData?.eml || curEmailAddress
+      curEmailAddress: userData?.emll || curEmailAddress
     }
   });
 };
@@ -176,7 +177,7 @@ const gotoStFees = (curStID, curStNmm, ygpp, onlyout, curEmailAddress) => {
                         <div className='crdinfo'>{stRec.schoolNm}</div>
                         <div className='crdinfo'>{stRec.ygpnm}</div>
                         <Checkbox className='chkk' checked={onlyout} onChange={(e) => setOnlyOut(e.target.checked)}>Outstanding Only</Checkbox>
-                        <Button className='crdbtn' onClick={() => gotoStFees(stRec.stid, stRec.fullname, stRec.ygpnm, onlyout ? 1 : 0)}>Show Fees</Button>
+                        <Button className='crdbtn' onClick={() => gotoStFees(stRec.stid, stRec.fullname, stRec.ygpnm, onlyout ? 1 : 0, userData?.eml || "")}>Show Fees</Button>
                         {/* <Button className='crdbtn'>Print Bank Form</Button> */}
                         <Button className='crdbtn' onClick={() => gotoStPayHist(stRec.stid, stRec.fullname, stRec.ygpnm, stRec.ygpno)}>Payments History</Button>
                       </>

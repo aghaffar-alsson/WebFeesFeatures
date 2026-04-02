@@ -63,7 +63,7 @@ function SignUp({userData}) {
   if (!API_BASE) {
     throw new Error("VITE_API_URL is not defined");
   }
-
+  
   // localStorage.removeItem("curFmNo");
   // localStorage.removeItem("curFmNm");
 
@@ -146,14 +146,25 @@ function SignUp({userData}) {
       setErrors((prev) => ({ ...prev, mobile: "" }));
       setMobileStatus("checking");
 
-      const res = await fetch(`${API_BASE}/spgetfmdet/${String(trgtMob).trim()}`);
+      const res = await fetch(`${API_BASE}/spgetfmdet`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          yr: import.meta.env.VITE_YEAR || "2025",
+          mobno: String(trgtMob).trim()
+        })
+      });
+
+      console.log("trgtMob:", trgtMob);
+      console.log("Mobile validation response status:", res.status);
+
       const data = await res.json();
 
-      if (data && data[0] && data.length > 0) {
+      if (Array.isArray(data) && data.length > 0) {
         setSelectedFamid(data[0].famid);
         setErrors((prev) => ({ ...prev, mobile: "" }));
         setMobileStatus("valid");
-        setTimeout(() => emlRef.current?.focus(), 100);        
+        setTimeout(() => emlRef.current?.focus(), 100);
       } else {
         setSelectedFamid("");
         setMobb("");
@@ -203,6 +214,7 @@ function SignUp({userData}) {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          yrNo: import.meta.env.VITE_YEAR || "2025",
           mobno: String(regMob).trim(),
           emll: String(regEmll).trim(),
         }),

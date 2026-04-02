@@ -149,7 +149,7 @@ function App() {
             path="/checkoutpage"
             element={
               <ProtectedRoute>
-                <CheckoutPage />
+                <CheckoutPage userData={userData}/>
               </ProtectedRoute>
             }
           />
@@ -173,6 +173,14 @@ function App() {
           OTP verification is required. Please check your email.
         </div>
       )}
+      <div className="tckt" >
+        <span className="tkt-lnk">For Fees Lists, Visit this link: 
+          <strong>
+            <a href="http://fees.alsson.com/" target="_blank" 
+            rel="noopener noreferrer" style={{marginLeft:"10px"}}>Fees Table 2025-2026</a>
+          </strong>
+        </span>
+      </div>
       <div className="tckt">
         <span className="tkt-lnk">For Help & Support, Please visit this link: 
           <strong>
@@ -180,8 +188,7 @@ function App() {
             rel="noopener noreferrer" style={{marginLeft:"10px"}}>Support Link</a>
           </strong>
         </span>
-      </div>
-    </BrowserRouter>
+      </div>    </BrowserRouter>
   );
 }
 

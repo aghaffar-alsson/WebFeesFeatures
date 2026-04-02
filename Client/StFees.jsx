@@ -1,17 +1,21 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react'
 import './StFees.css'
-import { Table, Typography, Spin, Alert, Button, message, Tooltip } from 'antd'
+import { Table, Typography, Spin, Alert, Button, message, Tooltip , Grid } from 'antd'
 import { useReactToPrint } from 'react-to-print'
 import { useNavigate ,useLocation } from 'react-router-dom';
 import Checkbox from 'antd/es/checkbox/Checkbox';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faHouse } from '@fortawesome/free-solid-svg-icons'
+const { useBreakpoint } = Grid;
 
 export default function StFees({ userData }) {
   //DECLARE GLOBAL VARIABLES
   //TO DELAY THE EXECUTION OF THE STORED PROCEDURE CALL
   //const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
   //const { Title } = Typography;
+  const screens = useBreakpoint();
+  const isSmallScreen = !screens.md;
+
   const [loading, setLoading] = useState(false);
 
   // const curFamilyNo = localStorage.getItem("loggedFamid")
@@ -31,7 +35,8 @@ export default function StFees({ userData }) {
   const curStudName = location.state?.curStNmm;
   const curYgpName = location.state?.ygp;
   const onlyRem = location.state?.onlyout === "true" ?  1 : 0;
-  const curEmailAddress = location.state?.curEmailAddress;
+  // const curEmailAddress = location.state?.curEmailAddress;
+  const curEmailAddress = userData?.emll || location.state?.curEmailAddress || "";
 
   const [selectedRows, setSelectedRows] = useState([]);
 
@@ -305,22 +310,45 @@ const handleUserSelection = (record, index, checked) => {
     console.log("Checked rows:", locked);
   }, [locked]);
   //get the installment code from the facename
+  // const getInstCodeFromFaceName = (facename) => {
+  //   if (!facename) return null;
+
+  //   const parts = facename.split("_");
+  //   return parts.length > 1 ? Number(parts[1]) : null;
+  // };
+// Get installment code from facename like: schoolfees_1_2025
   const getInstCodeFromFaceName = (facename) => {
     if (!facename) return null;
 
     const parts = facename.split("_");
-    return parts.length > 1 ? Number(parts[1]) : null;
+    return parts.length >= 3 ? Number(parts[1]) : null;
   };
+  // schoolfees_1_2025  => 2025
+  const getCurYearFromFaceName = (facename) => {
+    if (!facename) return null;
 
+    const parts = facename.split("_");
+    return parts.length >= 3 ? Number(parts[2]) : null;
+  };
+  //set the payment items array to be sent to the backend for payment processing, based on the user selection of installments from the table
   const paymentItems = selectedRows.map(r => ({
-    curyear: import.meta.env.VITE_CUR_YEAR_NAME,
-    famid: curFamilyNo,      
+    curyear: getCurYearFromFaceName(r.facename),   // <-- from facename not from env file
+    famid: curFamilyNo,
     stid: curStudID,
-    instCode: getInstCodeFromFaceName(r.facename),
+    instCode: getInstCodeFromFaceName(r.facename), // <-- installment id only not also current academic year
     schoolId: scid,
     facename: r.facename,
     amount: Math.round(r.amount), // PayFort-safe
   }));
+  // const paymentItems = selectedRows.map(r => ({
+  //   curyear: import.meta.env.VITE_CUR_YEAR_NAME,
+  //   famid: curFamilyNo,      
+  //   stid: curStudID,
+  //   instCode: getInstCodeFromFaceName(r.facename),
+  //   schoolId: scid,
+  //   facename: r.facename,
+  //   amount: Math.round(r.amount), // PayFort-safe
+  // }));
   //console.log("Payment Items:", paymentItems);  
   //Declare COLUMNS OF THE TABLE
   const columns = [
@@ -335,7 +363,7 @@ const handleUserSelection = (record, index, checked) => {
     },
     //INSTALLMENT
     {
-      title: 'Installment Name',
+      title: 'Payment Schedule',
       dataIndex: 'instName',
       align: "left",
       // render: (text, record) =>
@@ -481,7 +509,7 @@ const handleUserSelection = (record, index, checked) => {
       dataIndex: 'schoolId',
       align: "left",
       render: (text, record) =>
-        record.IsTotal === 1 ? <strong style={{ color: "#1e3a8a", display: "block", fontWeight: 700 }}>Totals:{text}</strong> : text,      // render: (status) => (
+        record.IsTotal === 1 ? <strong style={{ color: "#1e3a8a", display: "block", fontWeight: 700 }}>Total Amount:{text}</strong> : text,      // render: (status) => (
       width: 0,
     },
     hidd && {
@@ -490,7 +518,7 @@ const handleUserSelection = (record, index, checked) => {
       align: "left",
       className: "action-col",      
       render: (text, record) =>
-        record.IsTotal === 1 ? <strong style={{ color: "#1e3a8a", display: "block", fontWeight: 700 }}>Totals:{text}</strong> : text,      // render: (status) => (
+        record.IsTotal === 1 ? <strong style={{ color: "#1e3a8a", display: "block", fontWeight: 700 }}>Total Amount:{text}</strong> : text,      // render: (status) => (
       width: 0,
     },
   ].filter(Boolean);
@@ -528,7 +556,7 @@ const handleUserSelection = (record, index, checked) => {
       result.push({
         key: `total-${stid}`,
         stid,//: `Total For St.: ${s_code}` ,
-        instName: "Totals:",
+        instName: "Total Amount:",
         TotFees: totalFees,
         TotDisc: totalDisc,
         TotDue: totalDue,
@@ -929,16 +957,32 @@ const getSelectedTotal = () => {
   return (
     <div className='cont' ref={feesReff} >
       {contextHolder}
-      <Tooltip title="Back to Home">
-        <Button className="prntTb" style={{width:"10%" , height:"5vh", paddingTop:"8px"}}
+      
+        {isSmallScreen ? (
+        <Tooltip title="Back to Home">
+          <Button
+            className="prntTb"
+            style={{ width: "40px", height: "40px", paddingTop: "8px" }}
+            key="home"
+            type="primary"
+            shape="circle"
+            icon={<FontAwesomeIcon icon={faHouse} />}
+            href="/fminfo"
+          />
+        </Tooltip>
+        ) : (
+        <Button
+          className="prntTb"
+          style={{ width: "15%", height: "5vh" }}
           key="home"
           type="primary"
-          shape="circle"
-          icon={<FontAwesomeIcon icon={faHouse}/>}
-          
+          shape="default"
+          icon={<FontAwesomeIcon icon={faHouse} />}
           href="/fminfo"
-        ></Button>
-      </Tooltip>  
+        >
+          Back to Home
+        </Button>
+        )}
       <p className='curdt' >Date: {curDate}</p>
       <h3 className="frmhdr" style={{ textAlign: "center" }}><u><b>{scnm}</b></u></h3>
       <h3 className="frmhdr" style={{ textAlign: "center", fontSize:"20px" , }}><u>Student Fees Report - {import.meta.env.VITE_CUR_YEAR_NAME}</u></h3>
@@ -977,16 +1021,31 @@ const getSelectedTotal = () => {
       }
       <div className="func">
         <div>{loading ? (<></>) : (stfeesmtrx.length > 0 ? (<Button className="prntTb" onClick={tbPrnt}>Print / Save As PDF <i className="fa fa-print"></i></Button>) : (<></>))}</div>
+        {isSmallScreen ? (
         <Tooltip title="Back to Home">
-          <Button className="prntTb" style={{width:"10%" , height:"5vh", paddingTop:"8px"}}
+          <Button
+            className="prntTb"
+            style={{ width: "40px", height: "40px", paddingTop: "8px" }}
             key="home"
             type="primary"
             shape="circle"
-            icon={<FontAwesomeIcon icon={faHouse}/>}
-            
+            icon={<FontAwesomeIcon icon={faHouse} />}
             href="/fminfo"
-          ></Button>
-        </Tooltip>  
+          />
+        </Tooltip>
+        ) : (
+        <Button
+          className="prntTb"
+          style={{ width: "15%", height: "5vh" }}
+          key="home"
+          type="primary"
+          shape="default"
+          icon={<FontAwesomeIcon icon={faHouse} />}
+          href="/fminfo"
+        >
+          Back to Home
+        </Button>
+        )}
       </div>
       {loading ? (<></>) :  (stfeesmtrx.length > 0 ? <div className='bnkdiv'><select className="bnkcmb" value={selectedBnk} id="bnkcmbID" onChange={handleBnkChange}>
         <option value="">-- Select Bank --</option>

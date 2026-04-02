@@ -7,9 +7,10 @@
 .container {
   display: flex;
   align-items: flex-start;
+  flex-direction: row;
   /* Vertically align image + text */
   justify-content: flex-start;
-  gap: 8px;
+  gap: 300px;
   /* Space between image and text */
   padding: 1rem;
   /* Breathing room */
@@ -40,6 +41,7 @@
   color: dodgerblue;
   text-align: left;
   padding-top: 12px;
+  line-height: 1.5;
 
 }
 
@@ -49,8 +51,8 @@
   box-shadow: 0 12px 16px rgba(0, 0, 0, 0.1);
   /*box-shadow: 10px 8px 20px rgba(8, 37, 142, 0.34); /* Soft shadow */
   margin-right: 50px;
-  height: 140px;
-  width: 25%;
+  height: 140px !important;
+  width: 30% !important;
   margin-top: 20px;
 
 }
@@ -65,14 +67,21 @@
 
 @media (max-width: 992px) and (max-width: 768px) {
 
+.container {
+  display: flex;
+  align-items: flex-start;
+  flex-direction: column;
+  gap: 8px;
+  }
   .container h1,
   .container h2 {
-    font-size: 0.9rem;
+    font-size: 1.2rem;
     font-weight: 600;
+    text-shadow: #232323  0px 1px 1px;
   }
 
   .imghdrlft {
-    max-height: 80px;
-    width: 35%;
+    max-height: 140px !important;
+    width: 80% !important;
   }
 }

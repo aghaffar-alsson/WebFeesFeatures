@@ -1,22 +1,24 @@
 import React, { useEffect, useRef, useState } from 'react'
 import './StPay.css'
-import { Table, Typography, Spin, Alert, Button, message , Tooltip} from 'antd'
+import { Table, Typography, Spin, Alert, Button, message, Tooltip, Grid } from 'antd'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faHouse } from '@fortawesome/free-solid-svg-icons'
 import { useReactToPrint } from 'react-to-print'
 import { useNavigate, useLocation } from 'react-router-dom';
+const { useBreakpoint } = Grid;
 
-export default function StPay({userData}) {
+export default function StPay({ userData }) {
   const location = useLocation();
   const { Title } = Typography;
   const [loading, setLoading] = useState(false);
-  const curFamilyNo = userData?.famid 
-  const curFamilyName = userData?.famnm 
-  const curStudID = location.state?.curStID 
-  const curStudName = location.state?.curStNmm 
-  const curYgpName = location.state?.ygp 
-  const curYgpNo = location.state?.ygpno 
-
+  const curFamilyNo = userData?.famid
+  const curFamilyName = userData?.famnm
+  const curStudID = location.state?.curStID
+  const curStudName = location.state?.curStNmm
+  const curYgpName = location.state?.ygp
+  const curYgpNo = location.state?.ygpno
+  const screens = useBreakpoint();
+  const isSmallScreen = !screens.md;
   // const [selectedSt, setSelectedSt] = useState("");
   const [famno, setFamNo] = useState("");
   const [famnm, setFamNm] = useState("");
@@ -271,16 +273,33 @@ export default function StPay({userData}) {
   return (
     <div className='paycont' ref={payReff} >
       {contextHolder}
-      <Tooltip title="Back to Home">
-        <Button className="prntTb" style={{width:"10%" , height:"5vh", paddingTop:"8px"}}
+      {isSmallScreen ? (
+        <Tooltip title="Back to Home">
+          <Button
+            className="prntTb"
+            style={{ width: "40px", height: "40px", paddingTop: "8px" }}
+            key="home"
+            type="primary"
+            shape="circle"
+            icon={<FontAwesomeIcon icon={faHouse} />}
+            href="/fminfo"
+          />
+        </Tooltip>
+      ) : (
+        <Button
+          className="prntTb"
+          style={{ width: "15%", height: "5vh" }}
           key="home"
           type="primary"
-          shape="circle"
-          icon={<FontAwesomeIcon icon={faHouse}/>}
-          
+          shape="default"
+          icon={<FontAwesomeIcon icon={faHouse} />}
           href="/fminfo"
-        ></Button>
-      </Tooltip>       
+        >
+          Back to Home
+        </Button>
+      )}
+
+
       <p className='paycurdt'>Date: {curDate}</p>
       <h3 className='hdrr' style={{ textAlign: "center" }}><u><b>{scnm} School</b></u></h3>
       <h3 className='hdrr' style={{ textAlign: "center" }}><u><b>Student Payment History Report - {import.meta.env.VITE_CUR_YEAR_NAME}</b></u></h3>
@@ -317,17 +336,33 @@ export default function StPay({userData}) {
           : (<Alert message="No fee records found" type="info" showIcon />)
       }
       <div className="payhistfunc">
-      <div>{loading ? (<p></p>) : (stpaymtrx.length > 0 ? (<Button id='btnn' className="payprntTb" onClick={payTbPrnt}>Print / Save As PDF <i class="fa fa-print"></i></Button>) : (<></>))}</div>
-      <Tooltip title="Back to Home">
-        <Button className="prntTb" style={{width:"10%" , height:"5vh", paddingTop:"8px"}}
-          key="home"
-          type="primary"
-          shape="circle"
-          icon={<FontAwesomeIcon icon={faHouse}/>}
-          
-          href="/fminfo"
-        ></Button>
-      </Tooltip> 
+        <div>{loading ? (<p></p>) : (stpaymtrx.length > 0 ? (<Button id='btnn' className="payprntTb" onClick={payTbPrnt}>Print / Save As PDF <i class="fa fa-print"></i></Button>) : (<></>))}</div>
+        {isSmallScreen ? (
+          <Tooltip title="Back to Home">
+            <Button
+              className="prntTb"
+              style={{ width: "40px", height: "40px", paddingTop: "8px" }}
+              key="home"
+              type="primary"
+              shape="circle"
+              icon={<FontAwesomeIcon icon={faHouse} />}
+              href="/fminfo"
+            />
+          </Tooltip>
+        ) : (
+          <Button
+            className="prntTb"
+            style={{ width: "15%", height: "5vh" }}
+            key="home"
+            type="primary"
+            shape="default"
+            icon={<FontAwesomeIcon icon={faHouse} />}
+            href="/fminfo"
+          >
+            Back to Home
+          </Button>
+        )}
+
       </div>
     </div>
   )
