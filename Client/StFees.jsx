@@ -461,7 +461,7 @@ const handleUserSelection = (record, index, checked) => {
       align: "right",
       render: (value, record) => {
         const rmmValue = Number(value);
-        const displayRmmValue = rmmValue <= 30 && record.IsTotal !== 1 ? 0 : rmmValue;
+        const displayRmmValue = rmmValue <= 5 && record.IsTotal !== 1 ? 0 : rmmValue;
         return record.IsTotal === 1 ? (
           <strong style={{ color: "#4f46e5", fontStyle: "bold !important", fontWeight: 800 }}>
             {formatDec(displayRmmValue)}
@@ -896,7 +896,7 @@ const handleUserSelection = (record, index, checked) => {
   const selectedTotal = useMemo(() => {
     return stfeesmtrxWithTot.reduce((sum, row, index) => {
       if (row.IsTotal || row.IsGTotal) return sum;
-      if (checkedRows[index] && row.TotRem > 30) sum += Number(row.TotRem || 0);
+      if (checkedRows[index] && row.TotRem >= 5) sum += Number(row.TotRem || 0);
       return sum;
     }, 0);
   }, [checkedRows, stfeesmtrxWithTot]);
@@ -904,7 +904,7 @@ const handleUserSelection = (record, index, checked) => {
 
   const selectedInstallments = useMemo(() => {
     return stfeesmtrxWithTot
-      .filter((row, index) => !row.IsTotal && !row.IsGTotal && Number(row.TotRem) > 30 && checkedRows[index])
+      .filter((row, index) => !row.IsTotal && !row.IsGTotal && Number(row.TotRem) >= 5 && checkedRows[index])
       .map(row => row.instName);
   }, [checkedRows, stfeesmtrxWithTot]);  
 
@@ -933,7 +933,7 @@ const handleUserSelection = (record, index, checked) => {
 
 const getSelectedInstallments = () => {
   return stfeesmtrxWithTot
-    .filter((row, index) => checkedRows[index] && !row.IsTotal && !row.IsGTotal && Number(row.TotRem) > 30)
+    .filter((row, index) => checkedRows[index] && !row.IsTotal && !row.IsGTotal && Number(row.TotRem) >= 5)
     .map(row => ({
       instCode: row.instCode,
       instName: row.instName,
