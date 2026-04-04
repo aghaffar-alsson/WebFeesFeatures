@@ -1,0 +1,41 @@
+American School:
+Merchant Identifier: TbPedXZs
+Access Code *: kU6fcpiJQuECccKXisdF
+SHA Type *: SHA-256
+SHA Request Phrase *: $2y$10$.FGuYmcji
+SHA Response Phrase *: $2y$10$bvOG5B3vi
+********************************************
+British School:
+Merchant Identifier: TbPedXZs
+Access Code *: 5AwuMwz8X9awQnFcZcKq
+SHA Type *: SHA-256
+SHA Request Phrase *: $2y$10$glYDBiAVk
+SHA Response Phrase *: $2y$10$hletfN042
+********************************************
+*************NEW CONFIG (LIVE ENVIRONMENT)*******************
+# AMERICAN SETTINGS FOR PAYFORT 
+AM_Merchant_Identifier = TbPedXZs
+AM_Access_Code = kU6fcpiJQuECccKXisdF
+AM_RequestPhrase = $2y$10$.FGuYmcji
+AM_ResponsePhrase = $2y$10$bvOG5B3vi
+
+# BRITISH SETTINGS FOR PAYFORT
+BR_Merchant_Identifier = TbPedXZs
+BR_Access_Code = 68XB1hl9PyEXdUtX0OBW
+BR_RequestPhrase = $2y$10$glYDBiAVk
+BR_ResponsePhrase = $2y$10$hletfN042
+*************END OF NEW CONFIG (LIVE ENVIRONMENT)*******************
+
+*************OLD CONFIG (TEST SANDBOX)*******************
+# AMERICAN SETTINGS FOR PAYFORT 
+AM_RequestPhrase = $2y$10$Ta0481EDF
+AM_Merchant_Identifier = 4ada67b5
+AM_Access_Code = M4sQwfE5v1O5QkjocgPW
+AM_ResponsePhrase = $2y$10$aotEpWOtP
+
+# BRITISH SETTINGS FOR PAYFORT
+BR_RequestPhrase = $2y$10$DjSJp0XoG
+BR_Merchant_Identifier = 4ada67b5
+BR_Access_Code = 68XB1hl9PyEXdUtX0OBW
+BR_ResponsePhrase = $2y$10$ra8j2kA3t
+*************END OF OLD CONFIG (TEST SANDBOX)*******************

@@ -85,7 +85,8 @@ function ApsMerchantSection({
 
       const form = document.createElement("form");
       form.method = "POST";
-      form.action = "https://sbcheckout.payfort.com/FortAPI/paymentPage";
+      // form.action = "https://sbcheckout.payfort.com/FortAPI/paymentPage"; // SANDBOX URL
+      form.action = "https://checkout.payfort.com/FortAPI/paymentPage"; // LIVE URL
 
       Object.keys(payfortData).forEach((key) => {
         const input = document.createElement("input");
