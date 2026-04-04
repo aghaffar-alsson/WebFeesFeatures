@@ -462,13 +462,14 @@ const handleUserSelection = (record, index, checked) => {
       render: (value, record) => {
         const rmmValue = Number(value);
         const displayRmmValue = rmmValue <= 5 && record.IsTotal !== 1 ? 0 : rmmValue;
-        return record.IsTotal === 1 ? (
-          <strong style={{ color: "#4f46e5", fontStyle: "bold !important", fontWeight: 800 }}>
-            {formatDec(displayRmmValue)}
-          </strong>
-        ) : (
-          formatDec(displayRmmValue)
-        );
+        // return record.IsTotal === 1 ? (
+        //   <strong style={{ color: "#4f46e5", fontStyle: "bold !important", fontWeight: 800 }}>
+        //     {formatDec(displayRmmValue)}
+        //   </strong>
+        // ) : (
+        //   formatDec(displayRmmValue)
+        // );
+        render: (value, record) => { rmmValue},
       },      
       width: 40,
     },
