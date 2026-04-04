@@ -462,7 +462,8 @@ const handleUserSelection = (record, index, checked) => {
       render: (value, record) => {
         const rmmValue = Number(value);
         console.log("Original TotRem value:", rmmValue, "for record:", record);
-        const displayRmmValue = rmmValue <= 5 && record.IsTotal !== 1 ? 0 : rmmValue;
+        // const displayRmmValue = rmmValue <= 5 && record.IsTotal !== 1 ? 0 : rmmValue;
+        const displayRmmValue = rmmValue;
         // return record.IsTotal === 1 ? (
         //   <strong style={{ color: "#4f46e5", fontStyle: "bold !important", fontWeight: 800 }}>
         //     {formatDec(displayRmmValue)}
