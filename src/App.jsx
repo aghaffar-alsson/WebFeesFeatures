@@ -93,7 +93,7 @@ function App() {
           >
             <Col flex="1 1 auto" className="finance-welcome-col">
               <Text className="finance-topbar-text">
-                Welcome to El Alsson Finance Portal
+                Welcome to El Alsson Fees Portal
               </Text>
             </Col>
             <Col flex="0 0 auto" className="finance-btn-col">
