@@ -320,7 +320,7 @@ function SignUp({userData}) {
         {/* FORM TITLE */}
         <div className="frmtitlee">
           <h3 style={{ paddingTop: "10px", fontSize: "1.25rem", fontWeight: "600", lineHeight: "1.5" }}>Sign Up to Parents' Fees Portal</h3>
-          <img style={{height:"14vh" , width:"45%"}} className="titleimg" src={imgg} alt="EL ALSSON" />
+          <img style={{height:"13vh !important" , width:"35% !important"}} className="titleimg" src={imgg} alt="EL ALSSON" />
         </div>
         {/* Mobile */}
         <div className="mobb">

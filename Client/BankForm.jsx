@@ -123,7 +123,7 @@ export default function BankForm() {
           <h5 >Year Group: {curYgpName}</h5>
           <h5 >Installment Name: {instName}</h5>
           <h5 id='amt' className="evdd"><u>Amount: EGP {instAm.toLocaleString("en-us")}</u></h5>
-          <h5 >ONLY {(numberToWords.toWords(instAm)).toUpperCase()} LE</h5>
+          <h5 >ONLY {(numberToWords.toWords(instAm)).toUpperCase()} EGP</h5>
           <hr></hr>
           <h5 id='bnkinfotxt' className="graytxt"></h5>
           <div className="bnkdetclass">
@@ -145,33 +145,31 @@ export default function BankForm() {
         </div>
         <div className="bnkfunc">
           <Button className="frmPrnt" onClick={() => { if (bnkName && trgtAccNo && trgtAccNm && trgtAccIBAN && trgtAccSwft) { frmPrnt(); } else { messageApi.warning("Bank info is still loading, please wait a moment."); } }}>Print/Save As PDF <i className="fa fa-print"></i></Button>
-          {isSmallScreen ? (
-            <Tooltip title="Back to Home">
-              <Button
-                className="prntTb"
-                style={{ width: "40px", height: "40px", paddingTop: "8px" }}
-                key="home"
-                type="primary"
-                shape="circle"
-                icon={<FontAwesomeIcon icon={faHouse} />}
-                href="/fminfo"
-              />
-            </Tooltip>
-          ) : (
+        {isSmallScreen ? (
+          <Tooltip title="Back to Home">
             <Button
               className="prntTb"
-              style={{ width: "15%", height: "5vh" }}
+              style={{ width: "40px", height: "40px", paddingTop: "8px" }}
               key="home"
               type="primary"
-              shape="default"
+              shape="circle"
               icon={<FontAwesomeIcon icon={faHouse} />}
               href="/fminfo"
-            >
-              Back to Home
-            </Button>
-          )}
-
-
+            />
+          </Tooltip>
+        ) : (
+          <Button
+            className="prntTb"
+            style={{ width: "15%", height: "5vh" }}
+            key="home"
+            type="primary"
+            shape="default"
+            icon={<FontAwesomeIcon icon={faHouse} />}
+            href="/fminfo"
+          >
+            Back to Home
+          </Button>
+        )}
         </div>
         {/* <Button className="frmPrnt" onClick={frmPrnt}>Print/Save As PDF<i className="prntico" class="fa fa-print"></i></Button> */}
       </div>

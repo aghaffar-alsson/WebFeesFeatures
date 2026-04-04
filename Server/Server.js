@@ -866,7 +866,7 @@ app.post("/loginchk", asyncHandler(async (req, res) => {
       to: emll,
       subject: "Your Login Verification Code",
       html: `
-      <font face="Calibri" size="3" color = "blue">
+      <font face="Calibri" size="3" color = "#000">
       <h3>Dear Parent: ${record.famnm},</h3>
       <br/>
       <h3>Welcome to our portal,</h3>
@@ -875,6 +875,8 @@ app.post("/loginchk", asyncHandler(async (req, res) => {
       <h2 style="letter-spacing: 4px;">${otpCode}</h2>
       <br/>
       <p>This OTP code will expire in 5 minutes.</p>
+      <br/>
+      <p>Please do not share this code with anyone.</p>
       <br/>
       <p>Maximum 3 attempts allowed.</p>
       <br/>
@@ -972,19 +974,24 @@ app.post("/resend-login-code", asyncHandler(async (req, res) => {
       to: record.EMAIL_ADDRESS || record.email_address,
       subject: "Your New Login Verification Code",
       html: `
-    <div style="font-family: Calibri, Arial, sans-serif; color: #1f3c88;">
-      <h3>Dear Parent: ${record.FAMNM || record.famnm},</h3>
-      <p>You requested a new verification code.</p>
-      <p>Your new OTP code is:</p>
+      <font face="Calibri" size="3" color = "#000">
+      <h3>Dear Parent: ${record.famnm},</h3>
+      <br/>
+      <h3>Welcome to our portal,</h3>
+      <br/>
+      <p>Your verification OTP code is:</p>
       <h2 style="letter-spacing: 4px;">${otpCode}</h2>
+      <br/>
       <p>This OTP code will expire in 5 minutes.</p>
+      <br/>
+      <p>Please do not share this code with anyone.</p>
+      <br/>
       <p>Maximum 3 attempts allowed.</p>
       <br/>
       <p>Finance Department - Fees Section</p>
-      <p>El Alsson School</p>
+      <p>El Alsson School- </p>
       <p>Best regards,</p>
-    </div>
-  `
+    `,
     });
     // return res.json({
     //   success: true,

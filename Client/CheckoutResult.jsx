@@ -268,16 +268,18 @@ export default function CheckoutResult() {
                 key="home"
                 type="primary"
                 shape="circle"
+                style={{ width: "40px", height: "40px", paddingTop: "0px !important" }}
                 icon={<FontAwesomeIcon icon={faHouse} />}
                 href="/fminfo"
               />
             </Tooltip>,
 
-            <Tooltip title="Show Receipt" key="recTip">
+            <Tooltip title="Show Receipt" key="recTip" >
               <Button
                 key="rec"
                 type="primary"
                 shape="circle"
+                style={{ width: "40px", height: "40px", paddingTop: "0px !important" }}
                 icon={<FontAwesomeIcon icon={faReceipt} />}
                 onClick={handlePrint}
               />
@@ -288,6 +290,7 @@ export default function CheckoutResult() {
                 key="email"
                 type="primary"
                 shape="circle"
+                style={{ width: "40px", height: "40px", paddingTop: "0px !important" }}
                 icon={<FontAwesomeIcon icon={faEnvelope} />}
                 onClick={sendEmailToSchool}
               />

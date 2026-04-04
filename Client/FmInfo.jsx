@@ -11,6 +11,7 @@ import { UserOutlined } from "@ant-design/icons";
 import './FmInfo.css'
 
 
+
 export default function FmInfo({userData , setIsAuthenticated, setUserData}) {
   const [selectedFamid, setSelectedFamid] = useState("");
   const [selectedFamNm, setSelectedFamNM] = useState("");
@@ -108,8 +109,8 @@ const gotoStPayHist = (curStID, curStNmm, ygpp, ygpp_no) => {
 
 
 const handleLogout = () => {
-  localStorage.removeItem("isAuthenticated");
-  localStorage.removeItem("userData");
+  sessionStorage.removeItem("isAuthenticated");
+  sessionStorage.removeItem("userData");
 
   setIsAuthenticated(false);
   setUserData(null);
@@ -132,6 +133,7 @@ const handleLogout = () => {
 const gotoStFees = (curStID, curStNmm, ygpp, onlyout, curEmailAddress) => {
   //console.log(curStID, curStNmm, ygpp, onlyout)
   console.log(userData)
+  console.log("onlyout value:", onlyout);
   console.log("Navigating to StFees with:", { curStID, curStNmm, ygpp, onlyout, curEmailAddress });
   navigate("/stfees", {
     state: {

@@ -33,7 +33,8 @@
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
   transition: all 0.3s ease-in-out;
   /*width: 100%;           /* Makes card fill the column */
-  min-width: 290px;
+  min-width: 270px;
+  max-width: 90%;
 }
 
 
@@ -41,7 +42,7 @@
   border: solid 2px blue;
   background: dodgerblue;
   color: #fff;
-  transform: scale(1.03) ease-in ease-out;
+  transform: scale(1.1) ease-in ease-out;
 }
 
 

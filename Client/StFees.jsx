@@ -34,7 +34,8 @@ export default function StFees({ userData }) {
   const curStudID = location.state?.curStID;
   const curStudName = location.state?.curStNmm;
   const curYgpName = location.state?.ygp;
-  const onlyRem = location.state?.onlyout === "true" ?  1 : 0;
+  const onlyRem = location.state?.onlyout === "true" || location.state?.onlyout === 1 ?  1 : 0;
+  console.log("onlyRem value from location state:", onlyRem);
   // const curEmailAddress = location.state?.curEmailAddress;
   const curEmailAddress = userData?.emll || location.state?.curEmailAddress || "";
 
@@ -370,7 +371,7 @@ const handleUserSelection = (record, index, checked) => {
       // record.IsTotal === 1 ? <strong>{text}</strong> : text,      // render: (status) => (
       render: (text, record) =>
         // record.IsTotal === 1 ? (<strong style={{ color: "#1e3a8a" , whiteSpace: 'normal', wordBreak: 'break-word'}}>{text}</strong>) : (text),
-        <strong style={{ color: "#1e3a8a" , whiteSpace: 'normal', wordBreak: 'break-word'}}>{text}</strong>,
+        <strong style={{ color: "#1e3a8a" , whiteSpace: 'normal', wordBreak:'keep-all'}}>{text}</strong>,
       width: 45,
     },
     //DUE DATE
@@ -397,7 +398,7 @@ const handleUserSelection = (record, index, checked) => {
       //render: (value1) => formatDec(value1),
       render: (value, record) =>
         record.IsTotal === 1 ? (
-          <strong style={{ color: "#4f46e5", fontWeight: 600 }}>
+          <strong style={{ color: "#4f46e5", fontStyle: "bold !important", fontWeight: 800 }}>
             {formatDec(value)}
           </strong>
         ) : (
@@ -413,7 +414,7 @@ const handleUserSelection = (record, index, checked) => {
       //render: (value2) => formatDec(value2),
       render: (value, record) =>
         record.IsTotal === 1 ? (
-          <strong style={{ color: "#4f46e5", fontWeight: 600 }}>
+          <strong style={{ color: "#4f46e5", fontStyle: "bold !important", fontWeight: 800 }}>
             {formatDec(value)}
           </strong>
         ) : (
@@ -429,7 +430,7 @@ const handleUserSelection = (record, index, checked) => {
       // render: (value3) => formatDec(value3),
       render: (value, record) =>
         record.IsTotal === 1 ? (
-          <strong style={{ color: "#4f46e5", fontWeight: 600 }}>
+          <strong style={{ color: "#4f46e5", fontStyle: "bold !important", fontWeight: 800 }}>
             {formatDec(value)}
           </strong>
         ) : (
@@ -445,7 +446,7 @@ const handleUserSelection = (record, index, checked) => {
       // render: (value4) => formatDec(value4),
       render: (value, record) =>
         record.IsTotal === 1 ? (
-          <strong style={{ color: "#4f46e5", fontWeight: 600 }}>
+          <strong style={{ color: "#4f46e5", fontStyle: "bold !important", fontWeight: 800 }}>
             {formatDec(value)}
           </strong>
         ) : (
@@ -462,7 +463,7 @@ const handleUserSelection = (record, index, checked) => {
         const rmmValue = Number(value);
         const displayRmmValue = rmmValue <= 30 && record.IsTotal !== 1 ? 0 : rmmValue;
         return record.IsTotal === 1 ? (
-          <strong style={{ color: "#4f46e5", fontWeight: 600 }}>
+          <strong style={{ color: "#4f46e5", fontStyle: "bold !important", fontWeight: 800 }}>
             {formatDec(displayRmmValue)}
           </strong>
         ) : (
@@ -509,7 +510,7 @@ const handleUserSelection = (record, index, checked) => {
       dataIndex: 'schoolId',
       align: "left",
       render: (text, record) =>
-        record.IsTotal === 1 ? <strong style={{ color: "#1e3a8a", display: "block", fontWeight: 700 }}>Total Amount:{text}</strong> : text,      // render: (status) => (
+        record.IsTotal === 1 ? <strong style={{ color: "#1e3a8a", display: "block", fontWeight: 700 }}>Total:{text}</strong> : text,      // render: (status) => (
       width: 0,
     },
     hidd && {
@@ -518,7 +519,7 @@ const handleUserSelection = (record, index, checked) => {
       align: "left",
       className: "action-col",      
       render: (text, record) =>
-        record.IsTotal === 1 ? <strong style={{ color: "#1e3a8a", display: "block", fontWeight: 700 }}>Total Amount:{text}</strong> : text,      // render: (status) => (
+        record.IsTotal === 1 ? <strong style={{ color: "#1e3a8a", display: "block", fontWeight: 700 }}>Total:{text}</strong> : text,      // render: (status) => (
       width: 0,
     },
   ].filter(Boolean);
@@ -556,7 +557,7 @@ const handleUserSelection = (record, index, checked) => {
       result.push({
         key: `total-${stid}`,
         stid,//: `Total For St.: ${s_code}` ,
-        instName: "Total Amount:",
+        instName: "Total:",
         TotFees: totalFees,
         TotDisc: totalDisc,
         TotDue: totalDue,

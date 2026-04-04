@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { message } from "antd";
+import { message , Row , Col , Typography, Button} from "antd";
+import { LinkOutlined, CustomerServiceOutlined } from "@ant-design/icons";
 import "./App.css";
 import Head from "../Client/Head.jsx";
 import SignUp from "../Client/SignUp.jsx";
@@ -14,6 +15,7 @@ import CheckoutResult from "../Client/CheckoutResult.jsx";
 import PssForgot from "../Client/PssForgot.jsx";
 
 const API_BASE = import.meta.env.VITE_API_BASE;
+const { Text } = Typography;
 
 function App() {
   const [messageApi, contextHolder] = message.useMessage();
@@ -31,7 +33,7 @@ function App() {
     try {
       const savedAuth = sessionStorage.getItem("isAuthenticated");
       const savedUser = sessionStorage.getItem("userData");
-
+      console.log("Restoring auth from sessionStorage:", { savedAuth, savedUser });
       if (savedAuth === "true" && savedUser) {
         setIsAuthenticated(true);
         setUserData(JSON.parse(savedUser));
@@ -72,15 +74,59 @@ function App() {
 
       <Head />
       {isAuthenticated && userData && (
-        <div className="welcome-banner">
-          <span className="welcome-text">
-            Welcome, <strong>{userData.famnm || userData.name || "User"}</strong>
-          </span>
-          {(userData.emll || userData.email) && (
-            <span className="welcome-email">
-              ({userData.emll || userData.email})
-            </span>
-          )}
+        // <div className="welcome-banner">
+        //   <span className="welcome-text">
+        //     Welcome, <strong>{userData.famnm || userData.name || "User"}</strong>
+        //   </span>
+        //   {(userData.emll || userData.email) && (
+        //     <span className="welcome-email">
+        //       ({userData.emll || userData.email})
+        //     </span>
+        //   )}
+        // </div>
+        <div className="finance-topbar">
+          <Row
+            className="finance-topbar-row"
+            align="middle"
+            wrap={false}
+            gutter={[8, 8]}
+          >
+            <Col flex="1 1 auto" className="finance-welcome-col">
+              <Text className="finance-topbar-text">
+                Welcome to El Alsson Finance Portal
+              </Text>
+            </Col>
+            <Col flex="0 0 auto" className="finance-btn-col">
+              <Button
+                type="primary"
+                icon={<LinkOutlined />}
+                href="http://fees.alsson.com/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="finance-topbar-btn"
+              >
+                Fees Lists {import.meta.env.VITE_CUR_YEAR_NAME ? `${import.meta.env.VITE_CUR_YEAR_NAME}` : ""}
+              </Button>
+            </Col>
+
+            <Col flex="0 0 auto" className="finance-btn-col">
+              <Button
+                type="default"
+                icon={<CustomerServiceOutlined />}
+                href="https://support.finance.alsson.app/guest/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="finance-topbar-btn support-btn"
+              >
+                Help & Support
+              </Button>
+            </Col>
+          </Row>
+              {(userData.emll || userData.email) && (
+              <span  style={{color:'#fff', fontSize:"12px"}} className="welcome-email">
+              Registered Email:{userData.emll || userData.email}
+              </span>
+              )}
         </div>
       )}
 
@@ -173,7 +219,7 @@ function App() {
           OTP verification is required. Please check your email.
         </div>
       )}
-      <div className="tckt" >
+      {/* <div className="tckt" >
         <span className="tkt-lnk">For Fees Lists, Visit this link: 
           <strong>
             <a href="http://fees.alsson.com/" target="_blank" 
@@ -188,7 +234,8 @@ function App() {
             rel="noopener noreferrer" style={{marginLeft:"10px"}}>Support Link</a>
           </strong>
         </span>
-      </div>    </BrowserRouter>
+      </div>     */}
+      </BrowserRouter>
   );
 }
 

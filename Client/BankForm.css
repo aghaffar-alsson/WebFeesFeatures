@@ -77,7 +77,6 @@ h5 {
   height: 50px;
   border-radius: 16px;
   margin-left: 300px;
-
   font-size: 16px;
   color: #fff;
   background: dodgerblue;
@@ -248,7 +247,7 @@ h5 {
 flex-direction: row;
 justify-content: flex-start;
 align-items: flex-start;
-gap: 150px}
+gap: 100px !important;}
 
 
 /* --- Responsive adjustments for tablets (medium screens: 601px–1024px) --- */
@@ -280,11 +279,11 @@ gap: 150px}
   }
 
   .frmPrnt {
-    margin-left: 0;
-    width: 60%;
+    width: 50%;
     height: 45px;
-    display: block;
+    /* display: block; */
     margin: 20px auto;
+    margin-left: 0;
     font-size: 15px;
   }
 
@@ -358,12 +357,13 @@ gap: 150px}
   }
 
   .frmPrnt {
-    width: 90%;
-    margin: 15px auto;
+    width: 50%;
+    margin-top: 15px !important;
+    margin-left: 0 !important;
     height: 45px;
     font-size: 15px ;
     border-radius: 10px;
-    display: block;
+    /* display: block; */
     /*display: none;*/
   }
   .prntico{display: none;}
