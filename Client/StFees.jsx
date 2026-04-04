@@ -469,7 +469,7 @@ const handleUserSelection = (record, index, checked) => {
         // ) : (
         //   formatDec(displayRmmValue)
         // );
-        render: (value, record) => { rmmValue},
+        render: (value, record) => { rmmValue}
       },      
       width: 40,
     },
