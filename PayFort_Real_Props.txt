@@ -21,7 +21,7 @@ AM_ResponsePhrase = $2y$10$bvOG5B3vi
 
 # BRITISH SETTINGS FOR PAYFORT
 BR_Merchant_Identifier = TbPedXZs
-BR_Access_Code = 68XB1hl9PyEXdUtX0OBW
+BR_Access_Code = kU6fcpiJQuECccKXisdF
 BR_RequestPhrase = $2y$10$glYDBiAVk
 BR_ResponsePhrase = $2y$10$hletfN042
 *************END OF NEW CONFIG (LIVE ENVIRONMENT)*******************

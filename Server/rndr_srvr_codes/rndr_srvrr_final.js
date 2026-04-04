@@ -96,33 +96,39 @@ function getMerchantCredentials(schoolId) {
 //CREATE PAYFORT SIGNATURE
 function createSignature(params, schoolId) {
   const { request_phrase } = getMerchantCredentials(schoolId);
+
+  const phrase = String(request_phrase || "").trim();
   const sorted = Object.keys(params).sort();
 
   const concatenated = sorted
     .map((key) => `${key}=${String(params[key]).trim()}`)
     .join("");
 
-  const toHash = `${request_phrase}${concatenated}${request_phrase}`;
+  const toHash = `${phrase}${concatenated}${phrase}`;
 
   console.log("=== SIGNATURE DEBUG ===");
   console.log("Signature base string:", toHash);
 
-  return crypto.createHash("sha256").update(toHash).digest("hex");
+  return crypto
+    .createHash("sha256")
+    .update(toHash, "utf8")
+    .digest("hex")
+    .toUpperCase();
 }
-
+// VERIFY PAYFORT SIGNATURE
 function verifySignature(params, schoolId) {
   const { response_phrase } = getMerchantCredentials(schoolId);
 
   const phrase = String(response_phrase || "").trim();
 
   const data = { ...params };
-  const receivedSignature = String(data.signature || "").trim().toLowerCase();
+  const receivedSignature = String(data.signature || "").trim().toUpperCase();
   delete data.signature;
 
   const sortedKeys = Object.keys(data).sort();
 
   const concatenated = sortedKeys
-    .map((key) => `${key}=${data[key]}`)
+    .map((key) => `${key}=${String(data[key]).trim()}`)
     .join("");
 
   const stringToHash = `${phrase}${concatenated}${phrase}`;
@@ -131,7 +137,7 @@ function verifySignature(params, schoolId) {
     .createHash("sha256")
     .update(stringToHash, "utf8")
     .digest("hex")
-    .toLowerCase();
+    .toUpperCase();
 
   console.log("=== APS VERIFY DEBUG ===");
   console.log("Sorted Keys:", sortedKeys);
@@ -143,7 +149,7 @@ function verifySignature(params, schoolId) {
   return generatedSignature === receivedSignature;
 }
 
-
+// ---------- MERCHANT REFERENCE GENERATOR ----------
 function generateMerchantReference(length = 12) {
   const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
   let result = "";
@@ -211,7 +217,14 @@ const {
 
     // Resolve credentials dynamically
     const { merchant_identifier, access_code } = getMerchantCredentials(schoolCode);
-
+    const creds = getMerchantCredentials(schoolCode);
+    // DEBUG LOGGING FOR CREDENTIALS AND PAYLOAD PARAMS
+    console.log("=== APS CREDENTIALS DEBUG ===");
+    console.log("schoolCode:", schoolCode);
+    console.log("merchant_identifier:", JSON.stringify(String(creds.merchant_identifier || "").trim()));
+    console.log("access_code:", JSON.stringify(String(creds.access_code || "").trim()));
+    console.log("request_phrase:", JSON.stringify(String(creds.request_phrase || "").trim()));
+    console.log("response_phrase:", JSON.stringify(String(creds.response_phrase || "").trim()));
     let formPayLoad = {
       command: "PURCHASE",
       language: "en",

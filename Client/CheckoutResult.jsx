@@ -307,8 +307,22 @@ export default function CheckoutResult() {
             <Button key="retry" type="primary" href="/checkoutpage">
               Try Again
             </Button>,
+            <Tooltip title="Back to Home" key="homeTip">
+              <Button
+                key="home"
+                type="primary"
+                shape="circle"
+                style={{ width: "40px", height: "40px", paddingTop: "0px !important" }}
+                icon={<FontAwesomeIcon icon={faHouse} />}
+                href="/fminfo"
+              />
+            </Tooltip>,
+
           ]}
+          
         />
+        
+        
       )}
     </div>
   );
