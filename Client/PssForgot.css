@@ -47,8 +47,8 @@
 
 .titleimg {
   border-radius: 50%;
-  height: 15vh;
-  width: 15vh;
+  height: 14vh !important;
+  width: 35% !important;
   border: 2px solid dodgerblue;
   box-shadow: 10px 8px 20px rgba(8, 37, 142, 0.34);
   /* Soft shadow */
@@ -364,8 +364,8 @@ input#pss, input#pss{ font-size: 16px; font-family: 'Segoe UI', Tahoma, Geneva, 
   }
 
   .titleimg {
-    width: 100px;
-    height: 100px;
+    width: 35% !important;
+    height: 14vh !important;
   }
 
   .lbl,
@@ -425,10 +425,10 @@ input#pss, input#pss{ font-size: 16px; font-family: 'Segoe UI', Tahoma, Geneva, 
     font-size: 16px;
   }
 
-  .titleimg {
-    width: 80px;
-    height: 80px;
-  }
+  /* .titleimg {
+    width: 15% !important;
+    height: 14vh !important;
+  } */
 
   .signindiv {
     gap: 7px;
@@ -501,8 +501,8 @@ input#pss, input#pss1{ font-size: 12px; font-family: 'Segoe UI', Tahoma, Geneva,
   }
 
   .titleimg {
-    width: 100px;
-    height: 100px;
+    width: 200px !important;
+    height: 200px !important;
   }
 
   #regmobno,

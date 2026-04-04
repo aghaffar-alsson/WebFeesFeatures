@@ -208,30 +208,47 @@ function normalizeRecord(record, fallback = {}) {
 //   }
 //   next();
 // }
+//Configure NODEMAILER
+const transporter = nodemailer.createTransport({
+  service: "gmail",
+  auth: {
+    user: 'fees@alsson.com',
+    pass: 'gwwowluzlabnfyqw',
+  },
+});
+
+//create random temp password
+function generateTempPassword(length = 8) {
+  const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789@$!%*?&";
+  let password = "";
+  for (let i = 0; i < length; i++) {
+    password += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return password;
+}
 // // Optional: simple async wrapper
 function asyncHandler(fn) {
   return (req, res, next) => Promise.resolve(fn(req, res, next)).catch(next);
 }
-// // --- Health Check Endpoint
-// app.get("/health", (req, res) => {
-//   res.json({
-//     success: true,
-//     message: "API is running",
-//     env: process.env.NODE_ENV || "development",
-//     session: !!req.session,
-//     user: req.session?.user ? {
-//       famid: req.session.user.famid,
-//       famnm: req.session.user.famnm
-//     } : null
-//   });
-// });
+// --- Health Check Endpoint
+app.get("/health", (req, res) => {
+  res.json({
+    success: true,
+    message: "API is running",
+    env: process.env.NODE_ENV || "development",
+    session: !!req.session,
+    user: req.session?.user ? {
+      famid: req.session.user.famid,
+      famnm: req.session.user.famnm
+    } : null
+  });
+});
 // --- Test API
 app.get("/", (req, res) => {
   res.send("API Server is running on Port: " + port);
 });
 //***************************APIs START**************************************************/
 // --- Get family ID by mobile number Stored Procedure 
-
 app.post("/spgetfmdet", async (req, res) => {
   const { yr, mobno } = req.body;
 
@@ -346,24 +363,6 @@ app.post("/sp_GetLoginDetByMob&Email", async (req, res) => {
   }
 });
 
-//Configure NODEMAILER
-const transporter = nodemailer.createTransport({
-  service: "gmail",
-  auth: {
-    user: 'fees@alsson.com',
-    pass: 'gwwowluzlabnfyqw',
-  },
-});
-
-//create random temp password
-function generateTempPassword(length = 8) {
-  const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789@$!%*?&";
-  let password = "";
-  for (let i = 0; i < length; i++) {
-    password += chars.charAt(Math.floor(Math.random() * chars.length));
-  }
-  return password;
-}
 
 //CREATE NEW LOGIN
 app.post('/signup', async (req, res) => {

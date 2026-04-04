@@ -279,6 +279,37 @@ app.get("/", (req, res) => {
 });
 //***************************APIs START**************************************************/
 // --- Get family ID by mobile number Stored Procedure 
+app.post("/spgetfmdet", async (req, res) => {
+  const { yr, mobno } = req.body;
+
+  console.log("Received mobno:", mobno);
+  console.log("Received yr:", yr);
+
+  if (!mobno || !yr) {
+    return res.status(400).json({ error: "Missing or invalid mobile number or year" });
+  }
+
+  try {
+    const pool = await poolPromise;
+
+    const result = await pool
+      .request()
+      .input("yr", sql.VarChar, yr)
+      .input("mob", sql.VarChar, mobno)
+      .execute("sp_GetFmDet");
+
+    if (result.recordset.length > 0) {
+      return res.json(result.recordset);
+    } else {
+      return res.json([]);
+      // or return res.json({ data: null });
+      // but [] is easier for frontend because you're checking data[0]
+    }
+  } catch (err) {
+    console.error("Database error:", err);
+    return res.status(500).json({ error: "Database error" });
+  }
+});
 // --- Get family ID by email Address & Mobile No. Stored Procedure 
 app.post("/sp_GetFmDetByMob&Email", async (req, res) => {
   const { yrNo = req.params.yrNo ? String(req.params.yrNo).trim() : null,
