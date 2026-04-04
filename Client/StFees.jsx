@@ -461,23 +461,14 @@ const handleUserSelection = (record, index, checked) => {
       align: "right",
       render: (value, record) => {
         const rmmValue = Number(value);
-        console.log("Original TotRem value:", rmmValue, "for record:", record);
-        // const displayRmmValue = rmmValue <= 5 && record.IsTotal !== 1 ? 0 : rmmValue;
-        const displayRmmValue = rmmValue;
-        // return record.IsTotal === 1 ? (
-        //   <strong style={{ color: "#4f46e5", fontStyle: "bold !important", fontWeight: 800 }}>
-        //     {formatDec(displayRmmValue)}
-        //   </strong>
-        // ) : (
-        //   formatDec(displayRmmValue)
-        // );
-            return record.IsTotal === 1 ? (
-      <strong style={{ color: "#4f46e5", fontWeight: 800 }}>
-        {formatDec(displayRmmValue)}
-      </strong>
-    ) : (
-      formatDec(displayRmmValue)
-    );
+        const displayRmmValue = rmmValue <= 30 && record.IsTotal !== 1 ? 0 : rmmValue;
+        return record.IsTotal === 1 ? (
+          <strong style={{ color: "#4f46e5", fontStyle: "bold !important", fontWeight: 800 }}>
+            {formatDec(displayRmmValue)}
+          </strong>
+        ) : (
+          formatDec(displayRmmValue)
+        );
       },      
       width: 40,
     },
@@ -508,7 +499,7 @@ const handleUserSelection = (record, index, checked) => {
                 </select>)} */}
                 {/* {record.TotRem >= 1000 && (<p className="prntform" onClick={() => callBnkForm(record)}>Print Bank Form</p>)} */}
                 {/* {record.TotRem >= 1000 && (<Checkbox className='chkInclude' disabled={locked[record.row_num]} checked={checkedRows[record.row_num]} onChange={(e) => handleUserSelection(record.row_num, e.target.checked)}>Add to Bank Form or PayFort Invoice</Checkbox>)} */}
-                {record.TotRem >= 5 && (<Tooltip title="Select this installment to include in payment"><Checkbox checked={checkedRows[index]} disabled={locked[index]} onChange={(e) => handleUserSelection(record, index, e.target.checked)}>Add to Bank Form or PayFort Invoice</Checkbox></Tooltip>)}
+                {record.TotRem > 30 && (<Tooltip title="Select this installment to include in payment"><Checkbox checked={checkedRows[index]} disabled={locked[index]} onChange={(e) => handleUserSelection(record, index, e.target.checked)}>Add to Bank Form or PayFort Invoice</Checkbox></Tooltip>)}
               </div>)
           }
         }
@@ -905,7 +896,7 @@ const handleUserSelection = (record, index, checked) => {
   const selectedTotal = useMemo(() => {
     return stfeesmtrxWithTot.reduce((sum, row, index) => {
       if (row.IsTotal || row.IsGTotal) return sum;
-      if (checkedRows[index] && row.TotRem >= 5) sum += Number(row.TotRem || 0);
+      if (checkedRows[index] && row.TotRem > 30) sum += Number(row.TotRem || 0);
       return sum;
     }, 0);
   }, [checkedRows, stfeesmtrxWithTot]);
@@ -913,7 +904,7 @@ const handleUserSelection = (record, index, checked) => {
 
   const selectedInstallments = useMemo(() => {
     return stfeesmtrxWithTot
-      .filter((row, index) => !row.IsTotal && !row.IsGTotal && Number(row.TotRem) >= 5 && checkedRows[index])
+      .filter((row, index) => !row.IsTotal && !row.IsGTotal && Number(row.TotRem) > 30 && checkedRows[index])
       .map(row => row.instName);
   }, [checkedRows, stfeesmtrxWithTot]);  
 
@@ -942,7 +933,7 @@ const handleUserSelection = (record, index, checked) => {
 
 const getSelectedInstallments = () => {
   return stfeesmtrxWithTot
-    .filter((row, index) => checkedRows[index] && !row.IsTotal && !row.IsGTotal && Number(row.TotRem) >= 5)
+    .filter((row, index) => checkedRows[index] && !row.IsTotal && !row.IsGTotal && Number(row.TotRem) > 30)
     .map(row => ({
       instCode: row.instCode,
       instName: row.instName,
