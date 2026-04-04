@@ -499,7 +499,7 @@ const handleUserSelection = (record, index, checked) => {
                 </select>)} */}
                 {/* {record.TotRem >= 1000 && (<p className="prntform" onClick={() => callBnkForm(record)}>Print Bank Form</p>)} */}
                 {/* {record.TotRem >= 1000 && (<Checkbox className='chkInclude' disabled={locked[record.row_num]} checked={checkedRows[record.row_num]} onChange={(e) => handleUserSelection(record.row_num, e.target.checked)}>Add to Bank Form or PayFort Invoice</Checkbox>)} */}
-                {record.TotRem >= 50 && (<Tooltip title="Select this installment to include in payment"><Checkbox checked={checkedRows[index]} disabled={locked[index]} onChange={(e) => handleUserSelection(record, index, e.target.checked)}>Add to Bank Form or PayFort Invoice</Checkbox></Tooltip>)}
+                {record.TotRem >= 5 && (<Tooltip title="Select this installment to include in payment"><Checkbox checked={checkedRows[index]} disabled={locked[index]} onChange={(e) => handleUserSelection(record, index, e.target.checked)}>Add to Bank Form or PayFort Invoice</Checkbox></Tooltip>)}
               </div>)
           }
         }
