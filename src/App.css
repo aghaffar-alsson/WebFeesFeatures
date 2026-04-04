@@ -64,7 +64,7 @@
   margin-bottom: 20px;
   box-sizing: border-box;
   overflow: hidden;
-  margin-left: 5px !important;
+  margin-left: 25px !important;
 }
 
 .finance-topbar-row {
@@ -81,7 +81,7 @@
 
 .finance-topbar-text {
   color: #ffffff !important;
-  font-size: 0.9rem !important;
+  font-size: 0.7rem !important;
   font-weight: 600;
   display: block;
   white-space: wrap;         /* keep welcome on one line */
