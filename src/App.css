@@ -64,7 +64,8 @@
   margin-bottom: 20px;
   box-sizing: border-box;
   overflow: hidden;
-  margin-left: 12px !important;
+  margin-left: 8px !important;
+  margin-right: 4px !important;
 }
 
 .finance-topbar-row {
