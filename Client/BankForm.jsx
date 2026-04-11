@@ -35,8 +35,9 @@ export default function BankForm() {
   // console.log("Received params:", state);
 
   const YrNmm = import.meta.env.VITE_CUR_YEAR_NAME
-  const bankLogo = `/${selectedBnk}.png`
-  const schoolLogo = `/logo.png`
+  // const bankLogo = `./assets/${selectedBnk}.png`
+  const bankLogo = './src/assets/' + selectedBnk + '.png'
+  const schoolLogo = './src/assets/logo.png'
   const frmPrnt = useReactToPrint({
     // content: () => formReff.current,    
     contentRef: formReff,

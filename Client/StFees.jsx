@@ -5,7 +5,7 @@ import { useReactToPrint } from 'react-to-print'
 import { useNavigate ,useLocation } from 'react-router-dom';
 import Checkbox from 'antd/es/checkbox/Checkbox';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faHouse } from '@fortawesome/free-solid-svg-icons'
+import { faHouse , faPrint } from '@fortawesome/free-solid-svg-icons'
 const { useBreakpoint } = Grid;
 
 export default function StFees({ userData }) {
@@ -79,7 +79,7 @@ export default function StFees({ userData }) {
   if (!API_BASE) {
     throw new Error("VITE_API_URL is not defined");
   }
-
+  console.log("API_BASE:", API_BASE);
 
   const feesReff = useRef();
   //Print or Save As PDF for fees table

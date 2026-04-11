@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState } from 'react';
 import { Button } from "@mui/material";
 import axios from "axios";
 import "./CheckoutPage.css";
@@ -7,7 +7,7 @@ import { Table, Spin, Tooltip, Grid } from "antd";
 import { LoadingOutlined } from "@ant-design/icons";
 import { useLocation, useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faHouse } from "@fortawesome/free-solid-svg-icons";
+import { faHouse , faLock } from "@fortawesome/free-solid-svg-icons";
 const { useBreakpoint } = Grid;
 
 function formatDec(value) {
@@ -35,7 +35,7 @@ function ApsMerchantSection({
 
   const screens = useBreakpoint();
   const isSmallScreen = !screens.md;
-  
+
   const [loading, setLoading] = useState(false);
   console.log("ApsMerchantSection props:", { email, paymentItems, finalTotal, schoolNoo, curStudID, curStudName, curYgpName, curFamilyNo, curFamilyName, fullName });
   const handlePay = async () => {
@@ -60,8 +60,33 @@ function ApsMerchantSection({
       console.log("Student Name:", curStudName);
       console.log("Year Group:", curYgpName);
 
+      // const res = await axios.post(
+      //   "https://my-payfort-backend.onrender.com/createFormPayLoad",
+      //   {
+      //     email: safeEmail,
+      //     amount,
+      //     currency,
+      //     schoolId,
+      //     paymentItems,
+      //     frontendOrigin: window.location.origin,
+
+      //     // NEW: student / family data for backend logging
+      //     studentId: curStudID || null,
+      //     studentName: curStudName || "",
+      //     curYgp: curYgpName || "",
+      //     familyNo: curFamilyNo || null,
+      //     familyName: curFamilyName || "",
+      //     fullName: fullName || "",
+      //   }
+      // );
+      const backendUrl = import.meta.env.VITE_PAYFORT_BACKEND;
+
+      if (!backendUrl) {
+        throw new Error("VITE_PAYFORT_BACKEND is not defined");
+      }
+      console.log("Using backend URL:", backendUrl);
       const res = await axios.post(
-        "https://my-payfort-backend.onrender.com/createFormPayLoad",
+        `${backendUrl}/createFormPayLoad`,
         {
           email: safeEmail,
           amount,
@@ -79,14 +104,15 @@ function ApsMerchantSection({
           fullName: fullName || "",
         }
       );
-
       const payfortData = res.data;
       console.log("Payfort payload:", payfortData);
 
       const form = document.createElement("form");
       form.method = "POST";
       // form.action = "https://sbcheckout.payfort.com/FortAPI/paymentPage"; // SANDBOX URL
-      form.action = "https://checkout.payfort.com/FortAPI/paymentPage"; // LIVE URL
+      // form.action = "https://checkout.payfort.com/FortAPI/paymentPage"; // LIVE URL
+      const CALLBACK_URL = import.meta.env.VITE_CALLBACK_URL;
+      form.action = CALLBACK_URL; // LIVE URL IN CASE OF PRODUCTION, ELSE SANDBOX IN CASE OF DEVELOPMENT (TESTING)
 
       Object.keys(payfortData).forEach((key) => {
         const input = document.createElement("input");
@@ -129,7 +155,7 @@ function ApsMerchantSection({
       <Tooltip title="Back to Home" placement="top">
         <Button
           className="home-btn"
-          style={{fontSize:"9px !important"}}
+          style={{fontSize:"9px"}}
           href="/fminfo"
           startIcon={<FontAwesomeIcon icon={faHouse} />}
           sx={{

@@ -1,8 +1,9 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState } from 'react';
 import { Result, Button, message, Tooltip } from "antd";
 import { useLocation } from "react-router-dom";
 import axios from "axios";
-import recimgg from "../src/assets/newgiza-logo.jpg";
+// import recimgg from "../src/assets/newgiza-logo.jpg";
+import recimgg from "./src/assets/newgiza-logo.jpg";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEnvelope, faHouse, faReceipt } from "@fortawesome/free-solid-svg-icons";
 
@@ -166,14 +167,13 @@ export default function CheckoutResult() {
     setLoading(false);
   }, [search]);
 
-  useEffect(() => {
-    if (!loading && details && status === "success" && !emailSent) {
-      sendEmailToSchool();
-      setEmailSent(true);
-    }
-  }, [loading, details, status, emailSent]);
-
-  const sendEmailToSchool = async () => {
+  // useEffect(() => {
+  //   if (!loading && details && status === "success" && !emailSent) {
+  //     sendEmailToSchool();
+  //     setEmailSent(true);
+  //   }
+  // }, [loading, details, status, emailSent]);
+    const sendEmailToSchool = async () => {
     try {
       if (!details) return;
 
@@ -233,6 +233,17 @@ export default function CheckoutResult() {
       });
     }
   };
+  useEffect(() => {
+    const sendEmailIfNeeded = async () => {
+      if (!loading && details && status === "success" && !emailSent) {
+        await sendEmailToSchool();
+        setEmailSent(true);
+      }
+    };
+    sendEmailIfNeeded();
+  }, [loading, details, status, emailSent, sendEmailToSchool]);
+
+
 
   const isSuccess = status === "success";
 
@@ -319,10 +330,7 @@ export default function CheckoutResult() {
             </Tooltip>,
 
           ]}
-          
         />
-        
-        
       )}
     </div>
   );

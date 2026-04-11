@@ -1,0 +1,219 @@
+@import url('https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300..800;1,300..800&display=swap');
+*{
+  font-family: "Open Sans", sans-serif;
+  font-optical-sizing: auto;
+  font-weight: 500;
+}
+.welcome-banner {
+  /*position: fixed;*/
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 9999;
+  box-sizing: border-box;
+  border-width: 2px;
+  padding: 12px 20px;
+  background: linear-gradient(135deg, #f0fff4, #e6ffed);
+  border-bottom: 1px solid #b7ebc6;
+  border-left: 3px solid #52c41a;
+  border-top: 3px solid #52c41a;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+  border-radius: 8px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin-left: 10px;
+  margin-right: 10px;
+  font-size: 15px;
+  line-height: 1.5;
+  color: #000;
+}
+
+.welcome-icon {
+  font-size: 18px;
+  line-height: 1;
+}
+
+.welcome-text {
+  color: #135200;
+  /* color: hsl(230, 50%, 30%); */
+  font-weight: 500;
+}
+
+.welcome-text strong {
+  color: #237804;
+  /* color: hsl(230, 50%, 30%); */
+  font-weight: 700;
+}
+
+.welcome-email {
+  color: #389e0d;
+  /* color: hsl(230, 50%, 30%); */
+  font-size: 14px;
+  word-break: break-word;
+}
+
+.finance-topbar {
+  width: 100%;
+  background: linear-gradient(90deg, #1f3c88, #274ea3);
+  padding: 10px 14px;
+  border-radius: 0 0 12px 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+  margin-bottom: 20px;
+  box-sizing: border-box;
+  overflow: hidden;
+  margin-left: 8px !important;
+  margin-right: 4px !important;
+}
+
+.finance-topbar-row {
+  width: 100%;
+  flex-wrap: nowrap !important; /* force single row */
+  margin-top: 5px;
+  /* margin-left: 5px !important; */
+  gap: 12px;
+}
+
+.finance-welcome-col {
+  min-width: 0; /* IMPORTANT so text can shrink */
+}
+
+.finance-topbar-text {
+  color: #ffffff !important;
+  font-size: 14px !important;
+  font-weight: 600;
+  display: block;
+  white-space: wrap;         /* keep welcome on one line */
+  overflow: hidden;
+  text-overflow: ellipsis;     /* show ... if needed */
+}
+
+.finance-btn-col {
+  display: flex;
+  align-items: center;
+}
+
+.finance-topbar-btn {
+  border-radius: 8px !important;
+  font-weight: 600;
+  min-height: 44px !important;
+  max-width: 220px;
+  white-space: normal !important;   /* allow text wrapping inside button */
+  word-break: break-word;
+  text-align: center;
+  line-height: 1.1   !important;
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 6px !important;
+}
+
+.finance-topbar-btn > span {
+  white-space: normal !important;
+  display: inline-block;
+  text-align: center;
+}
+
+.finance-topbar-btn .anticon + span {
+  white-space: normal !important;
+}
+
+.support-btn {
+  color: #1f3c88 !important;
+  border-color: #d9e3ff !important;
+  background: #ffffff !important;
+}
+
+.support-btn:hover {
+  color: #16306d !important;
+  border-color: #ffffff !important;
+  background: #f5f8ff !important;
+}
+
+/* Desktop / tablet */
+@media (min-width: 769px) {
+  .finance-topbar {
+    padding: 14px 20px;
+  }
+
+  .finance-topbar-text {
+    font-size: 18px;
+  }
+
+  .finance-topbar-btn {
+    width: 220px;
+    min-height: 44px !important;
+    padding: 4px 6px !important;
+    font-size: 10px;
+  }
+}
+
+/* Mobile - ALL IN ONE ROW */
+@media (max-width: 768px) {
+  .finance-topbar {
+    padding: 8px 10px;
+  }
+
+  .finance-topbar-row {
+    gap: 4px;
+  }
+
+  .finance-topbar-text {
+    margin-top: 4px;
+    font-size: 13px;
+    font-weight: 600;
+    text-align: center;
+  }
+
+  .finance-topbar-btn {
+    width: 110px;              /* compact width */
+    max-width: 100px;
+    min-width: 80px;
+    min-height: 46px !important;
+    font-size: 12px;
+    padding: 2px 4px !important;
+  }
+
+  .finance-topbar-btn .anticon {
+    font-size: 14px;
+  }
+}
+
+.content.with-banner {
+  padding-top: 85px;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+}
+.tkt-lnk{
+  display: flex;
+  text-align: center;
+  margin-left: 25px;
+  margin-top: 5px;
+  font-size: 12px;
+  color: #00060b;
+  /* text-shadow: #8c82f7 1px 1px 2px; */
+  line-height: 2.5;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+@media (max-width: 768px) {
+  .welcome-banner {
+    padding: 10px 12px;
+    font-size: 14px;
+    justify-content: flex-start;
+  }
+
+  .welcome-email {
+    font-size: 13px;
+  }
+
+  .content.with-banner {
+    padding-top: 95px;
+  }
+}

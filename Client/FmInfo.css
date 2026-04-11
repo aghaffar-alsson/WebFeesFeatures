@@ -33,7 +33,7 @@
   color: dodgerblue;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
   transition: all 0.3s ease-in-out;
-  /*width: 100%;           /* Makes card fill the column */
+  /*width: 100%;    */       /* Makes card fill the column */
   min-width: 270px;
   max-width: 90%;
 }

@@ -1,5 +1,5 @@
 
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef } from 'react';
 import './Signup.css'
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCheck, faCheckDouble, faGreaterThan } from "@fortawesome/free-solid-svg-icons";
@@ -63,7 +63,7 @@ function SignUp({userData}) {
   if (!API_BASE) {
     throw new Error("VITE_API_URL is not defined");
   }
-  
+  console.log("API_BASE:", import.meta.env.VITE_API_URL);
   // localStorage.removeItem("curFmNo");
   // localStorage.removeItem("curFmNm");
 
@@ -419,7 +419,7 @@ function SignUp({userData}) {
               </div>
               <div className="divpss2">
                 <label className="lbl" htmlFor="pss2">Confirm your password:</label>
-                <Input.Password id="pss2" className={`inp_1 ${!isScndPswdValid ? "inp-error" : ""}`} type="password" maxLength={10} ovalue={ownPss2}
+                <Input.Password id="pss2" className={`inp_1 ${!isScndPswdValid ? "inp-error" : ""}`} type="password" maxLength={10} value={ownPss2}
                   iconRender={(visible) => visible ? <EyeTwoTone /> : <EyeInvisibleOutlined />}
                   onChange={(e) => setOwnPss2(e.target.value)} />
                   {
