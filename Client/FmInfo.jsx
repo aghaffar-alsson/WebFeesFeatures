@@ -9,6 +9,8 @@ import { Typography } from 'antd';
 import { useNavigate } from "react-router-dom";
 import { UserOutlined } from "@ant-design/icons";
 import './FmInfo.css'
+import { openExternal } from "./openExternal.js";
+import { useExternalLink } from "./useExternalLink.js";
 
 
 
@@ -33,6 +35,9 @@ export default function FmInfo({userData , setIsAuthenticated, setUserData}) {
   if (!API_BASE) {
     throw new Error("VITE_API_URL is not defined");
   }
+  
+  //here we use the custom hook to get the openExternal function
+  const openExternal = useExternalLink();
 
 
   //console.log(yrNo)
@@ -150,7 +155,7 @@ const gotoStFees = (curStID, curStNmm, ygpp, onlyout, curEmailAddress) => {
       <div className="fmm">
       <div className="logout" style={{display: "flex", alignItems: "flex-end", marginLeft: "auto", justifyContent: "flex-end"}}>
         <Tooltip title="Logout">
-          <Button type="primary"  onClick={() => {handleLogout()}}><i className="fa-solid fa-right-from-bracket"></i></Button>
+          <Button type="primary"  onClick={() => {handleLogout()}}><i className="fa-solid fa-right-from-bracket"></i>Logout</Button>
         </Tooltip>
       </div>
         <strong>Family ID: {CurFmNo} </strong>

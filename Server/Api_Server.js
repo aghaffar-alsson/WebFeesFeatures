@@ -516,9 +516,10 @@ app.post('/signup', async (req, res) => {
         <p>You should change it by your own password immediately.</p>
         <br/>
         <p>Finance Department - Fees Section</p>
-        <p>El Alsson School- </p>
+        <p>El Alsson School</p>
         <p>Best regards,</p>
-      `,
+        <img src="https://www.alsson.com/wp-content/themes/alsson/img/newgiza-logo.jpg" alt="Alsson Logo" width="150"/>          
+      </font>`,
     });
 
     // 5️⃣ Do NOT return password in API response (security best practice)
@@ -627,7 +628,8 @@ app.post('/modifylogin', async (req, res) => {
           <p>Finance Department - Fees Section</p>
           <p>El Alsson School- </p>
           <p>Best regards,</p>
-        `,
+          <img src="https://www.alsson.com/wp-content/themes/alsson/img/newgiza-logo.jpg" alt="Alsson Logo" width="150"/>          
+      </font>` ,
     };
     //await transporter.sendMail(mailOptions);
     await sendEmail({
@@ -655,7 +657,38 @@ app.post('/modifylogin', async (req, res) => {
           <p>Finance Department - Fees Section</p>
           <p>El Alsson School- </p>
           <p>Best regards,</p>
-        `
+          <img src="https://www.alsson.com/wp-content/themes/alsson/img/newgiza-logo.jpg" alt="Alsson Logo" width="150"/>          
+      </font>` ,
+    });
+    //await transporter.sendMail(mailOptions);
+    await sendEmail({
+      to: emll,
+      subject: "Your Reset Password For Parents' Fees Portal",
+      //html: `
+      //  <h3>Dear Parent: ${famnm}</h3>
+      //  <p>Your password has been reset.</p>
+      //  <h2>${tempPswd}</h2>
+      //`
+      html: `
+          <font face="Calibri" size="3" color = "blue">
+          <h3>Dear Parent: ${famnm},</h3>
+          <br/>
+          <h3>Welcome again to our portal,</h3>
+          <br/>
+          <p>Your login account for the <strong>Parents' Fees Portal</strong> has been modified.</p>
+          <p>Here is your new temporary password:</p><u><h2 style="color:#1a73e8;">${tempPswd}</h2></u>
+          <p>You can login using the email adress:</p><u><h2 style="color:#1a73e8;">${emll}</h2></u>
+          <p>and this mobile number:</p><u><h2 style="color:#1a73e8;">${mobb}</h2></u>
+          <br/>
+          <p>Please write this password when you login for the first time only.</p>
+          <p>You should change it by your own password immediately.</p>
+          <br/>
+          <p>Finance Department - Fees Section</p>
+          <p>El Alsson School- </p>
+          <p>Best regards,</p>
+          <img src="https://www.alsson.com/wp-content/themes/alsson/img/newgiza-logo.jpg" alt="Alsson Logo" width="150"/>
+        </font>
+        `,
     });
 
     res.json({ message: 'Reset Password is successful!', tempPswd: tempPswd },);
@@ -1018,6 +1051,7 @@ app.post("/loginchk", async (req, res) => {
           <p>Finance Department - Fees Section</p>
           <p>El Alsson School</p>
           <p>Best regards,</p>
+          <img src="https://www.alsson.com/wp-content/themes/alsson/img/newgiza-logo.jpg" alt="Alsson Logo" width="150"/>          
         </font>`,
     });
 
@@ -1120,6 +1154,7 @@ app.post("/resend-login-code", asyncHandler(async (req, res) => {
           <p>Maximum 3 attempts allowed.</p>
           <p>Finance Department - Fees Section</p>
           <p>El Alsson School</p>
+          <img src="https://www.alsson.com/wp-content/themes/alsson/img/newgiza-logo.jpg" alt="Alsson Logo" width="150"/>          
         </font>`,
     });
 

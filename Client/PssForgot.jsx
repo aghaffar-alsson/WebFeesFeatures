@@ -318,7 +318,7 @@ function PssForgot() {
       <form className="allDivv" onSubmit={(e) => HandleSubmit(e, selectedFamid)}>
         {/* FORM TITLE */}
         <div className="frmtitlee">
-          <h3 style={{ paddingTop: "10px", fontSize: "1.25rem", fontWeight: "600", lineHeight: "1.5" }}>Sign Up to Parents' Fees Portal</h3>
+          <h3 style={{ paddingTop: "10px", fontSize: "1.25rem", fontWeight: "600", lineHeight: "1.5" }}>Reset Password for Parents' Fees Portal</h3>
           <img  className="titleimg" style={{height:"13vh !important" , width:"35% !important"}} src={imgg} alt="EL ALSSON" />
         </div>
         {/* Mobile */}

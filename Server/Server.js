@@ -408,9 +408,10 @@ app.post('/signup', async (req, res) => {
           <p>You should change it by your own password immediately.</p>
           <br/>
           <p>Finance Department - Fees Section</p>
-          <p>El Alsson School- </p>
+          <p>El Alsson School</p>
           <p>Best regards,</p>
-        `,
+          <img src="https://www.alsson.com/wp-content/themes/alsson/img/newgiza-logo.jpg" alt="Alsson Logo" width="150" />
+          </font>`,
     };
     await transporter.sendMail(mailOptions);
     res.json({ message: 'Signup successful!', tempPswd: tempPswd },);
@@ -465,9 +466,10 @@ app.post('/modifylogin', async (req, res) => {
           <p>You should change it by your own password immediately.</p>
           <br/>
           <p>Finance Department - Fees Section</p>
-          <p>El Alsson School- </p>
+          <p>El Alsson School</p>
           <p>Best regards,</p>
-        `,
+          <img src="https://www.alsson.com/wp-content/themes/alsson/img/newgiza-logo.jpg" alt="Alsson Logo" width="150" />
+          </font>`,
     };
     await transporter.sendMail(mailOptions);
     res.json({ message: 'Reset Password is successful!', tempPswd: tempPswd },);
@@ -881,9 +883,12 @@ app.post("/loginchk", asyncHandler(async (req, res) => {
       <p>Maximum 3 attempts allowed.</p>
       <br/>
       <p>Finance Department - Fees Section</p>
-      <p>El Alsson School- </p>
+      <p>El Alsson School</p>
       <p>Best regards,</p>
-    `,
+      <div style="margin-top: 20px; margin-bottom: 20px;">
+      <img src="https://www.alsson.com/wp-content/themes/alsson/img/newgiza-logo.jpg" alt="Alsson Logo" width="150" />
+      </div>
+      </font>`,
     });
     return res.json({
       success: true,
@@ -989,9 +994,10 @@ app.post("/resend-login-code", asyncHandler(async (req, res) => {
       <p>Maximum 3 attempts allowed.</p>
       <br/>
       <p>Finance Department - Fees Section</p>
-      <p>El Alsson School- </p>
+      <p>El Alsson School</p>
       <p>Best regards,</p>
-    `,
+      <img src="https://www.alsson.com/wp-content/themes/alsson/img/newgiza-logo.jpg" alt="Alsson Logo" width="150" />
+      </font>`,
     });
     // return res.json({
     //   success: true,
@@ -1674,6 +1680,7 @@ app.post("/send-receipt-email", async (req, res) => {
       <p>
         Best regards,<br/>
       </p>
+      <img src="https://www.alsson.com/wp-content/themes/alsson/img/newgiza-logo.jpg" alt="Alsson Logo" width="150"/>
     </div>
     `;
     console.log(process.env.SMTP_USER);

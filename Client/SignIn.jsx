@@ -491,6 +491,7 @@ export default function SignIn({setIsAuthenticated, setUserData })
   setOtpDigits(["", "", "", "", "", ""]);
 };
   //Handle login submission using email, mobile and password, then trigger OTP flow if credentials are valid
+  // console.log("API_BASE in SignIn.jsx:", API_BASE);
   const handleLoginChk = async () => {
     if (isSubmittingLogin || !isFormValid) return;
     setIsSubmittingLogin(true);
@@ -752,7 +753,7 @@ if (digit && index === 5) {
 //     setOtpError("Server error");
 //   }
 // };
-
+console.log(API_BASE);
 const handleResendOtp = async () => {
   console.log("verification token:", verificationToken);
 

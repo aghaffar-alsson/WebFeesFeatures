@@ -14,6 +14,8 @@ import StPay from "../StPay.jsx";
 import CheckoutPage from "../CheckoutPage.jsx";
 import CheckoutResult from "../CheckoutResult.jsx";
 import PssForgot from "../PssForgot.jsx";
+import { openExternal } from "../openExternal.js";
+import { useExternalLink } from "../useExternalLink.js";
 
 const API_BASE = import.meta.env.VITE_API_BASE;
 const { Text } = Typography;
@@ -25,27 +27,99 @@ function App() {
   const [authLoading, setAuthLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [userData, setUserData] = useState(null);
+  const [email, setEmail] = useState("");
+  const [famnm, setFamnm] = useState("");
 
   // ===== OTP STATE =====
   const [isOtpStep, setIsOtpStep] = useState(false);
   const [verificationToken, setVerificationToken] = useState("");
 
+  // useEffect(() => {
+  //   try {
+  //     const savedAuth = sessionStorage.getItem("isAuthenticated");
+  //     const savedUser = sessionStorage.getItem("userData");
+  //     console.log("Restoring auth from sessionStorage:", { savedAuth, savedUser });
+  //     if (savedAuth === "true" && savedUser) {
+  //       setIsAuthenticated(true);
+  //       setUserData(JSON.parse(savedUser));
+  //       setEmail(JSON.parse(savedUser).EMAIL_ADDRESS  || "");
+  //       setFamnm(JSON.parse(savedUser).FAMNM ||  "");
+  //       console.log("Auth restored successfully:", JSON.parse(savedUser));
+  //       console.log("Email and Famnm set to:", JSON.parse(savedUser).EMAIL_ADDRESS, JSON.parse(savedUser).FAMNM);
+  //       console.log(email, famnm);
+  //     } else {
+  //       setIsAuthenticated(false);
+  //       setUserData(null);
+  //       setEmail("");
+  //       setFamnm("");
+  //     }
+  //   } catch (err) {
+  //     console.error("Local auth restore error:", err);
+  //     setIsAuthenticated(false);
+  //     setUserData(null);
+  //     setEmail("");
+  //     setFamnm("");
+  //   } finally {
+  //     setAuthLoading(false);
+  //   }
+  // }, []);
+
   useEffect(() => {
     try {
+      const params = new URLSearchParams(window.location.search);
+      const forceLogout = params.get("logout");
+
+      // ===== FORCE LOGOUT MODE =====
+      if (forceLogout === "1") {
+        sessionStorage.clear();
+
+        setIsAuthenticated(false);
+        setUserData(null);
+        setEmail("");
+        setFamnm("");
+
+        console.log("Forced logout triggered");
+        return;
+      }
+
+      // ===== NORMAL RESTORE =====
       const savedAuth = sessionStorage.getItem("isAuthenticated");
       const savedUser = sessionStorage.getItem("userData");
-      console.log("Restoring auth from sessionStorage:", { savedAuth, savedUser });
+
       if (savedAuth === "true" && savedUser) {
+        const parsed = JSON.parse(savedUser);
+
+        console.log("FULL parsed user:", parsed);
+
         setIsAuthenticated(true);
-        setUserData(JSON.parse(savedUser));
+        setUserData(parsed);
+
+        setEmail(
+          parsed.EMAIL_ADDRESS ||
+          parsed.emll ||
+          parsed.email ||
+          ""
+        );
+
+        setFamnm(
+          parsed.FAMNM ||
+          parsed.famnm ||
+          ""
+        );
       } else {
         setIsAuthenticated(false);
         setUserData(null);
+        setEmail("");
+        setFamnm("");
       }
+
     } catch (err) {
-      console.error("Local auth restore error:", err);
+      console.error("Auth restore error:", err);
+
       setIsAuthenticated(false);
       setUserData(null);
+      setEmail("");
+      setFamnm("");
     } finally {
       setAuthLoading(false);
     }
@@ -68,6 +142,9 @@ function App() {
     }
     return children;
   };
+
+  //open external link with fallback
+  const openExternal = useExternalLink();
 
   return (
     <BrowserRouter>
@@ -97,8 +174,9 @@ function App() {
                 Welcome to El Alsson Fees Portal
               </Text>
             </Col>
+            {isAuthenticated && userData && (
             <Col flex="0 0 auto" className="finance-btn-col">
-              <Button
+               <Button
                 type="primary"
                 icon={<LinkOutlined />}
                 href="http://fees.alsson.com/"
@@ -108,20 +186,36 @@ function App() {
               >
                 Fees Lists {import.meta.env.VITE_CUR_YEAR_NAME ? `${import.meta.env.VITE_CUR_YEAR_NAME}` : ""}
               </Button>
-            </Col>
-
+            </Col>)}
+            {isAuthenticated && userData && (
             <Col flex="0 0 auto" className="finance-btn-col">
               <Button
                 type="default"
                 icon={<CustomerServiceOutlined />}
-                href="https://support.finance.alsson.app/guest/"
+                href={`https://support.finance.alsson.app/guest/?emll=${encodeURIComponent(email)||""}&FAMNM=${encodeURIComponent(famnm) || ""}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="finance-topbar-btn support-btn"
               >
                 Help & Support
               </Button>
-            </Col>
+            </Col>)}:
+            {/* <Button
+              type="primary"
+              icon={<LinkOutlined />}
+              onClick={() => openExternal("http://fees.alsson.com/")}
+              className="finance-topbar-btn"
+            >
+              Fees Lists {import.meta.env.VITE_CUR_YEAR_NAME || ""}
+            </Button>        
+            <Button
+              type="default"
+              icon={<CustomerServiceOutlined />}
+              onClick={() => openExternal("https://support.finance.alsson.app/guest/")}
+              className="finance-topbar-btn support-btn"
+            >
+              Help & Support
+            </Button>                 */}
           </Row>
               {(userData.emll || userData.email) && (
               <span  style={{color:'#fff', fontSize:"12px"}} className="welcome-email">
