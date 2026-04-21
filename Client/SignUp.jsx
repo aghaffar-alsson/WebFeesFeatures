@@ -434,12 +434,13 @@ function SignUp({userData}) {
               </div>
             </div>
           </div>)}
+          <div className="signindivv" style={{display:"flex", flexDirection:"row", justifyContent:"center", marginTop:"20px", gap:"10px" }}>
+            <p className='signin' style={{ fontSize: "16px", marginLeft:"0px" }}>Have an account?</p>
+            <Link style={{ fontSize: "16px", marginLeft:"20px" }} to="/signin" className="signinlnk">Sign In</Link>
+          </div>
       </form >
 
-      <div className="signindiv">
-        <p className='signin'>Have an account?</p>
-        <Link to="/signin" className="signinlnk">Sign In</Link>
-      </div>
+
     </>
   )
 }

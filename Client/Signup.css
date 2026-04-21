@@ -274,7 +274,6 @@ button {
 }
 
 
-
 .mobb {
   display: flex;
   flex-direction: column;
@@ -324,7 +323,7 @@ button {
 .signinlnk {
   font-size: 16px;
   font-weight: 600;
-  margin-left: 15px;
+  margin-left: 10px;
 }
 
 .signinlnk:hover {
@@ -367,7 +366,7 @@ input#pss, input#pss{ font-size: 16px; font-family: 'Segoe UI', Tahoma, Geneva, 
 
   .titleimg {
     height: 14vh !important;
-    width: 35% !important;
+    width: 25% !important;
   }
 
   .lbl,
@@ -424,7 +423,7 @@ input#pss, input#pss{ font-size: 16px; font-family: 'Segoe UI', Tahoma, Geneva, 
 
   .signin,
   .signinlnk {
-    margin-left: 8px !important;
+    margin-left: 10px !important;
     font-size: 16px;
   }
 
@@ -506,7 +505,7 @@ input#pss, input#pss1{ font-size: 12px; font-family: 'Segoe UI', Tahoma, Geneva,
   }
   .signin,
   .signinlnk {
-    margin-left: 0;
+    margin-left: 10px !important;
     font-size: 14px;
   }
 

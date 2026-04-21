@@ -956,16 +956,16 @@ const handleResendOtp = async () => {
         
         {!isFormValid ? (<p></p>) :
           (<div className="fminfo"><strong >Family ID:{fmDtt.famid} - Family Name:{fmDtt.famnm} </strong></div>)}
-        <div className="forgotdiv">
+        <div className="forgotdiv" style={{ fontSize: "14px", marginLeft:"20px" }}>
           {isFormValid ? (<p></p>) :
-          <Link to="/forgot-pswd" className="forgotlnk">Forgot Password</Link>}
+          <Link style={{ fontSize: "14px", marginLeft:"20px" }}  to="/forgot-pswd" className="forgotlnk">Forgot Password</Link>}
+        </div>
+        <div style={{display:"flex", flexDirection:"row" }}>
+          <p  style={{ fontSize: "14px", marginLeft:"20px" }}> Don't have an account?{''}</p>
+          <Link style={{ fontSize: "14px", marginLeft:"20px" }} to="/signup" >Sign Up</Link>
         </div>
       </form >
-
-      <div className="signupdiv">
-        <p className='signup'>Don't have an account?{''}</p>
-        <Link to="/signup" className="signuplnk">Sign Up</Link>
-      </div>
+{/* //className="signuplnk" className='signup' className="signupdiv" */}
       {/* <div className="forgt">
         <button className="enbtn" type="button" tabIndex="10" id="btnForgt" disabled  onClick={() => navigate("/forgot-pswd")}>Forgot Password</button>)
       </div> */}

@@ -149,7 +149,7 @@ body {
 .signuplnk, .forgotlnk {
   font-size: 16px;
   font-weight: 600;
-  margin-left: 15px;
+  margin-left: 10px !important;
 }
 
 .signuplnk:hover, .forgotlnk:hover {
@@ -289,12 +289,12 @@ body {
 
   .signup,
   .signuplnk , .forgotlnk {
-    margin-left: 0;
+    margin-left: 10px !important;
     font-size: 14px;
   }
   .forgotdiv {
     margin-left: 10px !important;
-    font-size: 12px;
+    font-size: 14px;
   }
 
   .titleimg {
