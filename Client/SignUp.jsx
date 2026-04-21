@@ -134,7 +134,7 @@ function SignUp({userData}) {
 
     // invalid format
     // console.log("Validating mobile:", trgtMob);
-    if (!MobRegExp.test(trgtMob)) {
+    if (!MobRegExp.test(trgtMob) || trgtMob.length < 11) {
       setErrors((prev) => ({ ...prev, mobile: "Invalid Mobile Number" }));
       setSelectedFamid("");
       setMobb("");

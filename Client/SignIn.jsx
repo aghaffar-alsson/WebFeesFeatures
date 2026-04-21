@@ -15,7 +15,9 @@ import { useNavigate } from "react-router-dom";
 import '../Client/SignUp.jsx'
 import '../Client/PssForgot.jsx'
 import { easing } from '@mui/material/styles';
-
+//to manage authentication state and session in a centralized way across the app
+import { useAuth } from "./src/AuthContext.jsx";
+//define login function from AuthContext to call after OTP verification is successful, to set auth state and store session
 // import FmInfo from '../Client/FmInfo.jsx'
 
 var MobRegExp = /^01[0-2,5]{1}[0-9]{8}$/;
@@ -23,14 +25,15 @@ var EmlRegExp = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
 var pswdRegExp = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!_@#$%^&*]).{10,}$/;
 
 
-export default function SignIn({setIsAuthenticated, setUserData }) 
+export default function SignIn()
 {
   useEffect(() => {
     localStorage.clear();
   }, []);
 
+  const { login } = useAuth();
   const [otpDigits, setOtpDigits] = useState(["", "", "", "", "", ""]);
-  const otpRefs = useRef([]);  
+  const otpRefs = useRef([]);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   // const [message, setMessage] = useState("");
@@ -51,8 +54,8 @@ export default function SignIn({setIsAuthenticated, setUserData })
   const [pss, setPss] = useState('')
   const [fmpss, setFmPss] = useState('')
   const [mobTouched, setMobTouched] = useState(false);
-  const [emailTouched, setEmailTouched] = useState(false);  
-  const [pssTouched, setPssTouched] = useState(false);  
+  const [emailTouched, setEmailTouched] = useState(false);
+  const [pssTouched, setPssTouched] = useState(false);
   const navigate = useNavigate()
   const emlRef = useRef(null);
   const mobRef = useRef(null);
@@ -66,14 +69,14 @@ export default function SignIn({setIsAuthenticated, setUserData })
   // const [verificationCode, setVerificationCode] = useState("");
   const [isSubmittingLogin, setIsSubmittingLogin] = useState(false);
   const [isVerifyingCode, setIsVerifyingCode] = useState(false);
-  const [otpError, setOtpError] = useState("");  
+  const [otpError, setOtpError] = useState("");
   //const [otpCode, setOtpCode] = useState("");
-  //Define state variables for resend OTP 
+  //Define state variables for resend OTP
   const [showOtpSection, setShowOtpSection] = useState(false);
   const [showResendOtp, setShowResendOtp] = useState(false);
-  const [isResendingOtp, setIsResendingOtp] = useState(false); 
-  const [mobileStatus, setMobileStatus] = useState(""); 
-  const [emailStatus, setEmailStatus] = useState("");  
+  const [isResendingOtp, setIsResendingOtp] = useState(false);
+  const [mobileStatus, setMobileStatus] = useState("idle");
+  const [emailStatus, setEmailStatus] = useState("");
   const [lastCheckedMobile, setLastCheckedMobile] = useState("");
 
   //Define state variables to track OTP expiration and attempt limits (optional, can also rely on backend responses)
@@ -90,8 +93,8 @@ export default function SignIn({setIsAuthenticated, setUserData })
   }
   // console.log(API_URL)
   // console.log(YrNmm)
-  //console.log(API_BASE) 
-  
+  //console.log(API_BASE)
+
   //To check the family login using mobile number
   useEffect(() => {
     const handleMobileCheck = async () => {
@@ -107,20 +110,20 @@ export default function SignIn({setIsAuthenticated, setUserData })
       }
 
       // 2) While typing less than 11 digits -> no API call, no "invalid" yet
-      if (mobileValue.length < 11) {
+      if (!MobRegExp.test(mobileValue) || mobileValue.length < 11 ) {
         setErrors((prev) => ({ ...prev, mobile: "" }));
         setFmMob("");
         setMobileStatus("invalid");
         return;
       }
 
-      // 3) Safety: prevent more than 11
-      if (mobileValue.length > 11) {
-        setErrors((prev) => ({ ...prev, mobile: "Invalid Mobile Number" }));
-        setFmMob("");
-        setMobileStatus("invalid");
-        return;
-      }
+      // // 3) Safety: prevent more than 11
+      // if (mobileValue.length > 11) {
+      //   setErrors((prev) => ({ ...prev, mobile: "Invalid Mobile Number" }));
+      //   setFmMob("");
+      //   setMobileStatus("invalid");
+      //   return;
+      // }
 
       // 4) Validate exact 11-digit format
       if (!MobRegExp.test(mobileValue)) {
@@ -198,8 +201,8 @@ export default function SignIn({setIsAuthenticated, setUserData })
     // clear dependent fields while editing
     setFmMob("");
     setFmDtt(null);
-    setMobileStatus("");
-  };  
+    // setMobileStatus("");
+  };
   //To format remaining time in mm:ss for display
   const formatTime = (seconds) => {
     const mins = Math.floor(seconds / 60);
@@ -289,7 +292,7 @@ export default function SignIn({setIsAuthenticated, setUserData })
 
   handleEmailBlur();
 }, [regEmll, YrNmm]);
-  //To manage OTP expiration countdown and auto-enable resend option when expired 
+  //To manage OTP expiration countdown and auto-enable resend option when expired
   useEffect(() => {
     if (!otpExpiresAt || !showOtpSection) {
       setTimeLeft(0);
@@ -410,7 +413,7 @@ export default function SignIn({setIsAuthenticated, setUserData })
   }
   };
   //handleEmailBlur();
-  //}, [pss]); //  
+  //}, [pss]); //
 
 
   // // To check the family login using email address & mobile number
@@ -458,7 +461,7 @@ export default function SignIn({setIsAuthenticated, setUserData })
   // if (regEmll && regMob) {
   //   chkLogin();
   // }
-  //}, [regEmll, regMob]); 
+  //}, [regEmll, regMob]);
 
 
   useEffect(() => {
@@ -534,7 +537,7 @@ export default function SignIn({setIsAuthenticated, setUserData })
 
         setOtpExpiresAt(data.expiresAt || null);
         setMaxAttempts(data.maxAttempts || 3);
-        setAttemptsLeft(data.maxAttempts || 3);        
+        setAttemptsLeft(data.maxAttempts || 3);
 
         setTimeout(() => {
           otpRefs.current[0]?.focus();
@@ -600,7 +603,7 @@ if (digit && index === 5) {
       handleVerifyCode(fullCode);
     }, 150);
   }
-}  
+}
 };
   // Handle backspace to move focus back
   const handleOtpKeyDown = (e, index) => {
@@ -684,18 +687,19 @@ if (digit && index === 5) {
     setShowOtpSection(false);
     setVerificationToken("");
 
-    sessionStorage.setItem("isAuthenticated", "true");
-    sessionStorage.setItem("userData", JSON.stringify(data.user));
-
-    setIsAuthenticated(true);
-    setUserData(data.user);
+    // sessionStorage.setItem("isAuthenticated", "true");
+    // sessionStorage.setItem("userData", JSON.stringify(data.user));
+    // setIsAuthenticated(true);
+    // setUserData(data.user);
 
     messageApi.open({
       type: "success",
       content: "Login to our portal is successful"
     });
-
+    login(data.user);
     navigate("/fminfo");
+
+    // navigate("/fminfo");
   } catch (err) {
     console.error("OTP verify error:", err);
     setOtpError("Server error");
@@ -753,7 +757,7 @@ if (digit && index === 5) {
 //     setOtpError("Server error");
 //   }
 // };
-console.log(API_BASE);
+// console.log(API_BASE);
 const handleResendOtp = async () => {
   console.log("verification token:", verificationToken);
 
@@ -808,21 +812,22 @@ const handleResendOtp = async () => {
   }
 };
   // console.log(fmEml + ' '+ fmMob)
-  const isFormValid = !errors.email 
-  && !errors.mobile 
-  && regEmll 
-  && regMob 
-  && fmEml 
-  && fmMob 
-  && pswdRegExp.test(pss) 
-  && pss != '' 
-  && fmpss != undefined 
-  && pss != undefined 
+  const isFormValid = !errors.email
+  && !errors.mobile
+  && regEmll
+  && regMob
+  && fmEml
+  && fmMob
+  && mobileStatus === "valid" && emailStatus === "valid"
+  && pswdRegExp.test(pss)
+  && pss != ''
+  && fmpss != undefined
+  && pss != undefined
   && fmpss === pss
   && String(pss).trim().toLowerCase() === String(fmpss).trim().toLowerCase();
   const isMobInvalid = mobTouched && (!regMob || !MobRegExp.test(regMob) || !!errors.mobile);
   const isEmailInvalid = emailTouched && (!regEmll || !EmlRegExp.test(regEmll) || !!errors.email);
-  const isPasswordInvalid =pssTouched && (!pss || !pswdRegExp.test(pss) || !!errors.password);  
+  const isPasswordInvalid =pssTouched && (!pss || !pswdRegExp.test(pss) || !!errors.password);
   const attemptsLabel = (count) => {if (count === 1) return "1 attempt left";return `${count} attempts left`;};
   return (
     <div>
@@ -835,25 +840,74 @@ const handleResendOtp = async () => {
         {/* Mobile */}
         <div className="mobb">
           <input
-            type="tel"
-            id="regmobno"
-            maxLength={11}
-            className={`inp ${isMobInvalid ? "inp-error" : ""}`}
-            placeholder="Write Registered Mobile Number"
-            ref={mobRef}
-            value={regMob}
-            disabled={isOtpStep}
+            type="tel" id="regmobno" maxLength={11} className={`inp ${isMobInvalid ? "inp-error" : ""}`}
+            placeholder="Write Registered Mobile Number" ref={mobRef} value={regMob} disabled={isOtpStep}
+            // onChange={(e) => {const value = e.target.value.replace(/\D/g, "").slice(0, 11); setMobTouched(true); handleMobileChange(e);
+            // setRegMob(value);setRegEmll(""); setEmailTouched(false); setEmailStatus(""); setSelectedFamid(""); setSelectedFamNM("");
+            // setErrors((prev) => ({ ...prev, mobile: "", email: "" }));
+            // if (value.length < 11) {
+            //   setMobileStatus("");
+            //   setLastCheckedMobile("");
+            //   return;
+            // }
+            // if (value.length === 11) {
+            //   setRegMob(value);
+            //   handleMobileBlur(value);
+            // }
+            // }
+            // }
             onChange={(e) => {
+              const value = e.target.value.replace(/\D/g, "").slice(0, 11);
+
               setMobTouched(true);
-              handleMobileChange(e);
+              setRegMob(value);
+
+              // reset dependent state ONLY when editing
+              if (value.length < 11) {
+                setFmMob("");
+                setFmDtt(null);
+                setMobileStatus("");
+              }
+
+              setRegEmll("");
+              setEmailTouched(false);
+              setEmailStatus("");
+              setErrors((prev) => ({ ...prev, mobile: "", email: "" }));
             }}
-            onBlur={() => setMobTouched(true)}
+
+            onBlur={() => setMobTouched(true)
+
+            }
             required
-          />          
-          { !fmMob ? (<label className="lblworn">{errors.mobile}</label>) :
+          />
+          {/* { !fmMob ? (<label className="lblworn">{errors.mobile}</label>) :
           (errors.mobile ? (
             <label className="lblworn" style={{ color: "red" }}>{errors.mobile}<FontAwesomeIcon icon={faXmark} /></label>) :
             (<label className="lblworn" style={{ color: "green" }}>Correct Mobile Number!!<FontAwesomeIcon icon={faCheck} /></label>))
+          } */}
+          {/* {
+          !fmMob ? (<label className="lblworn">{errors.mobile}</label>)
+          : mobileStatus === "checking" ? (<label className="lblworn" style={{ color: "#d48806" }}>Checking mobile number, please wait...</label>)
+          : errors.mobile ? (<label className="lblworn" style={{ color: "red" }}>{errors.mobile} <FontAwesomeIcon icon={faXmark} /></label>)
+          : mobileStatus === "valid" ? (<label className="lblworn" style={{ color: "green" }}>Correct Mobile Number!! <FontAwesomeIcon icon={faCheck} /></label>)
+          : (<label className="lblworn"></label>)
+          } */}
+          {
+            mobileStatus === "checking" ? (
+              <label className="lblworn" style={{ color: "#d48806" }}>
+                Checking mobile number, please wait...
+              </label>
+            ) : errors.mobile ? (
+              <label className="lblworn" style={{ color: "red" }}>
+                {errors.mobile} <FontAwesomeIcon icon={faXmark} />
+              </label>
+            ) : mobileStatus === "valid" ? (
+              <label className="lblworn" style={{ color: "green" }}>
+                Correct Mobile Number!! <FontAwesomeIcon icon={faCheck} />
+              </label>
+            ) : (
+              <label className="lblworn"></label>
+            )
           }
         </div>
         {/* Email */}
@@ -862,10 +916,17 @@ const handleResendOtp = async () => {
           ref={emlRef} placeholder="Write Registered Email Address" disabled={isOtpStep || !fmMob}
           value={regEmll} onChange={(e) => {setEmailTouched(true);  setRegEmll(e.target.value);}}
           onBlur={() => setEmailTouched(true)} required
-          />          
-          { !fmEml ? (<label className="lblworn">{errors.email}</label>) :
+          />
+          {/* { !fmEml ? (<label className="lblworn">{errors.email}</label>) :
             (errors.email ? (<label className="lblworn" style={{ color: "red" }}>{errors.email}<FontAwesomeIcon icon={faXmark} /></label>) :
               (<label className="lblworn" style={{ color: "green", display: "flow" }}>Correct Email Address!!<FontAwesomeIcon icon={faCheck} /></label>))
+          } */}
+          {
+          !fmEml ? (<label className="lblworn"></label>)
+          : emailStatus === "checking" ? (<label className="lblworn" style={{ color: "#d48806" }}>Checking email address, please wait...</label>)
+          : errors.email ? (<label className="lblworn" style={{ color: "red" }}>{errors.email} <FontAwesomeIcon icon={faXmark} /></label>)
+          : emailStatus === "valid" ? (<label className="lblworn" style={{ color: "green" }}>Correct Email Address!! <FontAwesomeIcon icon={faCheck} /></label>)
+          : (<label className="lblworn"></label>)
           }
         </div>
         {/* User Password */}
@@ -913,18 +974,18 @@ const handleResendOtp = async () => {
                   }}
                 />
               ))}
-            </div>            
+            </div>
             {otpError && (<label className="lblworn" style={{ color: "red" }}> {otpError}</label>)}
           </div>
-        )}        
+        )}
         {/* Submit */}
         {/* <div className="sbmtt">
           {isFormValid ? (<button className="enbtn" type="button" tabIndex="9" id="btnSubmit" onClick={chkLogin} >Submit<FontAwesomeIcon icon={faCheckDouble} /></button>) :
             (<button className="disbtn" type="button" tabIndex="9" id="btnSubmit" disabled>Submit</button>)}
         </div> */}
         <div className="sbmtt">
-        {(!isOtpStep && !isFormValid) ? (<button className="disbtn" type="button" tabIndex="9" id="btnSubmit" disabled>Submit</button>) 
-        : 
+        {(!isOtpStep && !isFormValid) ? (<button className="disbtn" type="button" tabIndex="9" id="btnSubmit" disabled>Submit</button>)
+        :
         (
           <button className="enbtn" type="submit" tabIndex="9" id="btnSubmit" disabled={isSubmittingLogin || isVerifyingCode || (timeLeft === 0 && showResendOtp)}>
           {isSubmittingLogin ? (
@@ -953,7 +1014,7 @@ const handleResendOtp = async () => {
           Attempts left: <strong style={{color:"red"}}>{attemptsLabel(attemptsLeft)}</strong>
           </span>
         </div>)}
-        
+
         {!isFormValid ? (<p></p>) :
           (<div className="fminfo"><strong >Family ID:{fmDtt.famid} - Family Name:{fmDtt.famnm} </strong></div>)}
         <div className="forgotdiv" style={{ fontSize: "14px", marginLeft:"20px" }}>

@@ -170,17 +170,17 @@
     top: 0;
     left: 0;
     max-width: 100%;
-    transform: scale(1) !important; /* adjust if needed: 0.7–0.75 usually fits */
+    transform: scale(1.1) !important; /* adjust if needed: 0.7–0.75 usually fits */
     transform-origin: top left;
     font-size: 10pt;
     line-height: 1.1;
     overflow: visible !important;
     margin: 0 !important;
     padding: 0 !important;
-    size: A4 portrait !important;
+    size: A4 landscape !important;
    }
      @page {
-    size: landscape;
+    size: landscape !important;
   }
   .payprntTb {
     display: none !important;

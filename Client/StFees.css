@@ -220,8 +220,8 @@
 @media print {
   /* 1️⃣ Page setup */
   @page {
-    size: A4 portrait; /* standard paper size */
-    margin: 10mm; /* small margins to maximize space */
+    size: A4 landscape !important; /* standard paper size */
+    margin: 5mm !important; /* small margins to maximize space */
   }
   /* Hide everything by default */
   body * {

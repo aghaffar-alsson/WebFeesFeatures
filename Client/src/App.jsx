@@ -16,20 +16,22 @@ import CheckoutResult from "../CheckoutResult.jsx";
 import PssForgot from "../PssForgot.jsx";
 import { openExternal } from "../openExternal.js";
 import { useExternalLink } from "../useExternalLink.js";
-
+import { useAuth } from "./AuthContext.jsx";
+// import ProtectedRoute from '../ProtectedRoute.jsx';
 const API_BASE = import.meta.env.VITE_API_BASE;
 const { Text } = Typography;
 
 function App() {
   const [messageApi, contextHolder] = message.useMessage();
-
+  const { isAuthenticated, userData, logout, login, loading } = useAuth();
   // ===== AUTH STATE =====
-  const [authLoading, setAuthLoading] = useState(true);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [userData, setUserData] = useState(null);
-  const [email, setEmail] = useState("");
-  const [famnm, setFamnm] = useState("");
-
+  // const [authLoading, setAuthLoading] = useState(true);
+  // const [isAuthenticated, setIsAuthenticated] = useState(false);
+  // const [userData, setUserData] = useState(null);
+  // const [email, setEmail] = useState("");
+  // const [famnm, setFamnm] = useState("");
+  const email = userData?.emll || userData?.EMAIL_ADDRESS || "";
+  const famnm = userData?.famnm || userData?.FAMNM || "";
   // ===== OTP STATE =====
   const [isOtpStep, setIsOtpStep] = useState(false);
   const [verificationToken, setVerificationToken] = useState("");
@@ -174,76 +176,98 @@ function App() {
   //   }
   // }, []);
 
-  useEffect(() => {
-    try {
-      const params = new URLSearchParams(location.search);
+  // useEffect(() => {
+  //   try {
+  //     const params = new URLSearchParams(location.search);
 
-      const emllParam = params.get("emll");
-      const famnmParam = params.get("FAMNM");
+  //     const emllParam = params.get("emll");
+  //     const famnmParam = params.get("FAMNM");
 
-      // RETURN FROM PHP
-      if (emllParam || famnmParam) {
-        const savedUser = sessionStorage.getItem("userData");
-        let parsed = savedUser ? JSON.parse(savedUser) : {};
+  //     // RETURN FROM PHP
+  //     if (emllParam || famnmParam) {
+  //       const savedUser = sessionStorage.getItem("userData");
+  //       let parsed = savedUser ? JSON.parse(savedUser) : {};
 
-        const famidParam = params.get("famid");
-        const mobnoParam = params.get("mobno");
+  //       const famidParam = params.get("famid");
+  //       const mobnoParam = params.get("mobno");
 
-        const updatedUser = {
-          ...parsed,
-          famid: famidParam || parsed.famid || null,
-          mobno: mobnoParam || parsed.mobno || "",
-          emll: emllParam || parsed.emll || "",
-          famnm: famnmParam || parsed.famnm || "" 
-        };
-        // const updatedUser = {
-        //   ...parsed,
-        //   emll: emllParam || parsed.emll || "",
-        //   famnm: famnmParam || parsed.famnm || ""
-        // };
+  //       const updatedUser = {
+  //         ...parsed,
+  //         famid: famidParam || parsed.famid || null,
+  //         mobno: mobnoParam || parsed.mobno || "",
+  //         emll: emllParam || parsed.emll || "",
+  //         famnm: famnmParam || parsed.famnm || "" 
+  //       };
+  //       // const updatedUser = {
+  //       //   ...parsed,
+  //       //   emll: emllParam || parsed.emll || "",
+  //       //   famnm: famnmParam || parsed.famnm || ""
+  //       // };
 
-        sessionStorage.setItem("isAuthenticated", "true");
-        sessionStorage.setItem("userData", JSON.stringify(updatedUser));
+  //       sessionStorage.setItem("isAuthenticated", "true");
+  //       sessionStorage.setItem("userData", JSON.stringify(updatedUser));
 
-        setIsAuthenticated(true);
-        setUserData(updatedUser);
-        setEmail(updatedUser.emll);
-        setFamnm(updatedUser.famnm);
+  //       setIsAuthenticated(true);
+  //       setUserData(updatedUser);
+  //       setEmail(updatedUser.emll);
+  //       setFamnm(updatedUser.famnm);
 
-        navigate("/fminfo", { replace: true });
-        return;
-      }
+  //       navigate("/fminfo", { replace: true });
+  //       return;
+  //     }
 
-      // NORMAL RESTORE
-      const savedAuth = sessionStorage.getItem("isAuthenticated");
-      const savedUser = sessionStorage.getItem("userData");
+  //     // NORMAL RESTORE
+  //     const savedAuth = sessionStorage.getItem("isAuthenticated");
+  //     const savedUser = sessionStorage.getItem("userData");
 
-      if (savedAuth === "true" && savedUser) {
-        const parsed = JSON.parse(savedUser);
+  //     if (savedAuth === "true" && savedUser) {
+  //       const parsed = JSON.parse(savedUser);
 
-        setIsAuthenticated(true);
-        setUserData(parsed);
-        setEmail(parsed.emll || parsed.EMAIL_ADDRESS || "");
-        setFamnm(parsed.famnm || parsed.FAMNM || "");
-      } else {
-        setIsAuthenticated(false);
-        setUserData(null);
-        setEmail("");
-        setFamnm("");
-      }
+  //       setIsAuthenticated(true);
+  //       setUserData(parsed);
+  //       setEmail(parsed.emll || parsed.EMAIL_ADDRESS || "");
+  //       setFamnm(parsed.famnm || parsed.FAMNM || "");
+  //     } else {
+  //       setIsAuthenticated(false);
+  //       setUserData(null);
+  //       setEmail("");
+  //       setFamnm("");
+  //     }
 
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setAuthLoading(false);
-    }
-  }, [location.search]);
+  //   } catch (err) {
+  //     console.error(err);
+  //   } finally {
+  //     setAuthLoading(false);
+  //   }
+  // }, [location.search]);
 
-  useEffect(() => {
-  console.log("UPDATED:", email, famnm);
-  }, [email, famnm]);
+  // useEffect(() => {
+  //   setEmail(userData?.emll || userData?.EMAIL_ADDRESS || "");
+  //   setFamnm(userData?.famnm || userData?.FAMNM || "");
+  //   console.log("UPDATED:", email, famnm);
+  // }, [email, famnm]);
 
-  if (authLoading) {
+  // useEffect(() => {
+  //   const newEmail = userData?.emll || userData?.EMAIL_ADDRESS || "";
+  //   const newFamnm = userData?.famnm || userData?.FAMNM || "";
+
+  //   setEmail(newEmail);
+  //   setFamnm(newFamnm);
+
+  //   console.log("UPDATED:", newEmail, newFamnm);
+  // }, [userData]);
+
+  // if (authLoading) {
+  //   return (
+  //     <>
+  //       {contextHolder}
+  //       <div style={{ padding: "40px", textAlign: "center" }}>
+  //         Restoring session...
+  //       </div>
+  //     </>
+  //   );
+  // }
+  if (loading) {
     return (
       <>
         {contextHolder}
@@ -253,7 +277,6 @@ function App() {
       </>
     );
   }
-
   const ProtectedRoute = ({ children }) => {
     if (!isAuthenticated) {
       return <Navigate to="/signin" replace />;
@@ -352,8 +375,8 @@ function App() {
           path="/"
           element={
             <SignIn
-              setIsAuthenticated={setIsAuthenticated}
-              setUserData={setUserData}
+              // setIsAuthenticated={setIsAuthenticated}
+              // setUserData={setUserData}
             />
           }
         />
@@ -366,8 +389,8 @@ function App() {
           path="/signin"
           element={
             <SignIn
-              setIsAuthenticated={setIsAuthenticated}
-              setUserData={setUserData}
+              // setIsAuthenticated={setIsAuthenticated}
+              // setUserData={setUserData}
             />
           }
         />
@@ -380,9 +403,9 @@ function App() {
           element={
             <ProtectedRoute>
               <FmInfo
-                userData={userData}
-                setIsAuthenticated={setIsAuthenticated}
-                setUserData={setUserData}
+                // userData={userData}
+                // setIsAuthenticated={setIsAuthenticated}
+                // setUserData={setUserData}
               />
             </ProtectedRoute>
           }

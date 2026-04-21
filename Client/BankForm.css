@@ -177,13 +177,12 @@ h5 {
     align-items: right !important;
   } */
   @page {
-    size: A4 portrait;
-    margin: 5mm;
+    size: A4 portrait !important;
+    margin: 5mm !important;
   }
   
 #schoolLogo {
-  width: 600px !important;
-
+  width: 450px !important;
   padding-right: 150px;
 }
   /* .logo img {

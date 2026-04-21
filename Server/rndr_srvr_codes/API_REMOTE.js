@@ -966,7 +966,7 @@ app.post("/loginchk", async (req, res) => {
           <br/>
           <h3>Welcome to our portal,</h3>
           <br/>
-          <p>Your verification OTP code is:</p>
+          <p>Your one time verification OTP code is:</p>
           <h2 style="letter-spacing: 4px;">${otpCode}</h2>
           <br/>
           <p>This OTP code will expire in 5 minutes.</p>
@@ -1071,7 +1071,7 @@ app.post("/resend-login-code", asyncHandler(async (req, res) => {
         <font face="Calibri" size="3" color="blue">
           <h3>Dear Parent: ${record.FAMNM},</h3>
           <br/>
-          <p>Your verification OTP code is:</p>
+          <p>Your one time verification OTP code is:</p>
           <h2 style="letter-spacing: 4px;">${otpCode}</h2>
           <br/>
           <p>This OTP code will expire in 5 minutes.</p>

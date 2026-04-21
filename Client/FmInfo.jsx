@@ -11,17 +11,19 @@ import { UserOutlined } from "@ant-design/icons";
 import './FmInfo.css'
 import { openExternal } from "./openExternal.js";
 import { useExternalLink } from "./useExternalLink.js";
+import { useAuth } from "./src/AuthContext.jsx";
 
-
-
-export default function FmInfo({userData , setIsAuthenticated, setUserData}) {
+export default function FmInfo() {
   const [selectedFamid, setSelectedFamid] = useState("");
   const [selectedFamNm, setSelectedFamNM] = useState("");
   const [onlyout, setOnlyOut] = useState(false);
   const [studInfo, setstudInfo] = useState([]);
   const [fmDtt, setFmDtt] = useState({});
+  const { logout } = useAuth();
   // const CurFmNo = localStorage.getItem("loggedFamid")
   // const CurFmNm = localStorage.getItem("loggedFamNm")
+  const { isAuthenticated, userData } = useAuth();
+  
   const CurFmNo = userData?.famid //|| localStorage.getItem("loggedFamid");
   const CurFmNm = userData?.famnm //|| localStorage.getItem("loggedFamNm");
   // const yrNo = '2025'
@@ -155,7 +157,8 @@ const gotoStFees = (curStID, curStNmm, ygpp, onlyout, curEmailAddress) => {
       <div className="fmm">
       <div className="logout" style={{display: "flex", alignItems: "flex-end", marginLeft: "auto", justifyContent: "flex-end"}}>
         <Tooltip title="Logout">
-          <Button type="primary"  onClick={() => {handleLogout()}}><i className="fa-solid fa-right-from-bracket"></i>Logout</Button>
+          {/* <Button type="primary"  onClick={() => {handleLogout()}}><i className="fa-solid fa-right-from-bracket"></i>Logout</Button> */}
+          <Button type="primary"  onClick={() => {logout()}}><i className="fa-solid fa-right-from-bracket"></i>Logout</Button>
         </Tooltip>
       </div>
         <strong>Family ID: {CurFmNo} </strong>
