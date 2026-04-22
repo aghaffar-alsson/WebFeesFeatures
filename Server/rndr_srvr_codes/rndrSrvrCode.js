@@ -105,6 +105,7 @@ app.post("/createFormPayLoad", async (req, res) => {
       currency: req.body.currency,
       customer_email: req.body.email,
       return_url: `${PUBLIC_URL}/payfort-callback`,
+      //return_url: import.meta.env.VITE_CALLBACK_URL,
     };
 
     formPayLoad.signature = createSignature(formPayLoad);

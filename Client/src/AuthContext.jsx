@@ -59,7 +59,8 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     const params = new URLSearchParams(location.search);
-
+    console.log("URL Params:", Object.fromEntries(params.entries())); // Debug log
+    console.log(location.search)
     const emllParam = params.get("emll");
     const famnmParam = params.get("FAMNM");
 

@@ -12,6 +12,7 @@ import StFees from "../StFees.jsx";
 import BankForm from "../BankForm.jsx";
 import StPay from "../StPay.jsx";
 import CheckoutPage from "../CheckoutPage.jsx";
+import ProcessingPage from "../ProcessingPage.jsx";
 import CheckoutResult from "../CheckoutResult.jsx";
 import PssForgot from "../PssForgot.jsx";
 import { openExternal } from "../openExternal.js";
@@ -451,6 +452,7 @@ function App() {
           }
         />
 
+        <Route path="/processing" element={<ProcessingPage />} />
         {/* Catch-all redirect */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

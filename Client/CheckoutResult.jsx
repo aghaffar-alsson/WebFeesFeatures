@@ -142,7 +142,11 @@ export default function CheckoutResult() {
     const studentId = params.get("student_id");
     const studentName = params.get("student_name");
     const curYgp = params.get("cur_ygp");
-
+    //check if one of the params is missing, if so log a warning (but still show the page with whatever data is available) 
+    if (!amount || !customer_email || !fort_id || !merchant_reference || 
+      !response_message || !qsStatus || !studentId || !studentName || !curYgp) {
+      console.warn("Missing query params, details incomplete");
+    }    
     setStatus(qsStatus);
 
     setDetails({

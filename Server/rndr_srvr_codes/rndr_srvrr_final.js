@@ -238,6 +238,7 @@ const {
       customer_email: safeEmail,
       eci: "ECOMMERCE",
       return_url: `${PUBLIC_URL}/payfort-callback`,
+      //return_url: import.meta.env.VITE_CALLBACK_URL,
     };
 
     console.log("=== CREATE FORM PAYLOAD DEBUG ===");

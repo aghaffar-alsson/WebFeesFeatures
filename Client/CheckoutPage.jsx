@@ -111,7 +111,7 @@ function ApsMerchantSection({
       form.method = "POST";
       // form.action = "https://sbcheckout.payfort.com/FortAPI/paymentPage"; // SANDBOX URL
       // form.action = "https://checkout.payfort.com/FortAPI/paymentPage"; // LIVE URL
-      const CALLBACK_URL = import.meta.env.VITE_CALLBACK_URL;
+      const CALLBACK_URL = import.meta.env.VITE_PAYFORT_URL;
       form.action = CALLBACK_URL; // LIVE URL IN CASE OF PRODUCTION, ELSE SANDBOX IN CASE OF DEVELOPMENT (TESTING)
 
       Object.keys(payfortData).forEach((key) => {
@@ -152,7 +152,7 @@ function ApsMerchantSection({
           : "SECURE PAYMENT WITH PAYFORT (APS)"}
       </Button>
 
-      <Tooltip title="Back to Home" placement="top">
+      {/* <Tooltip title="Back to Home" placement="top">
         <Button
           className="home-btn"
           style={{fontSize:"9px"}}
@@ -173,7 +173,25 @@ function ApsMerchantSection({
         >
           Back To Home
         </Button>
-      </Tooltip>
+      </Tooltip> */}
+      <Button
+        className="home-btn"
+        style={{ fontSize: "12px" , height: "7vh", mt: 1 , width: isSmallScreen ? "40%" : "30%" }}
+        href={!loading ? "/fminfo" : undefined}   // prevent navigation
+        disabled={loading}                        // disable click
+        startIcon={<FontAwesomeIcon icon={faHouse} />}
+        sx={{
+          width: "50%",
+          height: "5vh",
+          color: "#fff",
+          backgroundColor: "#0177b9 !important",
+          "&:hover": { backgroundColor: "#015f86 !important" },
+          rounded: "10px",
+          borderRadius: "10px",
+        }}
+      >
+        Back To Home
+      </Button>
       {/* {isSmallScreen ? (
         <Tooltip title="Back to Home">
           <Button
@@ -202,6 +220,20 @@ function ApsMerchantSection({
       <p className="empty">Checkout Page</p>
     </div>
   );
+  useEffect(() => {
+    const handleBeforeUnload = (e) => {
+      if (loading) {
+        e.preventDefault();
+        e.returnValue = "";
+      }
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+    };
+  }, [loading]);
 }
 
 export default function CheckoutPage(userData = { userData }) {
