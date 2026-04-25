@@ -6,6 +6,7 @@ import { useNavigate ,useLocation } from 'react-router-dom';
 import Checkbox from 'antd/es/checkbox/Checkbox';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faHouse , faPrint } from '@fortawesome/free-solid-svg-icons'
+import axios from "axios";
 const { useBreakpoint } = Grid;
 
 export default function StFees({ userData }) {
@@ -96,6 +97,7 @@ export default function StFees({ userData }) {
       type: 'success',
       content: 'PDF successfully generated!',
     }),
+    
   });
 
   // const handlePrint = useReactToPrint({
@@ -871,7 +873,43 @@ const handleUserSelection = (record, index, checked) => {
   // };
 
   const curDate = new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+  // const feesReff = useRef();
 
+  const handlePrint = async () => {
+    try {
+      // console.log("stfeesmtrx length:", stfeesmtrx.length);
+      // console.log("PRINT CLICKED");
+      // if (!bnknmm || !curFamilyName || !curFamilyNo || !curStudID || !curYgpName || !curStudName  || !installmentName || !instAmt) {
+      //   console.log("Missing data for logging print action:", {bnknmm, curFamilyName, curFamilyNo, curStudID, curYgpName, curStudName, installmentName, instAmt});
+      //   return messageApi.warning("Bank info is still loading, please wait.");
+
+      // }
+
+      const payload = {
+        familyId: curFamilyNo, //OK
+        familyName: curFamilyName, //OK
+        studentId: curStudID, //OK
+        studentName: curStudName, //OK
+        yearGroup: curYgpName, //OK
+        academicYear: import.meta.env.VITE_CUR_YEAR_NAME,
+        installmentName: installmentName,
+        amount: instAmt,
+        bankName: bnknmm
+      };
+
+      console.log("Logging bank form print:", payload);
+
+      await axios.post(`${API_BASE}/log-bankform-print`, payload);
+
+      //frmPrnt();
+
+    } catch (err) {
+      console.error(err);
+      messageApi.error("Failed to log print action");
+    }
+    //print the bank form after logging the print action (or even if logging fails, to avoid blocking the user)
+    //tbPrnt();
+  };  
   // const selectedTotal = useMemo(() => {
   //   return stfeesmtrxWithTot.reduce((sum, row) => {
   //     // skip subtotal / total rows
@@ -901,6 +939,10 @@ const handleUserSelection = (record, index, checked) => {
     }, 0);
   }, [checkedRows, stfeesmtrxWithTot]);
 
+  // setInstAm(selectedTotal) // update the state variable for the total amount of selected installments, to be used in the bank form and payment processing
+  // useEffect(() => {
+  // setInstAm(selectedTotal);
+  // }, [selectedTotal]);
 
   const selectedInstallments = useMemo(() => {
     return stfeesmtrxWithTot
@@ -909,7 +951,11 @@ const handleUserSelection = (record, index, checked) => {
   }, [checkedRows, stfeesmtrxWithTot]);  
 
   const selectedInstallmentsString = selectedInstallments.join(",");
-
+  const instAmt = selectedTotal;
+  const installmentName = selectedInstallmentsString;
+  // useEffect(() => {
+  //   setInstName(selectedInstallmentsString);
+  // }, [selectedInstallmentsString]);
   //PREPARE THE SELECTED INSTALLMENTS TO BE PASSED TO THE CheckoutPage.jsx
 //   const getSelectedInstallments = () => {
 //     return stfeesmtrxWithTot
@@ -1056,7 +1102,7 @@ const getSelectedTotal = () => {
           </option>
         ))}
       </select>
-      <Button className="prntBnkk" disabled={selectedTotal === 0} onClick={() => callBnkForm()}>Print Bank Form <i  className="fa fa-print"></i></Button>
+      <Button className="prntBnkk" disabled={selectedTotal === 0} onClick={() => {callBnkForm() ; handlePrint()}}>Print Bank Form <i  className="fa fa-print"></i></Button>
       </div> : (<></>))}
       
       {loading ? <></> :       

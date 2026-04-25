@@ -2062,7 +2062,94 @@ app.post("/generate-whatsapp-link", (req, res) => {
     return res.status(500).json({ error: "Failed to generate WhatsApp link", details: err.message });
   }
 });
+// Endpoint to log bank form print or display action done by the parent, and send email notification to fees team on feesforms@alsson.com
+app.post("/log-bankform-print", async (req, res) => {
+  try {
+    const {
+      familyId,
+      familyName,
+      studentId,
+      studentName,
+      yearGroup,
+      academicYear,
+      installmentName,
+      amount,
+      bankName
+    } = req.body;
 
+    if (!familyId || !studentId || !amount || !bankName || !installmentName || !academicYear || !yearGroup || !familyName || !studentName) {
+      return res.status(400).json({ error: "Missing required fields" });
+    }
+
+    const pool = await sql.connect(sqlConfig);
+
+    await pool.request()
+      .input("family_id", sql.Int, Number(familyId))
+      .input("family_name", sql.NVarChar(255), familyName)
+      .input("student_id", sql.Int, Number(studentId))
+      .input("student_name", sql.NVarChar(255), studentName)
+      .input("year_group", sql.NVarChar(100), yearGroup)
+      .input("academic_year", sql.NVarChar(50), academicYear)
+      .input("installment_name", sql.NVarChar(100), installmentName)
+      .input("amount", sql.Decimal(18,2), Number(amount))
+      .input("bank_name", sql.NVarChar(100), bankName)
+      .query(`
+        INSERT INTO BankFormPrintLog (
+          family_id,
+          family_name,
+          student_id,
+          student_name,
+          year_group,
+          academic_year,
+          installment_name,
+          amount,
+          bank_name,
+          action_date
+        )
+        VALUES (
+          @family_id,
+          @family_name,
+          @student_id,
+          @student_name,
+          @year_group,
+          @academic_year,
+          @installment_name,
+          @amount,
+          @bank_name,
+          SYSDATETIME()
+        )
+      `);
+
+    // ---------- SEND EMAIL ----------
+    const emailHtml = `
+      <p><strong>Bank Form was Accessed by Parent</strong></p>
+      <p>
+        Academic Year: ${academicYear}<br/>
+        Family Name: ${familyName}<br/>
+        Student ID: ${studentId}<br/>
+        Student Name: ${studentName}<br/>
+        Year Group: ${yearGroup}<br/>
+        Installment: ${installmentName}<br/>
+        Amount: ${amount} EGP<br/>
+        Bank: ${bankName}<br/>
+        Date: ${new Date().toLocaleString()}
+      </p>
+    `;
+
+    await transporter.sendMail({
+      from: `"Fees System" <${process.env.SMTP_USER}>`,
+      to: "feesforms@alsson.com",
+      subject: "Bank Form was Accessed by Parent",
+      html: emailHtml
+    });
+
+    res.json({ success: true });
+
+  } catch (err) {
+    console.error("BankForm log error:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
 // --- Health Check & Test Endpoint
 app.get("/health", (req, res) => {
   res.json({ ok: true });

@@ -71,6 +71,36 @@ export default function BankForm() {
   trgtAccSwft = swft
   //console.log(trgtAccIBAN, trgtAccNm, trgtAccNo, trgtAccSwft)
   const curDate = new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+  // const handlePrint = async () => {
+  //   try {
+  //     if (!bnkName || !trgtAccNo || !trgtAccNm || !trgtAccIBAN || !trgtAccSwft) {
+  //       return messageApi.warning("Bank info is still loading, please wait.");
+  //     }
+
+  //     const payload = {
+  //       familyId: curFamilyNo,
+  //       familyName: curFamilyName,
+  //       studentId: curStudID,
+  //       studentName: curStudName,
+  //       yearGroup: curYgpName,
+  //       academicYear: YrNmm,
+  //       installmentName: instName,
+  //       amount: instAm,
+  //       bankName: bnkName
+  //     };
+
+  //     console.log("Logging bank form print:", payload);
+
+  //     await axios.post(`${API_BASE}/log-bankform-print`, payload);
+
+  //     frmPrnt();
+
+  //   } catch (err) {
+  //     console.error(err);
+  //     messageApi.error("Failed to log print action");
+  //     frmPrnt(); // still allow print
+  //   }
+  // };  
   // if (!AmAccNo ) {
   //   return;
   // }
@@ -146,6 +176,7 @@ export default function BankForm() {
         </div>
         <div className="bnkfunc">
           <Button className="frmPrnt" onClick={() => { if (bnkName && trgtAccNo && trgtAccNm && trgtAccIBAN && trgtAccSwft) { frmPrnt(); } else { messageApi.warning("Bank info is still loading, please wait a moment."); } }}>Print/Save As PDF <i className="fa fa-print"></i></Button>
+          {/* <Button className="frmPrnt" onClick={handlePrint}>Print/Save As PDF <i className="fa fa-print"></i></Button> */}
         {isSmallScreen ? (
           <Tooltip title="Back to Home">
             <Button

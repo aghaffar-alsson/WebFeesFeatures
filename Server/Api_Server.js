@@ -1177,7 +1177,245 @@ app.post("/resend-login-code", asyncHandler(async (req, res) => {
   }
 }));
 
+// //API to verify the OTP code sent to email, then create session/JWT if valid
+// app.post("/verify-login-code", asyncHandler(async (req, res) => {
+//   const { verificationToken, code } = req.body;
+//   console.log("Verification request received:", { verificationToken, code });
+//   if (!verificationToken || !code) {
+//     return res.status(400).json({
+//       success: false,
+//       message: "Missing verification token or code"
+//     });
+//   }
+//   //verificationToken = String(verificationToken).trim();
+//   console.log("Received verification request:", { verificationToken, code });
+//   try {
+//     const pool = await sql.connect(sqlConfig);
+
+//     const result = await pool
+//       .request()
+//       .input("verificationToken", sql.NVarChar(100), String(verificationToken).trim())
+//       .query(`SELECT TOP 1 OTP_ID,FAMID,FAMNM,EMAIL_ADDRESS,MOBILE_NUMBER,OTP_CODE,EXPIRES_AT,IS_USED,ATTEMPTS ,  
+//         case is_used when 1 then 'True' else 'False' end as ussdd 
+//         FROM LOGIN_OTP_VERIFICATIONS WHERE VERIFICATION_TOKEN = @verificationToken`);
+
+//     const record = result.recordset?.[0];
+//     console.log("DB record for verification:", record);
+//     if (!record) {
+//       return res.status(400).json({
+//         success: false,
+//         message: "Invalid or expired verification request",
+//         reason: "INVALID_REQUEST"
+//       });
+//     }
+//     console.log(record.IS_USED)
+//     console.log(record.ussdd)
+//     //if (record.IS_USED) {
+//     if (record.ussdd === 'True') {
+//       return res.status(400).json({
+//         success: false,
+//         message: "This verification code is no longer valid",
+//         reason: "OTP_USED",
+//         allowResend: true
+//       });
+//     }
+
+//     if (new Date() > new Date(record.EXPIRES_AT)) {
+//       await pool
+//         .request()
+//         .input("otpId", sql.Int, record.OTP_ID)
+//         .query(`UPDATE LOGIN_OTP_VERIFICATIONS SET IS_USED = 1, USED_AT = GETDATE() WHERE OTP_ID = @otpId`);
+
+//       return res.status(400).json({
+//         success: false,
+//         message: "Verification code expired",
+//         reason: "OTP_EXPIRED",
+//         allowResend: true
+//       });
+//     }
+
+//     if ((record.ATTEMPTS || 0) >= 3) {
+//       await pool
+//         .request()
+//         .input("otpId", sql.Int, record.OTP_ID)
+//         .query(`
+//           UPDATE LOGIN_OTP_VERIFICATIONS SET IS_USED = 1, USED_AT = GETDATE() WHERE OTP_ID = @otpId`);
+
+//       return res.status(429).json({
+//         success: false,
+//         message: "Number of attempts exceeded. Please request a new verification code.",
+//         reason: "ATTEMPTS_EXCEEDED",
+//         allowResend: true
+//       });
+//     }
+//     console.log("Comparing OTP code:", { inputCode: String(code).trim(), dbHash: String(record.OTP_CODE).trim() });
+//     const isMatch = await bcrypt.compare(String(code).trim(), String(record.OTP_CODE).trim());
+//     if (!isMatch) {
+//       await pool
+//         .request()
+//         .input("otpId", sql.Int, record.OTP_ID)
+//         .query(`UPDATE LOGIN_OTP_VERIFICATIONS SET ATTEMPTS = ATTEMPTS + 1,
+//           IS_USED = CASE WHEN ATTEMPTS + 1 >= 3 THEN 1 ELSE IS_USED END,
+//           USED_AT = CASE WHEN ATTEMPTS + 1 >= 3 THEN GETDATE() ELSE USED_AT END WHERE OTP_ID = @otpId
+//         `);
+
+//       const nextAttempts = (record.ATTEMPTS || 0) + 1;
+//       const lockedNow = nextAttempts >= 3;
+
+//       return res.status(401).json({
+//         success: false,
+//         message: lockedNow
+//           ? "Number of attempts exceeded. Please request a new verification code."
+//           : "Invalid verification code, please try again",
+//         reason: lockedNow ? "ATTEMPTS_EXCEEDED" : "INVALID_CODE",
+//         allowResend: lockedNow,
+//         attemptsLeft: Math.max(0, 3 - nextAttempts)
+//       });
+//     }
+
+//     // Successful verification -> mark OTP as used
+//     await pool
+//       .request()
+//       .input("otpId", sql.Int, record.OTP_ID)
+//       .query(`
+//         UPDATE LOGIN_OTP_VERIFICATIONS
+//         SET IS_USED = 1, USED_AT = GETDATE()
+//         WHERE OTP_ID = @otpId
+//       `);
+
+//     // Regenerate session to prevent session fixation
+//     // req.session.regenerate((regenErr) => {
+//     //   if (regenErr) {
+//     //     console.error("Session regenerate error:", regenErr);
+//     //     return res.status(500).json({
+//     //       success: false,
+//     //       message: "Unable to create session"
+//     //     });
+//     //   }
+
+//     // // Set session data INSIDE regenerate callback
+//     // req.session.isAuthenticated = true;
+//     // req.session.user = {
+//     //   famid: record.FAMID,
+//     //   famnm: record.FAMNM,
+//     //   email: record.EMAIL_ADDRESS,
+//     //   mobile: record.MOBILE_NUMBER,
+//     //   authenticated: true,
+//     //   loginAt: new Date().toISOString()
+//     // };
+
+//     //   // Save session before responding
+//     //   req.session.save((saveErr) => {
+//     //     if (saveErr) {
+//     //       console.error("Session save error:", saveErr);
+//     //       return res.status(500).json({
+//     //         success: false,
+//     //         message: "Failed to save session"
+//     //       });
+//     //     }
+
+//     //     return res.status(200).json({
+//     //       success: true,
+//     //       message: "Login successful",
+//     //       user: {
+//     //         famid: record.FAMID,
+//     //         famnm: record.FAMNM,
+//     //         emll: record.EMAIL_ADDRESS,
+//     //         mobno: record.MOBILE_NUMBER
+//     //       }
+//     //     });
+//     //   });
+//     // });
+//     return res.status(200).json({
+//       success: true,
+//       message: "Login successful (session bypass test)",
+//       user: //req.session.user
+//       {
+//         famid: record.FAMID,
+//         famnm: record.FAMNM,
+//         emll: record.EMAIL_ADDRESS,
+//         mobno: record.MOBILE_NUMBER
+//       }
+//     });
+//     //  return res.json({
+//     //     success: true,
+//     //     message: "Login verified successfully",
+//     //     user: req.session.user
+//     //   });    
+//   } catch (err) {
+//     console.error("verify-login-code error:", err);
+//     console.error("verify-login-code stack:", err?.stack);
+//     console.error("Request body:", req.body);
+//     return res.status(500).json({
+//       success: false,
+//       message: "Server error"
+//     });
+//   }
+// }));
 //API to verify the OTP code sent to email, then create session/JWT if valid
+// app.post("/verify-login-code", async (req, res) => {
+//   const { verificationToken, OTP_Code } = req.body;
+
+//   try {
+//     const pending = pendingLoginOtps[verificationToken];
+
+//     if (!pending) {
+//       return res.status(400).json({
+//         success: false,
+//         message: "Invalid or expired verification request"
+//       });
+//     }
+
+//     if (Date.now() > pending.expiresAt) {
+//       delete pendingLoginOtps[verificationToken];
+//       return res.status(400).json({
+//         success: false,
+//         message: "Verification code expired"
+//       });
+//     }
+
+//     pending.attempts += 1;
+
+//     if (pending.attempts > 5) {
+//       delete pendingLoginOtps[verificationToken];
+//       return res.status(429).json({
+//         success: false,
+//         message: "Number of attempts exceeded. Please request a new verification code."
+//       });
+//     }
+
+//     if (pending.otp !== String(OTP_Code).trim()) {
+//       return res.status(401).json({
+//         success: false,
+//         message: "Invalid verification code, please try again"
+//       });
+//     }
+
+//     // OTP correct -> create final login/session/JWT
+//     // Example response (replace with your real token/session logic)
+//     const authPayload = {
+//       famid: pending.famid,
+//       famnm: pending.famnm,
+//       emll: pending.email,
+//       mobb: pending.mobile,
+//     };
+
+//     delete pendingLoginOtps[verificationToken];
+
+//     return res.json({
+//       success: true,
+//       message: "Login successful",
+//       user: authPayload
+//     });
+
+//   } catch (err) {
+//     console.error("verify-login-code error:", err);
+//     return res.status(500).json({
+//       success: false,
+//       message: "Server error"
+//     });
+//   }
+// });
 app.post("/verify-login-code", asyncHandler(async (req, res) => {
   const { verificationToken, code } = req.body;
   console.log("Verification request received:", { verificationToken, code });
@@ -1893,6 +2131,122 @@ app.post("/generate-whatsapp-link", (req, res) => {
   } catch (err) {
     console.error(err);
     return res.status(500).json({ error: "Failed to generate WhatsApp link", details: err.message });
+  }
+});
+// Endpoint to log bank form print or display action done by the parent, and send email notification to fees team on feesforms@alsson.com
+app.post("/log-bankform-print", async (req, res) => {
+  try {
+    const {
+      familyId,
+      familyName,
+      studentId,
+      studentName,
+      yearGroup,
+      academicYear,
+      installmentName,
+      amount,
+      bankName
+    } = req.body;
+
+    if (!familyId || !studentId || !amount || !bankName || !installmentName || !academicYear || !yearGroup || !familyName || !studentName) {
+      return res.status(400).json({ error: "Missing required fields" });
+    }
+
+    const pool = await sql.connect(sqlConfig);
+
+    await pool.request()
+      .input("family_id", sql.Int, Number(familyId))
+      .input("family_name", sql.NVarChar(255), familyName)
+      .input("student_id", sql.Int, Number(studentId))
+      .input("student_name", sql.NVarChar(255), studentName)
+      .input("year_group", sql.NVarChar(100), yearGroup)
+      .input("academic_year", sql.NVarChar(50), academicYear)
+      .input("installment_name", sql.NVarChar(100), installmentName)
+      .input("amount", sql.Decimal(18,2), Number(amount))
+      .input("bank_name", sql.NVarChar(100), bankName)
+      .query(`
+        INSERT INTO BankFormPrintLog (
+          family_id,
+          family_name,
+          student_id,
+          student_name,
+          year_group,
+          academic_year,
+          installment_name,
+          amount,
+          bank_name,
+          action_date
+        )
+        VALUES (
+          @family_id,
+          @family_name,
+          @student_id,
+          @student_name,
+          @year_group,
+          @academic_year,
+          @installment_name,
+          @amount,
+          @bank_name,
+          SYSDATETIME()
+        )
+      `);
+
+    // ---------- SEND EMAIL ----------
+    // 4️⃣ Send email using Gmail API (NOT SMTP)
+    await sendEmail({
+      to: 'feesforms@alsson.com',
+      subject: "Bank Form was Accessed by Parent",
+      html: `
+        <font face="Calibri" size="3" color = "blue">
+        <h3>Academic Year: ${academicYear}</h3>
+        <br/>
+        <h3>Family Name: ${familyName}</h3>
+        <br/>
+        <h3>Student ID: ${studentId}</h3>
+        <br/>
+        <h3>Student Name: ${studentName}</h3>
+        <br/>
+        <h3>Installment: ${installmentName}</h3>
+        <br/>
+        <h3>Amount: ${amount} EGP</h3>
+        <br/>
+        <h3>Bank: ${bankName}</h3>
+        <br/>
+        <h3>${new Date().toLocaleString()}</h3>
+        <br/>
+        <p>Finance Department - Fees Section</p>
+        <p>El Alsson School</p>
+        <p>Best regards,</p>
+        <img src="https://www.alsson.com/wp-content/themes/alsson/img/newgiza-logo.jpg" alt="Alsson Logo" width="150"/>          
+      </font>`,
+    });
+    // const emailHtml = `
+    //   <p><strong>Bank Form was Accessed by Parent</strong></p>
+    //   <p>
+    //     Academic Year: ${academicYear}<br/>
+    //     Family Name: ${familyName}<br/>
+    //     Student ID: ${studentId}<br/>
+    //     Student Name: ${studentName}<br/>
+    //     Year Group: ${yearGroup}<br/>
+    //     Installment: ${installmentName}<br/>
+    //     Amount: ${amount} EGP<br/>
+    //     Bank: ${bankName}<br/>
+    //     Date: ${new Date().toLocaleString()}
+    //   </p>
+    // `;
+
+    // await transporter.sendMail({
+    //   from: `"Fees System" <${process.env.SMTP_USER}>`,
+    //   to: "feesforms@alsson.com",
+    //   subject: "Bank Form was Accessed by Parent",
+    //   html: emailHtml
+    // });
+
+    res.json({ success: true });
+
+  } catch (err) {
+    console.error("BankForm log error:", err);
+    res.status(500).json({ error: err.message });
   }
 });
 
