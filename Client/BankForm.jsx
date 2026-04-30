@@ -48,6 +48,30 @@ export default function BankForm() {
       content: 'PDF successfully generated!',
     }),
   });
+  
+  // Enhanced print handler to ensure all data is loaded and rendered before printing
+  const handleSafePrint = async () => {
+    // 1. Validate data
+    if (!bnkName || !trgtAccNo || !trgtAccNm || !trgtAccIBAN || !trgtAccSwft) {
+      messageApi.warning("Bank info is still loading, please wait...");
+      return;
+    }
+
+    try {
+      // 2. Small delay to ensure React finished rendering
+      await new Promise((resolve) => setTimeout(resolve, 300));
+
+      // 3. Force next frame render (VERY IMPORTANT for PDFs)
+      await new Promise((resolve) => requestAnimationFrame(resolve));
+
+      // 4. Print
+      frmPrnt();
+
+    } catch (err) {
+      console.error("Print error:", err);
+      messageApi.error("Failed to generate PDF");
+    }
+  };  
   // console.log(stud)
   let trgtAccNo = ""
   let trgtAccNm = ""
@@ -148,17 +172,21 @@ export default function BankForm() {
         </div>
         <div className="hdr">
           <h5 id='stinfotxt' className="graytxt"></h5>
-          <h5 >Family Name: {curFamilyName}</h5>
+          <h5 id='fmnmm_2'>Family Name: {curFamilyName}</h5>
+          <div className="stnmm">
           <h5 >Student ID: {curStudID}</h5>
           <h5 >Student Name: {curStudName}</h5>
           <h5 >Year Group: {curYgpName}</h5>
+          </div>
+          <div className="amtdiv">
           <h5 >Installment Name: {instName}</h5>
           <h5 id='amt' className="evdd"><u>Amount: EGP {instAm.toLocaleString("en-us")}</u></h5>
           <h5 >ONLY {(numberToWords.toWords(instAm)).toUpperCase()} EGP</h5>
+          </div>
           <hr></hr>
           <h5 id='bnkinfotxt' className="graytxt"></h5>
-          <div className="bnkdetclass">
-            <h5>Bank Name: {bnkName}</h5>
+          <div className="bnkdetclass" >
+            <h5>Bank Name: {bnkName}</h5> 
             <hr></hr>
             <h5>Acc. No.: {trgtAccNo}</h5>
             <hr></hr>
@@ -175,7 +203,7 @@ export default function BankForm() {
           </div>
         </div>
         <div className="bnkfunc">
-          <Button className="frmPrnt" onClick={() => { if (bnkName && trgtAccNo && trgtAccNm && trgtAccIBAN && trgtAccSwft) { frmPrnt(); } else { messageApi.warning("Bank info is still loading, please wait a moment."); } }}>Print/Save As PDF <i className="fa fa-print"></i></Button>
+          <Button className="frmPrnt" disabled={!bnkName || !trgtAccNo || !trgtAccNm || !trgtAccIBAN || !trgtAccSwft} onClick={handleSafePrint}>Print/Save As PDF <i className="fa fa-print"></i></Button>
           {/* <Button className="frmPrnt" onClick={handlePrint}>Print/Save As PDF <i className="fa fa-print"></i></Button> */}
         {isSmallScreen ? (
           <Tooltip title="Back to Home">

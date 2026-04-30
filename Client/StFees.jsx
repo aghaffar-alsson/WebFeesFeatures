@@ -124,7 +124,10 @@ export default function StFees({ userData }) {
       // const res = await fetch("http://localhost:3000/api/getstfees", {
       const res = await fetch(`${API_BASE}/getstfees`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "x-session-id": sessionStorage.getItem("sessionId") // Include session ID in headers for authentication
+        },        
         body: JSON.stringify({
           famid: curFamilyNo,
           curstid: curStudID,
@@ -265,9 +268,48 @@ export default function StFees({ userData }) {
 //     return updated;
 //   });
 // };
+// const handleUserSelection = (record, index, checked) => {
+
+//   // Uncheck → clear from index onward
+//   if (!checked) {
+//     setSelectedRows([]);
+//     setCheckedRows({});
+//     setLocked({});
+//     return;
+//   }
+
+//   const selected = [];
+//   const checkedMap = {};
+//   const lockedMap = {};
+
+//   // Walk sequentially from row 0 → index
+//   for (let i = 0; i <= index; i++) {
+//     const r = stfeesmtrx[i];
+
+//     // Skip zero remainder rows
+//     if (Number(r.TotRem) <= 0) continue;
+
+//     selected.push({
+//       stid: curStudID,
+//       instCode: r.row_num,
+//       facename: r.FACENAME,
+//       amount: Number(r.TotRem),
+//     });
+
+//     checkedMap[i] = true;
+
+//     // Lock all previous valid rows
+//     if (i < index) {
+//       lockedMap[i] = true;
+//     }
+//   }
+
+//   setSelectedRows(selected);
+//   setCheckedRows(checkedMap);
+//   setLocked(lockedMap);
+// };
 const handleUserSelection = (record, index, checked) => {
 
-  // Uncheck → clear from index onward
   if (!checked) {
     setSelectedRows([]);
     setCheckedRows({});
@@ -279,11 +321,12 @@ const handleUserSelection = (record, index, checked) => {
   const checkedMap = {};
   const lockedMap = {};
 
-  // Walk sequentially from row 0 → index
   for (let i = 0; i <= index; i++) {
-    const r = stfeesmtrx[i];
+    const r = stfeesmtrxWithTot[i]; // ✅ FIX HERE
 
-    // Skip zero remainder rows
+    // skip invalid rows
+    if (!r || r.isYearHeader || r.IsTotal || r.IsGTotal) continue;
+
     if (Number(r.TotRem) <= 0) continue;
 
     selected.push({
@@ -295,7 +338,6 @@ const handleUserSelection = (record, index, checked) => {
 
     checkedMap[i] = true;
 
-    // Lock all previous valid rows
     if (i < index) {
       lockedMap[i] = true;
     }
@@ -305,7 +347,6 @@ const handleUserSelection = (record, index, checked) => {
   setCheckedRows(checkedMap);
   setLocked(lockedMap);
 };
-
 // useEffect(() => {
   //   console.log("Checked rows:", checkedRows);
   // }, [checkedRows]);
@@ -354,35 +395,80 @@ const handleUserSelection = (record, index, checked) => {
   // }));
   //console.log("Payment Items:", paymentItems);  
   //Declare COLUMNS OF THE TABLE
+  const TOTAL_COLUMNS = 9; // number of columns that have totals (used for colspan in total rows)
   const columns = [
     //ROW NUMBER
     {
       title: '#',
       dataIndex: 'row_num',
       align: "left",
-      render: (text, record) =>
-        record.IsTotal === 1 ? <strong>{text}</strong> : text,      // render: (status) => (
       width: 10,
+      render: (value, record) => {
+        if (record.isYearHeader) {
+          return { props: { colSpan: 0 } };
+        }
+
+        return record.IsTotal === 1 ? <strong>{value}</strong> : value;
+      }
     },
     //INSTALLMENT
+    // {
+    //   title: 'Payment Schedule',
+    //   dataIndex: 'instName',
+    //   align: "left",
+    //   // render: (text, record) =>
+    //   // record.IsTotal === 1 ? <strong>{text}</strong> : text,      // render: (status) => (
+    //   // render: (text, record) =>
+    //   //   // record.IsTotal === 1 ? (<strong style={{ color: "#1e3a8a" , whiteSpace: 'normal', wordBreak: 'break-word'}}>{text}</strong>) : (text),
+    //   //   <strong style={{ color: "#1e3a8a" , whiteSpace: 'normal', wordBreak:'keep-all'}}>{text}</strong>,
+    //   // width: 45,
+    //   render: (text, record) => {
+    //     if (record.isYearHeader) {
+    //       return {
+    //         children: <strong style={{ fontSize: 14 }}>{text}</strong>,
+    //         props: { colSpan: 10 } // span across table
+    //       };
+    //     }
+    //     return <strong style={{ color: "#1e3a8a" }}>{text}</strong>;
+    //   }    
+    // },
     {
       title: 'Payment Schedule',
       dataIndex: 'instName',
       align: "left",
-      // render: (text, record) =>
-      // record.IsTotal === 1 ? <strong>{text}</strong> : text,      // render: (status) => (
-      render: (text, record) =>
-        // record.IsTotal === 1 ? (<strong style={{ color: "#1e3a8a" , whiteSpace: 'normal', wordBreak: 'break-word'}}>{text}</strong>) : (text),
-        <strong style={{ color: "#1e3a8a" , whiteSpace: 'normal', wordBreak:'keep-all'}}>{text}</strong>,
-      width: 45,
-    },
-    //DUE DATE
+      render: (text, record) => {
+        if (record.isYearHeader) {
+          return {
+            children: (
+              <div style={{
+                fontWeight: "bold",
+                fontSize: 16,
+                background: "#f0f5ff",
+                padding: "6px 12px"
+              }}>
+                Academic Year: {record.ACYear}
+              </div>
+            ),
+            props: {
+              colSpan: TOTAL_COLUMNS
+            }
+          };
+        }
+
+        return <strong style={{ color: "#1e3a8a" }}>{text}</strong>;
+      }
+    },    //DUE DATE
     {
       title: 'Due Date',
       dataIndex: 'duedt',
       align: "left",
       width: 25,
-      render: (date) => formatDtt(date),
+      render: (date, record) => {
+        if (record.isYearHeader) {
+          return { props: { colSpan: 0 } };
+        }
+        return formatDtt(date);
+      }    
     },
     //DEADLINE DATE
     {
@@ -390,38 +476,46 @@ const handleUserSelection = (record, index, checked) => {
       dataIndex: 'deadlinedt',
       align: "left",
       width: 45,
-      render: (date) => formatDtt(date),
+      render: (date, record) => {
+        if (record.isYearHeader) {
+          return { props: { colSpan: 0 } };
+        }
+
+        return formatDtt(date);
+      }    
     },
+    //BUS SITUATION
+    {
+      title: 'Bus Sit.',
+      dataIndex: 'bussit',
+      align: "left",
+      //render: (value1) => formatDec(value1),
+      render: (text, record) => {
+        if (record.isYearHeader) return { props: { colSpan: 0 } }
+        return record.IsTotal === 1 ? (<strong style={{ color: "#4f46e5", fontStyle: "bold !important", fontWeight: 800 }}>{text}</strong>) : (text);},
+        width: 40,
+    },  
+
     //TOTAL FEES
     {
       title: 'Total Fees',
       dataIndex: 'TotFees',
       align: "right",
       //render: (value1) => formatDec(value1),
-      render: (value, record) =>
-        record.IsTotal === 1 ? (
-          <strong style={{ color: "#4f46e5", fontStyle: "bold !important", fontWeight: 800 }}>
-            {formatDec(value)}
-          </strong>
-        ) : (
-          formatDec(value)
-        ),
-      width: 40,
-    },
+      render: (value, record) => {
+        if (record.isYearHeader) return { props: { colSpan: 0 } }
+        return record.IsTotal === 1 ? (<strong style={{ color: "#4f46e5", fontStyle: "bold !important", fontWeight: 800 }}>{formatDec(value)}</strong>) : (formatDec(value));},
+        width: 40,
+    },  
     //TOTAL DISC.
     {
       title: 'Total Disc.',
       dataIndex: 'TotDisc',
       align: "right",
       //render: (value2) => formatDec(value2),
-      render: (value, record) =>
-        record.IsTotal === 1 ? (
-          <strong style={{ color: "#4f46e5", fontStyle: "bold !important", fontWeight: 800 }}>
-            {formatDec(value)}
-          </strong>
-        ) : (
-          formatDec(value)
-        ),
+      render: (value, record) => {
+        if (record.isYearHeader) return { props: { colSpan: 0 } }
+        return record.IsTotal === 1 ? (<strong style={{ color: "#4f46e5", fontStyle: "bold !important", fontWeight: 800 }}>{formatDec(value)}</strong>) : (formatDec(value));},
       width: 40,
     },
     //TOTAL DUE
@@ -430,14 +524,9 @@ const handleUserSelection = (record, index, checked) => {
       dataIndex: 'TotDue',
       align: "right",
       // render: (value3) => formatDec(value3),
-      render: (value, record) =>
-        record.IsTotal === 1 ? (
-          <strong style={{ color: "#4f46e5", fontStyle: "bold !important", fontWeight: 800 }}>
-            {formatDec(value)}
-          </strong>
-        ) : (
-          formatDec(value)
-        ),
+      render: (value, record) => {
+        if (record.isYearHeader) return { props: { colSpan: 0 } }
+        return record.IsTotal === 1 ? (<strong style={{ color: "#4f46e5", fontStyle: "bold !important", fontWeight: 800 }}>{formatDec(value)}</strong>) : (formatDec(value));},
       width: 40,
     },
     //TOTAL PAID
@@ -446,14 +535,9 @@ const handleUserSelection = (record, index, checked) => {
       dataIndex: 'TotPaid',
       align: "right",
       // render: (value4) => formatDec(value4),
-      render: (value, record) =>
-        record.IsTotal === 1 ? (
-          <strong style={{ color: "#4f46e5", fontStyle: "bold !important", fontWeight: 800 }}>
-            {formatDec(value)}
-          </strong>
-        ) : (
-          formatDec(value)
-        ),
+      render: (value, record) => {
+        if (record.isYearHeader) return { props: { colSpan: 0 } }
+        return record.IsTotal === 1 ? (<strong style={{ color: "#4f46e5", fontStyle: "bold !important", fontWeight: 800 }}>{formatDec(value)}</strong>) : (formatDec(value));},
       width: 40,
     },
     //REMAINING
@@ -463,15 +547,18 @@ const handleUserSelection = (record, index, checked) => {
       align: "right",
       render: (value, record) => {
         const rmmValue = Number(value);
-        const displayRmmValue = rmmValue <= 30 && record.IsTotal !== 1 ? 0 : rmmValue;
-        return record.IsTotal === 1 ? (
-          <strong style={{ color: "#4f46e5", fontStyle: "bold !important", fontWeight: 800 }}>
-            {formatDec(displayRmmValue)}
-          </strong>
-        ) : (
-          formatDec(displayRmmValue)
-        );
-      },      
+        const displayRmmValue = rmmValue <= 20 && record.IsTotal !== 1 ? 0 : rmmValue;
+        if (record.isYearHeader) return { props: { colSpan: 0 } }
+        return record.IsTotal === 1 ? (<strong style={{ color: "#4f46e5", fontStyle: "bold !important", fontWeight: 800 }}>{formatDec(displayRmmValue)}</strong>) : (formatDec(displayRmmValue));},
+      // render: (value, record) => {
+      //   return record.IsTotal === 1 ? (
+      //     <strong style={{ color: "#4f46e5", fontStyle: "bold !important", fontWeight: 800 }}>
+      //       {formatDec(displayRmmValue)}
+      //     </strong>
+      //   ) : (
+      //     formatDec(displayRmmValue)
+      //   );
+      // },      
       width: 40,
     },
     //ACTION: PRINT BANK FORM
@@ -479,9 +566,13 @@ const handleUserSelection = (record, index, checked) => {
       title: "Action",
       key: "action",
       width: 120,
+      align: "left",
       className: "action-col",
       render: (value, record, index) => {
         // Don't show button for total row
+        if (record.isYearHeader) {
+          return { props: { colSpan: 0 } };
+        }
         if (!!(record.IsTotal === 1) || !!(record.IsGTotal === 1)) { return null; }
         else {
           if ((record.TotRem === 0)) {
@@ -511,8 +602,10 @@ const handleUserSelection = (record, index, checked) => {
       title: 'School ID',
       dataIndex: 'schoolId',
       align: "left",
-      render: (text, record) =>
-        record.IsTotal === 1 ? <strong style={{ color: "#1e3a8a", display: "block", fontWeight: 700 }}>Total:{text}</strong> : text,      // render: (status) => (
+      render: (text, record) => {
+        if (record.isYearHeader) return { props: { colSpan: 0 } }
+        record.IsTotal === 1 ? <strong style={{ color: "#1e3a8a", display: "block", fontWeight: 700 }}>Total:{text}</strong> : text    // render: (status) => (
+        },
       width: 0,
     },
     hidd && {
@@ -520,9 +613,22 @@ const handleUserSelection = (record, index, checked) => {
       dataIndex: 'FACENAME',
       align: "left",
       className: "action-col",      
-      render: (text, record) =>
-        record.IsTotal === 1 ? <strong style={{ color: "#1e3a8a", display: "block", fontWeight: 700 }}>Total:{text}</strong> : text,      // render: (status) => (
+      render: (text, record) => {
+        if (record.isYearHeader) return { props: { colSpan: 0 } }
+        record.IsTotal === 1 ? <strong style={{ color: "#1e3a8a", display: "block", fontWeight: 700 }}>Total:{text}</strong> : text    // render: (status) => (
+        },
       width: 0,
+    },
+    hidd &&{
+      title: 'Ac. Year',
+      dataIndex: 'ACYear',
+      align: "left",
+      className: "action-col",      
+      render: (text, record) => {
+        if (record.isYearHeader) return { props: { colSpan: 0 } }
+        record.IsTotal === 1 ? <strong style={{ color: "#1e3a8a", display: "block", fontWeight: 700 }}>Total:{text}</strong> : text    // render: (status) => (
+        },
+        width: 0,
     },
   ].filter(Boolean);
 
@@ -592,15 +698,70 @@ const handleUserSelection = (record, index, checked) => {
     // })
     return result;
   }
+  //here we can group by year and have totals per the academic year, then we can have a grand total at the end of the table
+  function groupByYearWithTotals(data) {
+    const grouped = {};
 
-  const stfeesmtrxWithTot = groupWithTotals(stfeesmtrx);
+    // Group rows by ACYear
+    data.forEach((item) => {
+      if (!grouped[item.ACYear]) grouped[item.ACYear] = [];
+      grouped[item.ACYear].push(item);
+    });
+
+    const result = [];
+
+    Object.keys(grouped).forEach((year) => {
+      const rows = grouped[year];
+
+      // 🔹 Year header row (visual separator)
+      result.push({
+        key: `header-${year}`,
+        ACYear: year,
+        instName: `Academic Year: ${year}`,
+        isYearHeader: true,
+      });
+
+      // 🔹 Normal rows
+      result.push(...rows);
+
+      // 🔹 Totals per year
+      const totalFees = rows.reduce((s, r) => s + (r.TotFees || 0), 0);
+      const totalDisc = rows.reduce((s, r) => s + (r.TotDisc || 0), 0);
+      const totalDue = rows.reduce((s, r) => s + (r.TotDue || 0), 0);
+      const totalPaid = rows.reduce((s, r) => s + (r.TotPaid || 0), 0);
+      const totalRem = rows.reduce((s, r) => {
+        const v = Number(r.TotRem) || 0;
+        return v >= 10 ? s + v : s;
+      }, 0);
+
+      result.push({
+        key: `total-${year}`,
+        instName: `Total for ${year}`,
+        TotFees: totalFees,
+        TotDisc: totalDisc,
+        TotDue: totalDue,
+        TotPaid: totalPaid,
+        TotRem: totalRem,
+        IsTotal: 1,
+        ACYear: year,
+      });
+    });
+
+    return result;
+  }
+  // const stfeesmtrxWithTot = groupWithTotals(stfeesmtrx);
+  const stfeesmtrxWithTot = groupByYearWithTotals(stfeesmtrx);
 
   //Get all banks
   useEffect(() => {
     const fetchBanks = async () => {
       try {
         // const res = await fetch("http://localhost:3000/api/banks");
-        const res = await fetch(`${API_BASE}/banks`);
+        const res = await fetch(`${API_BASE}/banks`, {
+          headers: {
+            "x-session-id": sessionStorage.getItem("sessionId")
+          }
+        });
         const bnkdata = await res.json();
         setBnks(bnkdata);
       } catch (err) {
@@ -630,7 +791,11 @@ const handleUserSelection = (record, index, checked) => {
     }
     try {
       // const res = await fetch(`http://localhost:3000/api/bankdet/${bnkId}`);
-      const res = await fetch(`${API_BASE}/bankdet/${bnkId}`);
+      const res = await fetch(`${API_BASE}/bankdet/${bnkId}`, {
+        headers: {
+          "x-session-id": sessionStorage.getItem("sessionId")
+        }
+      });
       const bnkDetData = await res.json();
       //console.log(bnkDetData[0])
       if (bnkDetData && bnkDetData[0].BANKID && bnkDetData[0].BANKNAME && bnkDetData[0].AMACCNO && bnkDetData[0].AMACCNM
@@ -879,11 +1044,11 @@ const handleUserSelection = (record, index, checked) => {
     try {
       // console.log("stfeesmtrx length:", stfeesmtrx.length);
       // console.log("PRINT CLICKED");
-      // if (!bnknmm || !curFamilyName || !curFamilyNo || !curStudID || !curYgpName || !curStudName  || !installmentName || !instAmt) {
-      //   console.log("Missing data for logging print action:", {bnknmm, curFamilyName, curFamilyNo, curStudID, curYgpName, curStudName, installmentName, instAmt});
-      //   return messageApi.warning("Bank info is still loading, please wait.");
+      if (!bnknmm || !curFamilyName || !curFamilyNo || !curStudID || !curYgpName || !curStudName  || !installmentName || !instAmt) {
+        console.log("Missing data for logging print action:", {bnknmm, curFamilyName, curFamilyNo, curStudID, curYgpName, curStudName, installmentName, instAmt});
+        return messageApi.warning("Bank info is still loading, please wait.");
 
-      // }
+      }
 
       const payload = {
         familyId: curFamilyNo, //OK
@@ -899,7 +1064,11 @@ const handleUserSelection = (record, index, checked) => {
 
       console.log("Logging bank form print:", payload);
 
-      await axios.post(`${API_BASE}/log-bankform-print`, payload);
+      await axios.post(`${API_BASE}/log-bankform-print`, payload,{
+        headers: {
+        "x-session-id": sessionStorage.getItem("sessionId")
+        }},
+      );
 
       //frmPrnt();
 
@@ -1035,7 +1204,7 @@ const getSelectedTotal = () => {
       <h3 className="frmhdr" style={{ textAlign: "center", fontSize:"20px" , }}><u>Student Fees Report - {import.meta.env.VITE_CUR_YEAR_NAME}</u></h3>
       <br></br>
       <div className="yrr">
-        <p>Academic Year: {import.meta.env.VITE_CUR_YEAR_NAME}</p>
+        {/* <p>Academic Year: {import.meta.env.VITE_CUR_YEAR_NAME}</p> */}
       </div>
       <div className="fmhdr">
         <p>Family ID: {curFamilyNo} </p>
@@ -1061,7 +1230,12 @@ const getSelectedTotal = () => {
             size="small"
             style={{ fontSize: "9px" }}
             scroll={{ x: 500 }}
-            rowClassName={(record, index) => { if (record.IsTotal === 1) return 'total-row'; return index % 2 === 0 ? 'even-row' : 'odd-row'; }}
+            //rowClassName={(record, index) => { if (record.IsTotal === 1) return 'total-row'; return index % 2 === 0 ? 'even-row' : 'odd-row'; }}
+            rowClassName={(record, index) => {
+              if (record.isYearHeader) return 'year-header-row';
+              if (record.IsTotal === 1) return 'total-row';
+              return index % 2 === 0 ? 'even-row' : 'odd-row';
+            }}            
           // scroll={{ y: 500 }}         
           />)
           : (<Alert message="No fee records found" type="info" showIcon />)

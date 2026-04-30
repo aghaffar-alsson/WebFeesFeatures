@@ -215,7 +215,11 @@ export default function CheckoutResult() {
 
       console.log("sendEmail payload:", payload);
 
-      const res = await axios.post(`${API_BASE}/send-receipt-email`, payload);
+      const res = await axios.post(`${API_BASE}/send-receipt-email`, payload,{
+        headers: {
+        "x-session-id": sessionStorage.getItem("sessionId")
+        }},
+      );
       console.log(res.data);
 
       messageApi.open({

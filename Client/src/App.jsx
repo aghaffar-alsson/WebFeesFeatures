@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef  } from 'react';
 import { BrowserRouter, Routes, Route, Navigate , useNavigate , useLocation } from "react-router-dom";
 import { message , Row , Col , Typography, Button} from "antd";
 import { LinkOutlined, CustomerServiceOutlined } from "@ant-design/icons";
@@ -10,6 +10,7 @@ import SignIn from "../SignIn.jsx";
 import FmInfo from "../FmInfo.jsx";
 import StFees from "../StFees.jsx";
 import BankForm from "../BankForm.jsx";
+import useIdleTimeout from "../useIdleTimeout.jsx";
 import StPay from "../StPay.jsx";
 import CheckoutPage from "../CheckoutPage.jsx";
 import ProcessingPage from "../ProcessingPage.jsx";
@@ -25,6 +26,7 @@ const { Text } = Typography;
 function App() {
   const [messageApi, contextHolder] = message.useMessage();
   const { isAuthenticated, userData, logout, login, loading } = useAuth();
+
   // ===== AUTH STATE =====
   // const [authLoading, setAuthLoading] = useState(true);
   // const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -38,6 +40,32 @@ function App() {
   const [verificationToken, setVerificationToken] = useState("");
   const navigate = useNavigate();
   const location = useLocation();
+
+  const WARNING_TIME = 9 * 60 * 1000; //warnning time at 9 minutes
+  const LOGOUT_TIME = 10 * 60 * 1000; //log out after 10 minutes due to inactivity
+
+  // const timerRef = useRef(null);
+  // const logoutTimerRef = useRef(null);
+
+  //logout_1 function to clear session and local storage and redirect to sign in page
+  const logout_1 = () => {
+    sessionStorage.clear();
+    localStorage.clear();
+    window.location.href = "/signin";
+  };
+  //use custom hook to handle idle timeout
+  useIdleTimeout(logout_1, 10 * 60 * 1000); // 10 minutes  
+
+  //to give warning to the parent before logging out, we can set a timer for 9 minutes and show a warning message 
+  console.log("Setting idle timers", { WARNING_TIME, LOGOUT_TIME });
+  // timerRef.current = setTimeout(() => {
+  //   alert("Session will expire in 1 minute due to inactivity");
+  // }, WARNING_TIME);
+  
+  // //and then set another timer for 10 minutes to actually log out the user
+  // logoutTimerRef.current = setTimeout(() => {
+  //   logout_1();
+  // }, LOGOUT_TIME);  
 
   // useEffect(() => {
   //   try {
@@ -287,6 +315,9 @@ function App() {
 
   //open external link with fallback
   const openExternal = useExternalLink();
+
+
+
 
   return (
     <>

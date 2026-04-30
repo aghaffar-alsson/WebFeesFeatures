@@ -83,7 +83,7 @@
 .sthdr,
 .yrr {
   display: flex;
-  flex-direction: row;
+  flex-direction: column !important;
   justify-content: flex-start;
   align-items: flex-start;
   gap: 30px;
@@ -216,6 +216,15 @@
   color: #1e3a8a;
   font-weight: 600;
 }
+.year-row {
+  background: #f1f5f9;
+  font-weight: bold;
+}
+
+.total-row {
+  background: #eef2ff;
+  font-weight: bold;
+}
 /* .cont .ant-table {font-size: 7;} */
 @media print {
   /* 1️⃣ Page setup */
@@ -239,8 +248,8 @@
     position: absolute;
     top: 0;
     left: 0;
-    width: 80%;
-    transform: scale(0.9); /* adjust if needed: 0.7–0.75 usually fits */
+    width: 100%;
+    transform: scale(1) !important; /* adjust if needed: 0.7–0.75 usually fits */
     transform-origin: top left;
     font-size: 10pt;
     line-height: 1.1;
@@ -261,7 +270,7 @@
 
   /* 4️⃣ Table adjustments */
   .ant-table {
-    width: 100% !important;
+    width: 150% !important;
     table-layout: fixed !important; /* shrink columns proportionally */
     font-size: 12px !important; /* reduce font to fit */
     border-collapse: collapse !important;
@@ -291,9 +300,13 @@
   .fmhdr,
   .sthdr,
   .yrr {
+    display: flex !important;
+      flex-direction: row !important;
+      justify-content: flex-start !important;
+      align-items: flex-start !important;
     font-size: 18px !important;
     font-weight: 500;
-    gap: 10px !important;
+    gap: 30px !important;
     margin-bottom: 20px;
   }
   p{margin-bottom: 15px;}
@@ -313,7 +326,7 @@
   /* 7️⃣ Remove scrolls & overflow */
   body, html {
     overflow: visible !important;
-    width: 110%;
+    width: 90% !important;
   }
 
   .tbb {
@@ -400,7 +413,7 @@
   .fmhdr,
   .sthdr,
   .yrr {
-    flex-direction: column;
+    flex-direction: row !important;
     gap: 6px;
     font-size: 14px;
   }

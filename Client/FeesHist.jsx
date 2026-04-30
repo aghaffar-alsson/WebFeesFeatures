@@ -32,8 +32,11 @@ export default function FeesHist() {
       // const res = await fetch("http://localhost:3000/api/getstfees", {
       const res = await fetch(`${API_BASE}/getstfees`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
+          headers: {
+            "Content-Type": "application/json",
+            "x-session-id": sessionStorage.getItem("sessionId") // Include session ID in headers for authentication
+          },        
+          body: JSON.stringify({
           famid: curFamilyNo,
           curstid: curStudID,
           onlyRem: onlyRem,

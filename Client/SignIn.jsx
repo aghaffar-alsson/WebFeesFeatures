@@ -544,7 +544,10 @@ export default function SignIn()
         }, 100);
         messageApi.open({
           type: "success",
-          content: "Verification code sent to your email"
+          content: "Verification code sent to your email",
+          duration: 10, // seconds (increase as needed)
+          className: "custom-success-message",
+
         });
         // keep button disabled in OTP mode by design until verify/reload
         setIsSubmittingLogin(false);
@@ -647,7 +650,7 @@ if (digit && index === 5) {
 
   setIsVerifyingCode(true);
   setOtpError("");
-
+  console.log("Before fetch - verificationToken:", verificationToken, "code:", codeToVerify);
   try {
     const res = await fetch(`${API_BASE}/verify-login-code`, {
       method: "POST",
@@ -659,6 +662,7 @@ if (digit && index === 5) {
         code: codeToVerify.trim()
       })
     });
+  console.log("After fetch - verificationToken:", verificationToken, "code:", codeToVerify);
 
     const data = await res.json();
 
@@ -697,6 +701,8 @@ if (digit && index === 5) {
       content: "Login to our portal is successful"
     });
     login(data.user);
+    // Optional: store session ID or token if returned by backend for future authenticated requests
+    sessionStorage.setItem("sessionId", data.sessionId);
     navigate("/fminfo");
 
     // navigate("/fminfo");
@@ -707,7 +713,7 @@ if (digit && index === 5) {
   } finally {
     setIsVerifyingCode(false);
   }
-};
+  };
   //Create a unified submit handler that checks the login credentials first, then triggers OTP verification if valid, or directly finalizes login if OTP step is not needed
   const handleSubmitAction = async () => {
   if (!isOtpStep) {
@@ -801,7 +807,9 @@ const handleResendOtp = async () => {
     setOtpDigits(["", "", "", "", "", ""]);
     messageApi.open({
       type: "success",
-      content: "Verification code sent to your email"
+      content: "Verification code sent to your email",
+      duration: 10,
+      className: "custom-success-message",
     });
 
   } catch (err) {

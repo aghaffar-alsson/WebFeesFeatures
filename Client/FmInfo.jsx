@@ -17,7 +17,10 @@ export default function FmInfo() {
   const [selectedFamid, setSelectedFamid] = useState("");
   const [selectedFamNm, setSelectedFamNM] = useState("");
   const [onlyout, setOnlyOut] = useState(false);
-  const [studInfo, setstudInfo] = useState([]);
+  // const [studInfo, setstudInfo] = useState([]);
+  const [studInfo, setstudInfo] = useState(() => {
+    return JSON.parse(localStorage.getItem("studInfo") || "[]");
+  });
   const [fmDtt, setFmDtt] = useState({});
   const { logout } = useAuth();
   // const CurFmNo = localStorage.getItem("loggedFamid")
@@ -26,6 +29,7 @@ export default function FmInfo() {
   
   const CurFmNo = userData?.famid //|| localStorage.getItem("loggedFamid");
   const CurFmNm = userData?.famnm //|| localStorage.getItem("loggedFamNm");
+  const emll = userData?.emll || "" //to get the email from userData & pass it to the API for fetching family info, if not available then pass empty string
   // const yrNo = '2025'
   const yrNo = import.meta.env.VITE_CUR_YEAR
   const { Meta } = Card;
@@ -40,22 +44,30 @@ export default function FmInfo() {
   
   //here we use the custom hook to get the openExternal function
   const openExternal = useExternalLink();
-
-
+  const sessionId = sessionStorage.getItem("sessionId");
+  console.log("Session ID in FmInfo:", sessionId);
   //console.log(yrNo)
+  
+  //To get the family info and students info based on the family number and name stored in localStorage when the component mounts or when CurFmNo or CurFmNm changes
   const getFmInfo = async () => {
-    if (!CurFmNm || !CurFmNo) {
-      return
+    if (!CurFmNm || !CurFmNo || !emll || CurFmNo === "undefined" || CurFmNm === "undefined" || emll === "undefined") {
+      console.log(CurFmNm, CurFmNo, emll)
+      console.log("Missing family info or email, cannot fetch data");
+      return;
     }
-    //console.log(CurFmNo , CurFmNm)
+    console.log(CurFmNo , CurFmNm, emll)
     try {
       // const res = await fetch("http://localhost:3000/api/sp_GetFmInfo", {
       const res = await fetch(`${API_BASE}/sp_GetFmInfo`, {
+        headers: {
+          "Content-Type": "application/json",
+          "x-session-id": sessionId // Include session ID in headers for authentication
+        },        
         method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           yrNo: yrNo,
           CurFmNo: CurFmNo,
+          eml: emll || "" // Include email from userData if available
         }),
       });
       const data = await res.json();
@@ -67,7 +79,8 @@ export default function FmInfo() {
         //console.log(2)
         setstudInfo([data]);
       } else {
-        setstudInfo([]);
+        //setstudInfo([]);
+        if (!data) return;        
       }
       // console.log(data)
       // console.log(studInfo)
@@ -86,9 +99,17 @@ export default function FmInfo() {
     }
 
   }
+  
+  // Persist studInfo to localStorage whenever it changes
   useEffect(() => {
+    localStorage.setItem("studInfo", JSON.stringify(studInfo));
+  }, [studInfo]);
+  
+  //effect to fetch family and students info when CurFmNo or CurFmNm changes
+  useEffect(() => {
+    if (!CurFmNo || !CurFmNm) return;
     getFmInfo();
-  }, []);
+  }, [CurFmNo, CurFmNm]);
 
 // const gotoStPayHist = (curStID, curStNmm, ygpp, ygpp_no) => {
 //   console.log(curStID, curStNmm, ygpp, ygpp_no)
@@ -103,6 +124,7 @@ export default function FmInfo() {
 
 //   Navigate('/stpayhist')
 // }
+//navigate to payment history page with the current student info as state
 const gotoStPayHist = (curStID, curStNmm, ygpp, ygpp_no) => {
   navigate('/stpayhist', {
     state: {
@@ -113,7 +135,6 @@ const gotoStPayHist = (curStID, curStNmm, ygpp, ygpp_no) => {
     }
   });
 }
-
 
 const handleLogout = () => {
   sessionStorage.removeItem("isAuthenticated");

@@ -206,7 +206,15 @@ body {
   color: #188038;
   font-size: 14px;
 }
-
+.custom-success-message{
+  background-color: #fff !important;
+  border: 1px solid #c3e6cb !important;
+  color: #007bff !important;
+  font-size: 14px !important;
+  font-weight: 600 !important;
+  /* text-decoration: solid  ;
+  padding: 10px; */
+}
 
 @media (min-width: 600px) and (max-width: 990px){
 

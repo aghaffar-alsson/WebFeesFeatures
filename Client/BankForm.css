@@ -19,8 +19,8 @@
   flex-direction: row;
   justify-content: space-between;
   align-items: center;
-  padding-bottom: 8px;
-  margin-bottom: 15px;
+  padding-bottom: 5px;
+  margin-bottom: 5px;
   gap: 250px;
 }
 
@@ -111,9 +111,9 @@ h5 {
   ;
 }
 
-#endforminfo::before {
+/* #endforminfo::before {
   content: "|***********************END OF FORM**************************|";
-}
+} */
 
 @media print {
 
@@ -129,8 +129,6 @@ h5 {
   .frmPrnt {
     display: none !important;
   }
-
-
   .bnkfrmcont {
     position: absolute;
     top: 0;
@@ -146,11 +144,12 @@ h5 {
     box-shadow: none !important;
     background: #fff;
     padding: 10mm;
-    transform: scale(0.97);
+    transform: scale(0.97 ) !important;
   }
 
   .tbb,
   .ant-table-body {
+    width: 100% !important;
     overflow: visible !important;
     max-height: none !important;
   }
@@ -161,8 +160,8 @@ h5 {
     flex-direction: row;
     justify-content: center;
     align-items: flex-start;
-    padding-bottom: 8px;
-    margin-bottom: 15px;
+    padding-bottom: 5px;
+    margin-bottom: 5px;
     gap: 50px;
   }
   /* #schoolLogo {
@@ -201,11 +200,21 @@ h5 {
     font-size: 11px !important;
     text-align: right 
 }
+.stnmm, .amtdiv{ display: flex; flex-direction: row !important; justify-content: flex-start !important; align-items: flex-start !important; gap: 50px !important;}
+#fmnmm_2{display: none;}
+/* .bnkdetclass {
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: flex-start !important;
+  align-items: flex-start !important;
+  gap: 10px;
+  
+} */
 }
 /* --- Print preview boundary --- */
 @media screen {
   .bnkfrmcont {
-    position: relative;
+    position: relative !important;
   }
 .bnkfunc{display: none;
   }
@@ -216,16 +225,16 @@ h5 {
     position: absolute;
     top: 0;
     left: 0;
-    width: 210mm;
-    height: 297mm;
+    /* width: 210mm;
+    height: 297mm; */
     border: 2px solid black;
     /* Preview border */
     box-sizing: border-box;
     pointer-events: none;
     color: black;
-    font-size: 12px;
+    font-size: 11px;
     text-align: center;
-    padding-top: 5px;
+    /* padding-top: 5px; */
     background: rgba(255, 255, 255, 0.01);
     border-radius: 12px;
   }
@@ -246,7 +255,7 @@ h5 {
 flex-direction: row;
 justify-content: flex-start;
 align-items: flex-start;
-gap: 100px !important;}
+gap: 50px !important;}
 
 
 /* --- Responsive adjustments for tablets (medium screens: 601px–1024px) --- */

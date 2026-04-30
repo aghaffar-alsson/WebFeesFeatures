@@ -69,8 +69,12 @@ export default function StPay({ userData }) {
     try {
       // const res = await fetch("http://localhost:3000/api/getstpayhist", {
       const res = await fetch(`${API_BASE}/getstpayhist`, {
+        headers: {
+          "Content-Type": "application/json" ,
+          "x-session-id": sessionStorage.getItem("sessionId")
+        },        
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        
         body: JSON.stringify({
           famid: curFamilyNo,
           curstid: curStudID,
@@ -145,7 +149,7 @@ export default function StPay({ userData }) {
       width: 45,
     },
     //DUE DATE
-    {
+    hidd && {
       title: 'Due Date',
       dataIndex: 'duedt',
       align: "left",
@@ -153,7 +157,7 @@ export default function StPay({ userData }) {
       render: (date) => formatDtt(date),
     },
     //DEADLINE DATE
-    {
+    hidd &&{
       title: 'Deadline Date',
       dataIndex: 'deadlinedt',
       align: "left",
@@ -304,9 +308,9 @@ export default function StPay({ userData }) {
       <h3 className='hdrr' style={{ textAlign: "center" }}><u><b>{scnm} School</b></u></h3>
       <h3 className='hdrr' style={{ textAlign: "center" }}><u><b>Student Payment History Report - {import.meta.env.VITE_CUR_YEAR_NAME}</b></u></h3>
       <br></br>
-      <div className="payyrr">
+      {/* <div className="payyrr">
         <p>Academic Year: {import.meta.env.VITE_CUR_YEAR_NAME}</p>
-      </div>
+      </div> */}
       <div className="payfmhdr">
         <p>Family ID: {curFamilyNo} </p>
         <p>Family Name: {curFamilyName}</p>

@@ -2,7 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { Button } from "@mui/material";
 import axios from "axios";
 import "./CheckoutPage.css";
-
+import imgg from './img/logoo.jpg'
 import { Table, Spin, Tooltip, Grid } from "antd";
 import { LoadingOutlined } from "@ant-design/icons";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -314,8 +314,11 @@ export default function CheckoutPage(userData = { userData }) {
 
   return (
     <div>
-      <h3 className="alsh1">{schoolNmm || "El Alsson British & American International School - Newgiza"}</h3>
-      <h3 className="alsh1">Checkout Page</h3>
+        <h3 className="alsh1" style={{width:"100%"}}>{schoolNmm || "El Alsson British & American International school - Newgiza"}</h3>
+        <div className="hdrrr" style={{display:"flex" , flexDirection:"row", gap:"10px" ,alignItems:"flex-start" , justifyContent:"center"}}>
+          <h3 className="alsh1" style={{width:"75%", paddingTop:"30px"}}>Checkout Page</h3>
+          <img className="imghdrlftt" style={{width:"90px" , height:"90px", borderRadius:"50%" , border:"2px solid darkblue"}}  src={imgg} alt="EL ALSSON" />
+        </div>
 
       <div className="crtt">
         <h3 className="crttt">

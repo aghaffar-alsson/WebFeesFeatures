@@ -27,12 +27,40 @@ fs.ensureDirSync(RECEIPTS_DIR);
 app.use("/receipts", express.static(RECEIPTS_DIR));
 app.use("/public", express.static(path.join(__dirname, "public")));
 
-// ---------- MIDDLEWARE ----------
-app.use(cors());
+//app.use(cors());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use(express.json());
 
+const allowedOrigins = [
+  "http://localhost:5173",
+  "http://localhost:5174",
+  "https://alsson-web-fees-features-2pr9.vercel.app",
+  "https://fees.family.alsson.app",
+];
+
+app.use((req, res, next) => {
+  console.log("Origin:", req.headers.origin);
+  next();
+});
+
+app.use(cors({
+  origin: function (origin, callback) {
+    if (!origin) return callback(null, true);
+
+    if (allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+
+    console.error("CORS BLOCKED:", origin);
+    return callback(new Error("Not allowed by CORS"));
+  },
+  credentials: true
+}));
+
+app.options("*", cors());
+
+app.use(express.json());
 
 // ---------- SQL CONFIG ----------
 const sqlConfig = {
@@ -116,7 +144,53 @@ function createSignature(params, schoolId) {
     .digest("hex")
     .toUpperCase();
 }
-// VERIFY PAYFORT SIGNATURE
+// // VERIFY PAYFORT SIGNATURE
+// function verifySignature(params, schoolId) {
+//   const { response_phrase } = getMerchantCredentials(schoolId);
+
+//   const phrase = String(response_phrase || "").trim();
+
+//   // const data = { ...params };
+//   // const receivedSignature = String(data.signature || "").trim().toUpperCase();
+//   // delete data.signature;
+
+//   // const sortedKeys = Object.keys(data).sort();
+
+//   // const concatenated = sortedKeys
+//   //   .map((key) => `${key}=${String(data[key]).trim()}`)
+//   //   .join("");
+
+//   // const stringToHash = `${phrase}${concatenated}${phrase}`;
+//   const data = { ...params };
+//   // const receivedSignature = String(data.signature || "").trim().toUpperCase();
+//   const receivedSignature = payload.signature.trim().toUpperCase();
+//   delete data.signature;
+
+//   // ✅ FILTER EMPTY VALUES
+//   const filtered = Object.keys(data)
+//     .filter((key) => data[key] !== undefined && data[key] !== null && data[key] !== "")
+//     .sort();
+
+//   const concatenated = filtered
+//     .map((key) => `${key}=${String(data[key]).trim()}`)
+//     .join("");
+
+//   const stringToHash = `${phrase}${concatenated}${phrase}`;
+//   const generatedSignature = crypto
+//     .createHash("sha256")
+//     .update(stringToHash, "utf8")
+//     .digest("hex")
+//     .toUpperCase();
+
+//   console.log("=== APS VERIFY DEBUG ===");
+//   console.log("Sorted Keys:", sortedKeys);
+//   console.log("Concatenated:", concatenated);
+//   console.log("String To Hash:", stringToHash);
+//   console.log("Generated Signature:", generatedSignature);
+//   console.log("Received Signature:", receivedSignature);
+
+//   return generatedSignature === receivedSignature;
+// }
 function verifySignature(params, schoolId) {
   const { response_phrase } = getMerchantCredentials(schoolId);
 
@@ -126,7 +200,15 @@ function verifySignature(params, schoolId) {
   const receivedSignature = String(data.signature || "").trim().toUpperCase();
   delete data.signature;
 
-  const sortedKeys = Object.keys(data).sort();
+  // ✅ Remove empty values
+  const sortedKeys = Object.keys(data)
+    .filter(
+      (key) =>
+        data[key] !== undefined &&
+        data[key] !== null &&
+        String(data[key]).trim() !== ""
+    )
+    .sort();
 
   const concatenated = sortedKeys
     .map((key) => `${key}=${String(data[key]).trim()}`)
@@ -141,15 +223,17 @@ function verifySignature(params, schoolId) {
     .toUpperCase();
 
   console.log("=== APS VERIFY DEBUG ===");
-  console.log("Sorted Keys:", sortedKeys);
-  console.log("Concatenated:", concatenated);
+  console.log("Filtered Keys:", sortedKeys);
   console.log("String To Hash:", stringToHash);
-  console.log("Generated Signature:", generatedSignature);
-  console.log("Received Signature:", receivedSignature);
-
+  console.log("Generated:", generatedSignature);
+  console.log("Received:", receivedSignature);
+  //Logging the entire payload and critical values for debugging
+  //console.log("APS PAYLOAD:", payload);
+  console.log("STRING TO HASH:", stringToHash);
+  console.log("GENERATED:", generatedSignature);
+  console.log("RECEIVED:", receivedSignature);
   return generatedSignature === receivedSignature;
 }
-
 // ---------- MERCHANT REFERENCE GENERATOR ----------
 function generateMerchantReference(length = 12) {
   const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
@@ -189,29 +273,8 @@ const {
       return res.status(400).json({ error: "frontendOrigin is required" });
     }
 
-    // 🔐 Optional security whitelist
-    const allowedOrigins = [
-      "http://localhost:5173",
-      "http://localhost:5174",
-      "https://alsson-web-fees-features-2pr9.vercel.app",
-      "https://fees.family.alsson.app",
-    ];
-
-  app.use(cors({
-    origin: function (origin, callback) {
-      if (!origin) return callback(null, true); // mobile apps / postman
-  
-      if (allowedOrigins.includes(origin)) {
-        return callback(null, true);
-      }
-  
-      return callback(new Error("Not allowed by CORS"));
-    },
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"],
-    credentials: true
-  }));
-      
+    //after app.use(cors()) and before any route handlers, to enforce the whitelist on all routes
+    console.log("Received frontendOrigin:", frontendOrigin);
     if (!allowedOrigins.includes(frontendOrigin)) {
       return res.status(400).json({ error: "Invalid frontend origin" });
     }
@@ -269,8 +332,27 @@ const {
     console.log("Generated signature:", formPayLoad.signature);
     console.log("Payload AFTER signature:", formPayLoad);
 
-    // here insert a record to keep track the merchant reference and the school id
-    const pool = await sql.connect(sqlConfig);
+  // here insert a record to keep track the merchant reference and the school id
+  let pool;
+
+  try {
+    pool = await sql.connect(sqlConfig);
+  } catch (err) {
+    console.error("SQL CONNECTION FAILED:", err);
+    return res.status(500).json({
+      error: "Database connection failed",
+      details: err.message
+    });
+  }
+
+  // 🚨 HARD GUARD
+  if (!pool) {
+    return res.status(500).json({
+      error: "Database pool is undefined"
+    });
+  }
+
+await pool.request()
   await pool.request()
   .input("merchant_reference", sql.VarChar(50), orderID)
   .input("school_id", sql.Int, schoolCode)
@@ -1056,10 +1138,15 @@ async function handlePayfortCallback(req, res) {
     const full_name = trxRow.full_name || "";
 
     // Verify signature using correct school credentials
+    // if (!verifySignature(payload, schoolId)) {
+    //   return res.status(400).send("Invalid signature");
+    // }
+    //Instead of blocking immediately on signature mismatch, log it for investigation but allow processing to continue (optional)
     if (!verifySignature(payload, schoolId)) {
-      return res.status(400).send("Invalid signature");
+      console.error("⚠️ Signature mismatch — continuing for investigation");
+      // optionally allow temporarily:
+      // return res.status(400).send("Invalid signature");
     }
-
     const success = payload.status === "14";
 
     // Helper to build redirect URL

@@ -20,7 +20,7 @@ import crypto from "crypto";
 //const MSSQLStore = require('connect-mssql-v2')(session)
 import helmet from "helmet";
 import rateLimit from "express-rate-limit";
-
+import sessions from "./sessionStore.js";
 //import { getTransporter } from "./mailer.js"; // the above transporter file
 //******************OPEN CONNECTION & ESTABLISH SERVER************************/
 //const express = require("express");
@@ -40,6 +40,9 @@ app.set("trust proxy", 1);
 //paths setup for static files
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
+const { v4: uuidv4 } = require("uuid");
+const SESSION_TIMEOUT = 10 * 60 * 1000; // 10 minutes
 
 const port = process.env.VITE_PORT || 3000;
 //server connection configuration
@@ -63,6 +66,7 @@ const allowedOrigins = [
   "http://localhost:5173",
   "http://localhost:5174",
   process.env.FRONTEND_URL,
+  "https://feesweb.alsson.com",
   // process.env.SEC_FRONTEND_URL,
 ];
 //CORS configuration to allow only our frontend origin and credentials (cookies) to be sent
@@ -259,6 +263,23 @@ function normalizeRecord(record, fallback = {}) {
 function asyncHandler(fn) {
   return (req, res, next) => Promise.resolve(fn(req, res, next)).catch(next);
 }
+// --- Health Check Endpoint
+app.get("/health", (req, res) => {
+  res.json({
+    success: true,
+    message: "API is running",
+    env: process.env.NODE_ENV || "development",
+    session: !!req.session,
+    user: req.session?.user ? {
+      famid: req.session.user.famid,
+      famnm: req.session.user.famnm
+    } : null
+  });
+});
+// --- Test API
+app.get("/", (req, res) => {
+  res.send("API Server is running on Port: " + port);
+});
 // // --- Health Check Endpoint
 // app.get("/health", (req, res) => {
 //   res.json({
@@ -277,6 +298,36 @@ function asyncHandler(fn) {
 app.get("/", (req, res) => {
   res.send("API Server is running on Port: " + port);
 });
+// --- Session Middleware to protect routes
+function sessionMiddleware(req, res, next) {
+  //const sessions ={}// require("./sessionStore"); // Re-import the session store to ensure we have the latest data
+  const sessionId = req.headers['x-session-id'];
+  const session = sessions[sessionId];
+
+  console.log("All sessions:", sessions);
+  console.log("Session ID from header:", sessionId);
+  //console.log("Current session ID:", session.sessionId);
+  console.log("Current session:", session);
+  if (!sessionId) {
+    return res.status(401).json({ error: "No session" });
+  }
+
+  if (!session) {
+    return res.status(401).json({ error: "Invalid session" });
+  }
+
+  const now = Date.now();
+
+  if (now - session.lastActivity > SESSION_TIMEOUT) {
+    delete sessions[sessionId];
+    return res.status(401).json({ error: "Session expired" });
+  }
+
+  session.lastActivity = now;
+
+  req.user = session;
+  next();
+}
 //***************************APIs START**************************************************/
 // --- Get family ID by mobile number Stored Procedure 
 app.post("/spgetfmdet", async (req, res) => {
@@ -895,19 +946,20 @@ app.post('/chkLoginByPswd', async (req, res) => {
 });
 
 //GET THE PERSONAL INFO FOR THE SELECTED FAMILY
-app.post('/sp_GetFmInfo', async (req, res) => {
-  const { yrNo, CurFmNo } = req.body;
-
-  if (!yrNo || !CurFmNo) {
+app.post('/sp_GetFmInfo', sessionMiddleware, async (req, res) => {
+  const { yrNo, CurFmNo, eml } = req.body;
+  console.log(req.body);
+  if (!yrNo || !CurFmNo || !eml) {
     return res.status(400).json({ message: 'Missing required fields' });
   }
 
   try {
-    const pool = await poolPromise;
+    const pool = await sql.connect(sqlConfig);
     const result = await pool
       .request()
       .input('yrNo', sql.Char(4), yrNo)
       .input('famid', sql.Int, CurFmNo)
+      .input('eml', sql.NVarChar(255), eml)
       .execute('sp_GetFmInfo');
     const records = result.recordset;
     if (records && records.length > 0) {
@@ -936,9 +988,8 @@ app.post('/sp_GetFmInfo', async (req, res) => {
   }
 });
 
-
 // --- Bank Details Stored Procedure
-app.get("/bankdet/:bnkId", async (req, res) => {
+app.get("/bankdet/:bnkId", sessionMiddleware, async (req, res) => {
   const bnkId = parseInt(req.params.bnkId, 10);
   try {
     const pool = await poolPromise;
@@ -960,9 +1011,9 @@ app.get("/bankdet/:bnkId", async (req, res) => {
 //   return crypto.randomUUID();
 // }
 // API to validate credentials, generate OTP, store it in DB, and send it by email
-app.post("/loginchk", async (req, res) => {
+app.post("/loginchk", asyncHandler(async (req, res) => {
   const { yr, emll, pswd, mobno } = req.body;
-  console.log("Login attempt:", { yr, emll, mobno });
+
   if (!yr || !emll || !pswd || !mobno) {
     return res.status(400).json({
       success: false,
@@ -982,7 +1033,7 @@ app.post("/loginchk", async (req, res) => {
       .input("phone_reg", sql.NVarChar(20), mobno)
       .execute("chkLoginByPswd");
     const record = result.recordset?.[0];
-    console.log("Credential check result:", record);
+
     if (!record || !record.famid || !record.famnm) {
       return res.status(401).json({
         success: false,
@@ -993,13 +1044,9 @@ app.post("/loginchk", async (req, res) => {
     const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
     // 3) Generate verification token
     const verificationToken = crypto.randomUUID();
-    console.log("Generated OTP:", otpCode);
-    console.log("Generated verification token:", verificationToken);
     // 4) Expiry = 5 minutes
     const expiresAt = new Date(Date.now() + 5 * 60 * 1000);
-    console.log("OTP expires at:", expiresAt);
     const otpHash = await bcrypt.hash(otpCode, 10);
-    console.log("Hashed OTP:", otpHash);
     console.log("OTP plain:", otpCode);
     console.log("OTP hash:", otpHash);
     // 5) Invalidate previous unused OTPs for same user (optional but recommended)
@@ -1071,7 +1118,7 @@ app.post("/loginchk", async (req, res) => {
       error: err.message
     });
   }
-});
+}));
 // API to resend OTP code if expired or attempts exceeded
 app.post("/resend-login-code", asyncHandler(async (req, res) => {
   const { verificationToken } = req.body;
@@ -1564,9 +1611,24 @@ app.post("/verify-login-code", asyncHandler(async (req, res) => {
     //     });
     //   });
     // });
+
+    // Generate a unique session ID (in real implementation, this would be handled by session middleware)
+    console.log("Before:", sessions);
+    const sessionId = uuidv4();
+    // Store session data in memory (replace with real session store in production)
+    sessions[sessionId] = {
+      famid: record.FAMID,
+      famnm: record.FAMNM,
+      emll: record.EMAIL_ADDRESS,
+      mobno: record.MOBILE_NUMBER,
+      lastActivity: Date.now()
+    };    
+    console.log("After:", sessions);
+
     return res.status(200).json({
       success: true,
       message: "Login successful (session bypass test)",
+      sessionId,   // returning session ID for testing purposes
       user: //req.session.user
       {
         famid: record.FAMID,
@@ -1590,9 +1652,8 @@ app.post("/verify-login-code", asyncHandler(async (req, res) => {
     });
   }
 }));
-
 // --- Banks API
-app.get("/banks", async (req, res) => {
+app.get("/banks", sessionMiddleware, async (req, res) => {
   try {
     const pool = await poolPromise;
     const result = await pool.request().query(
@@ -1606,7 +1667,7 @@ app.get("/banks", async (req, res) => {
 });
 
 //GET WHOLE FFES SITUATION FOR THE SELECTED STUDENT
-app.post('/getstfees', async (req, res) => {
+app.post('/getstfees', sessionMiddleware, async (req, res) => {
   const { famid, curstid, onlyRem } = req.body;
   console.log(req.body);
   if (!famid || !curstid) {
@@ -1636,7 +1697,7 @@ app.post('/getstfees', async (req, res) => {
 
 
 //GET PAYMENT HISTORY FOR THE SELECTED STUDENT
-app.post('/getstpayhist', async (req, res) => {
+app.post('/getstpayhist', sessionMiddleware, async (req, res) => {
   const { famid, curstid, ygpno } = req.body;
 
   if (!famid || !curstid || !ygpno) {
@@ -1663,7 +1724,7 @@ app.post('/getstpayhist', async (req, res) => {
 });
 
 //HERE TO SETTLE THE FEES PAYMENT FOR THE SELECTED STUDENT
-app.post('/settlefees', async (req, res) => {
+app.post('/settlefees', sessionMiddleware, async (req, res) => {
   const { famid, curstid, onlyRem } = req.body;
 
   if (!famid || !curstid || onlyRem === undefined) {
@@ -1855,7 +1916,7 @@ function getLogoPath() {
   return fs.existsSync(p) ? p : null;
 }
 // Endpoint to generate receipt for whtasapp
-app.post("/generate-receipt", async (req, res) => {
+app.post("/generate-receipt",  sessionMiddleware, async (req, res) => {
   try {
     const data = req.body;
 
@@ -1884,7 +1945,7 @@ app.post("/generate-receipt", async (req, res) => {
   }
 });
 // Main endpoint to send email
-app.post("/send-receipt-email", async (req, res) => {
+app.post("/send-receipt-email", sessionMiddleware, async (req, res) => {
   try {
     const { receiptData } = req.body;
 
@@ -2097,7 +2158,7 @@ function drawTable(doc, rows, fontSize = 12) {
 }
 
 // Endpoint to generate WhatsApp link
-app.post("/generate-whatsapp-link", (req, res) => {
+app.post("/generate-whatsapp-link", sessionMiddleware, (req, res) => {
   try {
     const {
       schoolNumber = "201003828160",
@@ -2134,7 +2195,7 @@ app.post("/generate-whatsapp-link", (req, res) => {
   }
 });
 // Endpoint to log bank form print or display action done by the parent, and send email notification to fees team on feesforms@alsson.com
-app.post("/log-bankform-print", async (req, res) => {
+app.post("/log-bankform-print",  sessionMiddleware, async (req, res) => {
   try {
     const {
       familyId,
