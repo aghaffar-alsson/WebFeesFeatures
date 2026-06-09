@@ -1,0 +1,474 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+  
+
+.bnkfrmcont {
+  margin: auto;
+  max-width: 740px;
+  padding-top: 10px;
+  box-shadow: 0 1px 2px 2px rgba(0, 0, 0, 0.08);
+  margin-top: 50px;
+  height: 900px;
+}
+
+.logo {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 5px;
+  margin-bottom: 5px;
+  gap: 250px;
+}
+
+#schoolLogo {
+  width: 1000px !important;
+  /* padding-right: 150px; */
+}
+
+.divtitle {
+  display: flex;
+  flex-direction: column;
+}
+
+.frmtitle {
+  text-align: center;
+  font-size: 16px;
+  font-weight: bold;
+  text-decoration: underline;
+  margin-bottom: 10px;
+}
+
+.hdr {
+  margin-left: 50px;
+}
+
+h5 {
+  margin-top: 15px;
+  margin-bottom: 15px;
+  font-size: 16px;
+}
+
+.bnkdetclass {
+  border: 1px solid black;
+}
+
+.bnkdetclass h5 {
+  padding-left: 15px;
+}
+
+.graytxt {
+  color: lightgrey;
+}
+
+.evdd {
+  color: red;
+}
+
+.evdd_1 {
+  margin-bottom: 10px;
+}
+
+.frmPrnt {
+  margin-top: 10px;
+  height: 50px;
+  border-radius: 16px;
+  margin-left: 300px;
+  font-size: 16px;
+  color: #fff;
+  background: dodgerblue;
+}
+
+.curdt {
+  font-size: 11px !important;
+  text-align: right !important;
+}
+.frmPrnt:hover {
+  background: darkblue !important;
+  color: #fff !important;
+  border-color: darkblue !important;
+}
+
+#amt {
+  color: red;
+  font-size: 20px;
+}
+
+#evdd1 {
+  color: red;
+  font-size: 16px;
+}
+
+#stinfotxt::before {
+  content: "|************************FAMILY INFO**************************|";
+}
+
+#bnkinfotxt::before {
+  content: "|***********************BANK DETAILS**************************|";
+  ;
+}
+
+/* #endforminfo::before {
+  content: "|***********************END OF FORM**************************|";
+} */
+
+/* @media print {
+
+  body * {
+    visibility: hidden;
+  }
+
+  .bnkfrmcont,
+  .bnkfrmcont * {
+    visibility: visible;
+  }
+
+  .frmPrnt {
+    display: none !important;
+  }
+  .bnkfrmcont {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    max-width: 210mm;
+    overflow: hidden !important;
+    margin: 0 !important;
+    box-shadow: none !important;
+    background: #fff;
+    padding: 10mm;
+    transform: scale(0.97 ) !important;
+  }
+
+  .tbb,
+  .ant-table-body {
+    width: 100% !important;
+    overflow: visible !important;
+    max-height: none !important;
+  }
+
+  .logo {
+    
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: flex-start;
+    padding-bottom: 5px;
+    margin-bottom: 5px;
+    gap: 50px;
+  }
+  @page {
+    size: A4 portrait !important;
+    margin: 5mm !important;
+  }
+  
+  #schoolLogo {
+    width: 450px !important;
+    padding-right: 150px;
+  }
+  .frmtitle {font-size: 22px; }    
+  .curdt {
+    font-size: 11px !important;
+    text-align: right 
+  }
+  .stnmm, .amtdiv{ display: flex; flex-direction: row !important; justify-content: flex-start !important; align-items: flex-start !important; gap: 50px !important;}
+  #fmnmm_2{display: none;}
+
+} */
+
+@media print {
+  body * {
+    visibility: hidden !important;
+    /* margin: 0 !important;
+    padding: 0 !important; */
+  }
+
+  .bnkfrmcont,
+  .bnkfrmcont * {
+    visibility: visible !important;
+  }
+  @page {
+    size: A4 portrait !important;
+    margin: 5mm !important;
+  }
+  #fmnmm_2 {
+    display: none !important;
+  }
+  .bnkfrmcont {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    transform: scale(1) !important; /* adjust if needed: 0.7–0.75 usually fits */
+    transform-origin: top left;
+    font-size: 10pt;
+    line-height: 1.1;
+    overflow: visible !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  /* .bnkfrmcont * {
+  page-break-inside: avoid !important;
+  } */
+  #schoolLogo {
+    width: 250px !important;   /* 450px is too large for print */
+    padding-right: 40px;
+  }
+
+  .frmtitle { font-size: 18px; }
+
+  .curdt { font-size: 10px !important; }
+
+  body {
+    font-size: 11px;
+    line-height: 0.75 !important;
+  }
+
+.bnkfrmcont{
+   width: 210mm;
+    height: 297mm;
+
+    /* ✅ SCALE TO FIT */
+    transform: scale(1);  /* adjust dynamically (0.85–0.95) */
+        /* prevent page breaks */
+    page-break-inside: avoid;
+}
+  .stnmm , .amtdiv {
+    display: flex;
+    flex-direction: row !important;
+    justify-content: flex-start !important;
+    align-items: flex-start !important;
+    gap: 50px !important;
+  }
+  .frmPrnt {
+    display: none !important;
+  }
+  #instnm { line-height: 1.1 !important;}
+}
+
+/* --- Print preview boundary --- */
+@media screen {
+  .bnkfrmcont {
+    position: relative !important;
+  }
+.bnkfunc{display: none;
+  }
+
+  /* A4 preview box (shows visible border on screen only) */
+  .bnkfrmcont::after {
+    content: "Bank Form";
+    position: absolute;
+    top: 0;
+    left: 0;
+    /* width: 210mm;
+    height: 297mm; */
+    border: 2px solid black;
+    /* Preview border */
+    box-sizing: border-box;
+    pointer-events: none;
+    color: black;
+    font-size: 11px;
+    text-align: center;
+    /* padding-top: 5px; */
+    background: rgba(255, 255, 255, 0.01);
+    border-radius: 12px;
+  }
+
+  .bnkfrmcont.exceeds::after {
+    border-color: orange;
+    content: "⚠️ Content exceeds A4 height!";
+  }
+
+
+  /* #schoolLogo {
+    width: 200px ;
+    height: auto ;
+  } */
+}
+
+.bnkfunc{display: flex;
+flex-direction: row;
+justify-content: flex-start;
+align-items: flex-start;
+gap: 50px !important;}
+
+
+/* --- Responsive adjustments for tablets (medium screens: 601px–1024px) --- */
+@media (max-width: 1024px) {
+  .bnkfrmcont {
+    max-width: 90%;
+    margin-top: 30px;
+    height: auto;
+    padding: 20px;
+  }
+
+  .logo {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    padding-bottom: 6px;
+  }
+
+  .divtitle {
+    align-items: center;
+  }
+
+  .frmtitle {
+    font-size: 15px;
+  }
+
+  .hdr {
+    margin-left: 25px;
+  }
+
+  .frmPrnt {
+    width: 50%;
+    height: 45px;
+    /* display: block; */
+    margin: 20px auto;
+    margin-left: 0;
+    font-size: 15px;
+  }
+
+  .logo {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 250px;
+  }
+
+  /* #schoolLogo,
+  #bankLogo {
+    max-width: 100px;
+  } */
+
+  .frmtitle {
+    font-size: 15px;
+  }
+
+  .graytxt,
+  .graytxt h5 {
+    font-size: 12px;
+    color: gray;
+  }
+
+  #evdd1 {
+    color: red;
+    font-size: 16px;
+  }
+
+  #amt {
+    color: red;
+    font-size: 16px;
+  }
+
+}
+
+/* --- Responsive adjustments for phones (small screens: ≤600px) --- */
+@media (max-width: 600px) {
+  .bnkfrmcont {
+    max-width: 95%;
+    margin-top: 20px;
+    padding: 15px;
+    height: auto;
+    box-shadow: none;
+  }
+  
+  .divtitle {
+    text-align: center;
+    align-items: center;
+  }
+
+  .frmtitle {
+    font-size: 13px !important;
+    margin-bottom: 8px;
+  }
+
+  .hdr {
+    margin-left: 10px;
+    font-size: 13px;
+  }
+
+  h5 {
+    margin-top: 10px;
+    margin-bottom: 10px;
+    font-size: 13px;
+  }
+
+  .bnkdetclass h5 {
+    padding-left: 10px;
+  }
+
+  .frmPrnt {
+    width: 50%;
+    margin-top: 15px !important;
+    margin-left: 0 !important;
+    height: 45px;
+    font-size: 15px ;
+    border-radius: 10px;
+    /* display: block; */
+    /*display: none;*/
+  }
+  .prntico{display: none;}
+
+  /* Hide the A4 preview border on small screens */
+  .bnkfrmcont::after {
+    display: none;
+  }
+
+  .logo {
+    flex-direction: row;
+    justify-content: flex-start;
+    align-items: flex-start;
+    gap: 100px;
+  }
+  /* .logo {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+  } */
+
+  #schoolLogo,
+  #bankLogo {
+    width: 75% !important;
+    height: 7vh !important;
+  }
+
+  .frmtitle {
+    font-size: 13px;
+  }
+
+  .graytxt,
+  .graytxt h5 {
+    font-size: 14px;
+    color: black;
+  }
+
+  #evdd1 {
+    color: red;
+    font-size: 14px;
+  }
+
+  #amt {
+    color: red;
+    font-size: 14px;
+  }
+
+  #stinfotxt::before {
+    content: "|************Student Info.********|";
+  }
+
+  #bnkinfotxt::before {
+    content: "|*********Bank Details***********|";
+  }
+
+  #endforminfo::before {
+    content: "|************End Of Form********|";
+  }
+
+}
