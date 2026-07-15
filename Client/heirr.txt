@@ -1,0 +1,30 @@
+root 
+├─ .vercel 
+	├─ project.json 
+	├─ README.txt 
+├─ api 
+	├─ index.js 
+├─ Client 
+	├─ img 
+	├─ signin.jsx 
+	├─ signin.css ................................................... 
+├─ dist 
+	├─ index.html 
+├─ node_modules 
+├─ public 
+├─ Server
+	├─ Server.js
+
+├─ src
+	├─ App.jsx
+	├─ App.css
+├─ .env
+├─ .env.local
+├─ .gitignore
+├─ .eslint.config.js
+├─ Index.html
+├─ package.json
+├─ package_lock.json
+├─ readme.md
+├─ vercel.json
+├─ vite.config.js ?

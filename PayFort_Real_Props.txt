@@ -1,0 +1,34 @@
+******************START OF LIVE**************************
+American School:
+Merchant Identifier: TbPedXZs
+Access Code *: kU6fcpiJQuECccKXisdF
+SHA Type *: SHA-256
+SHA Request Phrase *: $2y$10$.FGuYmcji
+SHA Response Phrase *: $2y$10$bvOG5B3vi
+********************************************
+British School:
+Merchant Identifier: TbPedXZs
+Access Code *: 5AwuMwz8X9awQnFcZcKq
+SHA Type *: SHA-256
+SHA Request Phrase *: $2y$10$glYDBiAVk
+SHA Response Phrase *: $2y$10$hletfN042
+********************************************
+callback_url:https://checkout.payfort.com/FortAPI/paymentPage
+******************END OF LIVE**************************
+******************START OF SANDBOX**************************
+American School:
+Merchant Identifier: 4ada67b5
+Access Code *: M4sQwfE5v1O5QkjocgPW
+SHA Type *: SHA-256
+SHA Request Phrase *: $2y$10$Ta0481EDF
+SHA Response Phrase *: $2y$10$aotEpWOtP
+********************************************
+British School:
+Merchant Identifier: 4ada67b5
+Access Code *: 68XB1hl9PyEXdUtX0OBW
+SHA Type *: SHA-256
+SHA Request Phrase *: $2y$10$DjSJp0XoG
+SHA Response Phrase *: $2y$10$ra8j2kA3t
+********************************************
+callback_url:https://sbcheckout.payfort.com/FortAPI/paymentPage
+******************END OF SANDBOX**************************

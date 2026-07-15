@@ -1,0 +1,11 @@
+•	Host IP: 160.153.178.25
+•	Username: qkleshay
+•	Password: f!n@ncE25!$mY#@$$
+•	Project Path: C:\inetpub\vhosts\fees.family.alsson.app\httpdocs
+https://fees.family.alsson.app/
+
+Message
+Executed as user: NT SERVICE\SQLSERVERAGENT. Transaction (Process ID 58) 
+was deadlocked on lock resources with another process and has been chosen 
+as the deadlock victim. Rerun the transaction. [SQLSTATE 40001] (Error 1205).  
+The step failed.
