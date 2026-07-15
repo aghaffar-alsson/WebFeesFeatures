@@ -12,10 +12,7 @@ import { Link } from 'react-router-dom'
 import { useNavigate } from "react-router-dom";
 import Checkbox from 'antd/es/checkbox/Checkbox';
 //here import the functions from simplewebauthn to handle biometric login flow on the client side (generate options, verify response)
-import {
-  startRegistration,
-  startAuthentication
-} from "@simplewebauthn/browser";
+import { startRegistration, startAuthentication } from "@simplewebauthn/browser";
 //const { Link } = Typography;
 import '../Client/SignUp.jsx'
 import '../Client/PssForgot.jsx'
@@ -23,7 +20,7 @@ import { easing } from '@mui/material/styles';
 //to manage authentication state and session in a centralized way across the app
 import { useAuth } from "./src/AuthContext.jsx";
 //define login function from AuthContext to call after OTP verification is successful, to set auth state and store session
-// import FmInfo from '../Client/FmInfo.jsx'
+
 
 var MobRegExp = /^01[0-2,5]{1}[0-9]{8}$/;
 var EmlRegExp = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
@@ -60,6 +57,8 @@ export default function SignIn() {
   const [mobTouched, setMobTouched] = useState(false);
   const [emailTouched, setEmailTouched] = useState(false);
   const [pssTouched, setPssTouched] = useState(false);
+  // //use this state to enable biometric login option only if the user checked the "Enable Biometric Login" checkbox
+  // const [useBiometric, setUseBiometric] = useState(false);
   const navigate = useNavigate()
   const emlRef = useRef(null);
   const mobRef = useRef(null);
@@ -99,12 +98,9 @@ export default function SignIn() {
   if (!API_BASE) {
     throw new Error("VITE_API_URL is not defined");
   }
-  // console.log(API_URL)
-  // console.log(YrNmm)
-  //console.log(API_BASE)
-
-  //To check the family login using mobile number
-  // useEffect(() => {
+  // // console.log('API_BASE:', API_BASE);
+  // // console.log(YrNmm)
+  // //console.log(API_BASE)
 
   //define a ref to store the last checked mobile number, to prevent redundant API calls when user types the same number repeatedly or makes edits that don't change the final number (e.g. adding spaces, retyping the same digits)
   const lastCheckedRef = useRef("");
@@ -112,8 +108,8 @@ export default function SignIn() {
   const handleMobileCheck = async () => {
     const mobileValue = String(regMob || "").trim();
     const yearValue = String(YrNmm || "").trim();
-    console.log(mobileValue, yearValue);
-    if (mobileValue === lastCheckedRef.current) return; // 🚀 skip duplicate
+    //console.log(mobileValue, yearValue);
+    if (mobileValue === lastCheckedRef.current) return; // here to skip duplicate mobile checks
     lastCheckedRef.current = mobileValue;
     // 1) Empty field -> no API call, no error
     if (!mobileValue || mobileValue === "") {
@@ -131,6 +127,8 @@ export default function SignIn() {
       return;
     }
 
+    // remove the safety check for more than 11 digits, since the regex already enforces exactly 11 digits. 
+    // This avoids unnecessary API calls and user confusion.
     // // 3) Safety: prevent more than 11
     // if (mobileValue.length > 11) {
     //   setErrors((prev) => ({ ...prev, mobile: "Invalid Mobile Number" }));
@@ -148,8 +146,8 @@ export default function SignIn() {
     }
 
     // 5) Do not call API if year is missing
-    if (!yearValue) {
-      setErrors((prev) => ({ ...prev, mobile: "Year is missing" }));
+    if (!yearValue || yearValue === "") {
+      setErrors((prev) => ({ ...prev, mobile: "Academic year is missing" }));
       setFmMob("");
       setMobileStatus("invalid");
       return;
@@ -168,8 +166,9 @@ export default function SignIn() {
       });
       const data = await res.json();
       // if (res.ok && data && data.famid && data.famnm) {
+      // console.log("Mobile check response:", data);
       if (res.ok && data.success && data.famid && data.famnm) {
-        console.log(data.famid, data.famnm);
+        // console.log(data.famid, data.famnm);
         setFmMob(data.famid);
         setFmDtt(data);
         setMobileStatus("valid");
@@ -198,8 +197,8 @@ export default function SignIn() {
     const mobileValue = String(regMob || "").trim();
     const yearValue = String(YrNmm || "").trim();
 
-    // ===== KEEP YOUR ORIGINAL GUARDS =====
-    if (!mobileValue) {
+    // ===== KEEP MY ORIGINAL GUARDS =====
+    if (!mobileValue || mobileValue === "") {
       setErrors((prev) => ({ ...prev, mobile: "" }));
       setFmMob("");
       setMobileStatus("");
@@ -213,8 +212,8 @@ export default function SignIn() {
       return;
     }
 
-    if (!yearValue) {
-      setErrors((prev) => ({ ...prev, mobile: "Year is missing" }));
+    if (!yearValue || yearValue === "") {
+      setErrors((prev) => ({ ...prev, mobile: "Academic year is missing" }));
       setFmMob("");
       setMobileStatus("invalid");
       return;
@@ -222,12 +221,13 @@ export default function SignIn() {
 
     // ===== DEBOUNCE ONLY THE API CALL =====
     const timer = setTimeout(() => {
-      handleMobileCheck(); // 👈 call your EXISTING function
+      handleMobileCheck(); // Call your existing function
     }, 400);
 
     return () => clearTimeout(timer);
 
   }, [regMob, YrNmm]);
+
   //   handleMobileCheck();
   // }, [regMob, YrNmm]);
   // const handleMobileCheck = async () => {
@@ -326,6 +326,7 @@ export default function SignIn() {
       return () => clearTimeout(timer);
     }
   }, [otpDigits, showOtpSection]);
+
   //To allow only digits in mobile input and auto-clear dependent fields while editing
   const handleMobileChange = (e) => {
     const onlyDigits = e.target.value.replace(/\D/g, "").slice(0, 11);
@@ -354,9 +355,9 @@ export default function SignIn() {
         return;
       }
 
-      if (!year) {
-        console.log("YrNmm missing:", YrNmm);
-        setErrors((prev) => ({ ...prev, email: "Year is missing" }));
+      if (!year || year === "") {
+        // console.log("YrNmm missing:", YrNmm);
+        setErrors((prev) => ({ ...prev, email: "Academic year is missing" }));
         setEmailStatus("");
         return;
       }
@@ -367,7 +368,7 @@ export default function SignIn() {
         setEmailStatus("invalid");
         return;
       }
-      // optional: do not check DB until mobile is valid
+      // optional: do not call the API that check the database until mobile is valid
       if (!MobRegExp.test(regMob)) {
         setErrors((prev) => ({ ...prev, email: "" }));
         setEmailStatus("");
@@ -387,21 +388,18 @@ export default function SignIn() {
 
         const data = await res.json();
 
-        if (!res.ok) {
+        if (!res.ok || !data || !data.famid || !data.famnm) {
           console.error("Backend returned error:", data);
           setFmEml("");
           setEmailStatus("invalid");
-          setErrors((prev) => ({
-            ...prev,
-            email: data.message || "Server error",
-          }));
+          setErrors((prev) => ({ ...prev, email: data.message || "Server error", }));
           return;
         }
 
         if (data && data.famid && data.famnm) {
           setFmEml(data.famid);
           setFmDtt(data);
-          console.log(data.famid, data.famnm);
+          // console.log(data.famid, data.famnm);
           setErrors((prev) => ({ ...prev, email: "" }));
           setEmailStatus("valid");
           // focus email only after success
@@ -409,10 +407,7 @@ export default function SignIn() {
 
         } else {
           setFmEml("");
-          setErrors((prev) => ({
-            ...prev,
-            email: "Unregistered Email Address",
-          }));
+          setErrors((prev) => ({ ...prev, email: "Unregistered Email Address", }));
           setEmailStatus("invalid");
         }
       } catch (err) {
@@ -424,6 +419,7 @@ export default function SignIn() {
 
     handleEmailBlur();
   }, [regEmll, YrNmm]);
+
   //To manage OTP expiration countdown and auto-enable resend option when expired
   useEffect(() => {
     if (!otpExpiresAt || !showOtpSection) {
@@ -435,14 +431,13 @@ export default function SignIn() {
       const now = Date.now();
       const expiry = new Date(otpExpiresAt).getTime();
       const diff = Math.max(0, Math.floor((expiry - now) / 1000));
-
+      // console.log("Time left:", diff, "seconds");
+      //to calculate the remaining time in seconds and update the state for display
       setTimeLeft(diff);
 
       if (diff === 0) {
-        setShowResendOtp(true); // UI can show resend when timer ends
-        setOtpError((prev) =>
-          prev || "Verification code expired. Please request a new OTP."
-        );
+        setShowResendOtp(true);  //here to show resend when timer ends
+        setOtpError((prev) => prev || "Verification code expired. Please request a new OTP.");
       }
     };
 
@@ -496,7 +491,7 @@ export default function SignIn() {
   //   }
   // };
   const pswdExst = async () => {
-    if (!pss) {
+    if (!pss || pss.trim() === "") {
       setFmPss("");
       setErrors((prev) => ({ ...prev, password: "" }));
       return;
@@ -511,7 +506,6 @@ export default function SignIn() {
 
     try {
       setErrors((prev) => ({ ...prev, password: "" }));
-
       const res = await fetch(`${API_BASE}/chkLoginByPswd`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -595,7 +589,7 @@ export default function SignIn() {
   // }
   //}, [regEmll, regMob]);
 
-
+  // Auto-focus mobile input after the initial render, to improve user experience by allowing immediate typing without extra clicks
   useEffect(() => {
     if (mobRef.current) {
       mobRef.current.focus();
@@ -610,6 +604,8 @@ export default function SignIn() {
   // console.log(fmEml)
   // console.log(fmMob)
   // console.log(pswdRegExp.test(pss))
+
+  // Clear OTP inputs and their error state, then focus the first input for a fresh start, used after resend or failed attempts
   const resetOtpAndFocusFirst = () => {
     setOtpDigits(["", "", "", "", "", ""]);
     setOtpError("");
@@ -620,6 +616,7 @@ export default function SignIn() {
       }, 0);
     }, 0);
   };
+
   // Handle resend OTP flow, with similar logic to initial login but only for OTP
   const resetOtpAndFocus = () => {
     shouldRefocusOtp.current = true;
@@ -634,9 +631,7 @@ export default function SignIn() {
     try {
       const res = await fetch(`${API_BASE}/loginchk`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
+        headers: { "Content-Type": "application/json" },
         //credentials: "include",
         body: JSON.stringify({
           yr: YrNmm,
@@ -648,7 +643,7 @@ export default function SignIn() {
 
       const data = await res.json();
 
-      if (!res.ok) {
+      if (!res.ok || !data || !data.success) {
         messageApi.open({
           type: "error",
           content: data.message || "Invalid login credentials"
@@ -679,7 +674,6 @@ export default function SignIn() {
           content: "Verification code sent to your email",
           duration: 10, // seconds (increase as needed)
           className: "custom-success-message",
-
         });
         // keep button disabled in OTP mode by design until verify/reload
         setIsSubmittingLogin(false);
@@ -726,11 +720,10 @@ export default function SignIn() {
     // }
     if (digit && index === 5) {
       const fullCode = newOtp.join("");
-
-      console.log("Last digit entered:", digit);
-      console.log("newOtp:", newOtp);
-      console.log("fullCode:", fullCode);
-      console.log("includes empty?", newOtp.includes(""));
+      // console.log("Last digit entered:", digit);
+      // console.log("newOtp:", newOtp);
+      // console.log("fullCode:", fullCode);
+      // console.log("includes empty?", newOtp.includes(""));
 
       if (!newOtp.includes("")) {
         setTimeout(() => {
@@ -752,16 +745,13 @@ export default function SignIn() {
     e.preventDefault();
     const pasted = e.clipboardData.getData("text").replace(/\D/g, "").slice(0, 6);
 
-    if (!pasted) return;
-
+    if (!pasted || pasted.length !== 6) return;
     const newOtp = ["", "", "", "", "", ""];
 
     for (let i = 0; i < pasted.length; i++) {
       newOtp[i] = pasted[i];
     }
-
     setOtpDigits(newOtp);
-
     const nextIndex = Math.min(pasted.length, 5);
     otpRefs.current[nextIndex]?.focus();
   };
@@ -770,11 +760,8 @@ export default function SignIn() {
   //Handle OTP verification submission, then finalize login if OTP is valid
   const handleVerifyCode = async (codeOverride = null) => {
     if (isVerifyingCode) return;
-
     const codeToVerify = codeOverride || otpDigits.join("");
-
     console.log("handleVerifyCode running with:", codeToVerify);
-
     if (!codeToVerify || codeToVerify.trim().length !== 6) {
       setOtpError("Please enter the 6-digit verification code");
       return;
@@ -786,31 +773,24 @@ export default function SignIn() {
     try {
       const res = await fetch(`${API_BASE}/verify-login-code`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           verificationToken,
           code: codeToVerify.trim()
         })
       });
       console.log("After fetch - verificationToken:", verificationToken, "code:", codeToVerify);
-
       const data = await res.json();
-
       if (!res.ok || !data.success) {
         setOtpError(data.message || "Invalid verification code");
-
         if (typeof data.attemptsLeft === "number") {
           setAttemptsLeft(data.attemptsLeft);
         }
-
         if (data.allowResend || data.reason === "ATTEMPTS_EXCEEDED") {
           setShowResendOtp(true);
         } else {
           setShowResendOtp(false);
         }
-
         resetOtpAndFocus();
         return;
       }
@@ -822,7 +802,7 @@ export default function SignIn() {
       setIsOtpStep(false);
       setShowOtpSection(false);
       setVerificationToken("");
-      setOtpVerified (true) ;
+      setOtpVerified(true);
 
       // sessionStorage.setItem("isAuthenticated", "true");
       // sessionStorage.setItem("userData", JSON.stringify(data.user));
@@ -834,15 +814,21 @@ export default function SignIn() {
         content: "Login to our portal is successful"
       });
       login(data.user);
-      //calling biometric registration after successful OTP login, to allow users to opt-in for biometric login in the future if they choose, using WebAuthn library and backend endpoints
-      await registerBiometric();
+      //calling biometric registration after successful OTP login, 
+      // to allow users to opt-in for biometric login in the future if they choose, 
+      // using WebAuthn library and backend endpoints
+      // await registerBiometric();
+      if (enableBiometric) {
+        localStorage.setItem("biometricEnabled", "true");
+        await registerBiometric();
+      } else {
+        localStorage.setItem("biometricEnabled", "false");
+      }
       // Optional: store session ID or token if returned by backend for future authenticated requests
       sessionStorage.setItem("sessionId", data.sessionId);
-      // After successful OTP verification, you can choose to register biometric for future logins
-      await registerBiometric();
-      // Finally, navigate to the protected area - Family Info page
-      navigate("/fminfo");
-
+      // // After successful OTP verification, you can choose to register biometric for future logins
+      // await registerBiometric();
+      // // Finally, navigate to the protected area - Family Info page
       // navigate("/fminfo");
     } catch (err) {
       console.error("OTP verify error:", err);
@@ -932,10 +918,9 @@ export default function SignIn() {
         email: regEmll
       })
     });
-
     const options = await res.json();
-
-    const attResp = await startRegistration(options);
+    // const attResp = await startRegistration(options);
+    const attResp = await startRegistration({ optionsJSON: options });
 
     await fetch(`${API_BASE}/webauthn/register-verify`, {
       method: "POST",
@@ -1137,192 +1122,222 @@ export default function SignIn() {
         <div className="frmtitle">
           <h3 style={{ fontSize: "1.1rem" }}>Sign In to Parents' Fees Portal</h3>
         </div>
-        {/* Mobile */}
-        <div className="mobb">
-          <input
-            type="tel" id="regmobno" maxLength={11} className={`inp ${isMobInvalid ? "inp-error" : ""}`}
-            placeholder="Write Registered Mobile Number" ref={mobRef} value={regMob} disabled={isOtpStep}
-            // onChange={(e) => {const value = e.target.value.replace(/\D/g, "").slice(0, 11); setMobTouched(true); handleMobileChange(e);
-            // setRegMob(value);setRegEmll(""); setEmailTouched(false); setEmailStatus(""); setSelectedFamid(""); setSelectedFamNM("");
-            // setErrors((prev) => ({ ...prev, mobile: "", email: "" }));
-            // if (value.length < 11) {
-            //   setMobileStatus("");
-            //   setLastCheckedMobile("");
-            //   return;
-            // }
-            // if (value.length === 11) {
-            //   setRegMob(value);
-            //   handleMobileBlur(value);
-            // }
-            // }
-            // }
-            onChange={(e) => {
-              const value = e.target.value.replace(/\D/g, "").slice(0, 11);
-
-              setMobTouched(true);
-              setRegMob(value);
-
-              // reset dependent state ONLY when editing
-              if (value.length < 11) {
-                setFmMob("");
-                setFmDtt(null);
-                setMobileStatus("");
-              }
-
-              setRegEmll("");
-              setEmailTouched(false);
-              setEmailStatus("");
-              setErrors((prev) => ({ ...prev, mobile: "", email: "" }));
+        {biometricRegistered ? (
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              marginTop: "20px",
+              gap: "10px",
             }}
+          >
+            <button
+              type="button"
+              className="biobtn"
+              onClick={handleBiometricLogin}
+            >
+              Sign in with Fingerprint / Face ID
+            </button>
 
-            onBlur={() => setMobTouched(true)
+            <button
+              type="button"
+              className="disbtn"
+              onClick={() => {
+                localStorage.removeItem("biometricEnabled");
+                setBiometricRegistered(false);
+              }}
+            >
+              Use another account
+            </button>
+          </div>
+        ) : (
+          <>
+            {/* Mobile */}
+            <div className="mobb">
+              <input
+                type="tel" id="regmobno" maxLength={11} className={`inp ${isMobInvalid ? "inp-error" : ""}`}
+                placeholder="Write Registered Mobile Number" ref={mobRef} value={regMob} disabled={isOtpStep}
+                // onChange={(e) => {const value = e.target.value.replace(/\D/g, "").slice(0, 11); setMobTouched(true); handleMobileChange(e);
+                // setRegMob(value);setRegEmll(""); setEmailTouched(false); setEmailStatus(""); setSelectedFamid(""); setSelectedFamNM("");
+                // setErrors((prev) => ({ ...prev, mobile: "", email: "" }));
+                // if (value.length < 11) {
+                //   setMobileStatus("");
+                //   setLastCheckedMobile("");
+                //   return;
+                // }
+                // if (value.length === 11) {
+                //   setRegMob(value);
+                //   handleMobileBlur(value);
+                // }
+                // }
+                // }
+                onChange={(e) => {
+                  const value = e.target.value.replace(/\D/g, "").slice(0, 11);
 
-            }
-            required
-          />
-          {/* { !fmMob ? (<label className="lblworn">{errors.mobile}</label>) :
+                  setMobTouched(true);
+                  setRegMob(value);
+
+                  // reset dependent state ONLY when editing
+                  if (value.length < 11) {
+                    setFmMob("");
+                    setFmDtt(null);
+                    setMobileStatus("");
+                  }
+
+                  // setRegEmll("");
+                  // setEmailTouched(false);
+                  // setEmailStatus("");
+                  // setErrors((prev) => ({ ...prev, mobile: "", email: "" }));
+                }}
+
+                // onBlur={() => setMobTouched(true)}
+                required
+              />
+              {/* { !fmMob ? (<label className="lblworn">{errors.mobile}</label>) :
           (errors.mobile ? (
             <label className="lblworn" style={{ color: "red" }}>{errors.mobile}<FontAwesomeIcon icon={faXmark} /></label>) :
             (<label className="lblworn" style={{ color: "green" }}>Correct Mobile Number!!<FontAwesomeIcon icon={faCheck} /></label>))
           } */}
-          {/* {
+              {/* {
           !fmMob ? (<label className="lblworn">{errors.mobile}</label>)
           : mobileStatus === "checking" ? (<label className="lblworn" style={{ color: "#d48806" }}>Checking mobile number, please wait...</label>)
           : errors.mobile ? (<label className="lblworn" style={{ color: "red" }}>{errors.mobile} <FontAwesomeIcon icon={faXmark} /></label>)
           : mobileStatus === "valid" ? (<label className="lblworn" style={{ color: "green" }}>Correct Mobile Number!! <FontAwesomeIcon icon={faCheck} /></label>)
           : (<label className="lblworn"></label>)
           } */}
-          {
-            mobileStatus === "checking" ? (
-              <label className="lblworn" style={{ color: "#d48806" }}>
-                Checking mobile number, please wait...
-              </label>
-            ) : errors.mobile ? (
-              <label className="lblworn" style={{ color: "red" }}>
-                {errors.mobile} <FontAwesomeIcon icon={faXmark} />
-              </label>
-            ) : mobileStatus === "valid" ? (
-              <label className="lblworn" style={{ color: "green" }}>
-                Correct Mobile Number!! <FontAwesomeIcon icon={faCheck} />
-              </label>
-            ) : (
-              <label className="lblworn"></label>
-            )
-          }
-        </div>
-        {/* Email */}
-        <div className="emll">
-          <input type="email" id="regEmll" className={`inp ${isEmailInvalid ? "inp-error" : ""}`}
-            ref={emlRef} placeholder="Write Registered Email Address" disabled={isOtpStep || !fmMob}
-            value={regEmll} onChange={(e) => { setEmailTouched(true); setRegEmll(e.target.value); }}
-            onBlur={() => setEmailTouched(true)} required
-          />
-          {/* { !fmEml ? (<label className="lblworn">{errors.email}</label>) :
+              {
+                mobileStatus === "checking" ? (
+                  <label className="lblworn" style={{ color: "#d48806" }}>
+                    Checking mobile number, please wait...
+                  </label>
+                ) : errors.mobile ? (
+                  <label className="lblworn" style={{ color: "red" }}>
+                    {errors.mobile} <FontAwesomeIcon icon={faXmark} />
+                  </label>
+                ) : mobileStatus === "valid" ? (
+                  <label className="lblworn" style={{ color: "green" }}>
+                    {/* Correct Mobile Number!! <FontAwesomeIcon icon={faCheck} /> */}
+                    Correct Mobile Number!! <FontAwesomeIcon icon={faCheck} />
+                  </label>
+                ) : (
+                  <label className="lblworn"></label>
+                )
+              }
+            </div>
+            {/* Email */}
+            <div className="emll">
+              <input type="email" id="regEmll" className={`inp ${isEmailInvalid ? "inp-error" : ""}`}
+                ref={emlRef} placeholder="Write Registered Email Address" disabled={isOtpStep || !fmMob}
+                value={regEmll} onChange={(e) => { setEmailTouched(true); setRegEmll(e.target.value); }}
+                onBlur={() => setEmailTouched(true)} required
+              />
+              {/* { !fmEml ? (<label className="lblworn">{errors.email}</label>) :
             (errors.email ? (<label className="lblworn" style={{ color: "red" }}>{errors.email}<FontAwesomeIcon icon={faXmark} /></label>) :
               (<label className="lblworn" style={{ color: "green", display: "flow" }}>Correct Email Address!!<FontAwesomeIcon icon={faCheck} /></label>))
           } */}
-          {
-            !fmEml ? (<label className="lblworn"></label>)
-              : emailStatus === "checking" ? (<label className="lblworn" style={{ color: "#d48806" }}>Checking email address, please wait...</label>)
-                : errors.email ? (<label className="lblworn" style={{ color: "red" }}>{errors.email} <FontAwesomeIcon icon={faXmark} /></label>)
-                  : emailStatus === "valid" ? (<label className="lblworn" style={{ color: "green" }}>Correct Email Address!! <FontAwesomeIcon icon={faCheck} /></label>)
-                    : (<label className="lblworn"></label>)
-          }
-        </div>
-        {/* User Password */}
-        <div className="divpss12">
-          {/* <label id="lbl2" className="lbl" htmlFor="pss1" >Write own password:</label>             */}
-          {/* <Input.Password id="pss1" placeholder='password' className="inp_1" type="password" maxLength={10} value={pss}
+              {
+                !fmEml ? (<label className="lblworn"></label>)
+                  : emailStatus === "checking" ? (<label className="lblworn" style={{ color: "#d48806" }}>Checking email address, please wait...</label>)
+                    : errors.email ? (<label className="lblworn" style={{ color: "red" }}>{errors.email} <FontAwesomeIcon icon={faXmark} /></label>)
+                      : emailStatus === "valid" ? (<label className="lblworn" style={{ color: "green" }}>Correct Email Address!! <FontAwesomeIcon icon={faCheck} /></label>)
+                        : (<label className="lblworn"></label>)
+              }
+            </div>
+            {/* User Password */}
+            <div className="divpss12">
+              {/* <label id="lbl2" className="lbl" htmlFor="pss1" >Write own password:</label>             */}
+              {/* <Input.Password id="pss1" placeholder='password' className="inp_1" type="password" maxLength={10} value={pss}
             iconRender={(visible) => visible ? <EyeTwoTone /> : <EyeInvisibleOutlined />}
             onChange={(e) => setPss(e.target.value)} onKeyUp={pswdExst} /> */}
-          <Input.Password id="pss1" placeholder="password" disabled={isOtpStep} className={`inp_1 ${isPasswordInvalid ? "inp-password-error" : ""}`}
-            maxLength={10} ref={pswdRef} value={pss} iconRender={(visible) => (visible ? <EyeTwoTone /> : <EyeInvisibleOutlined />)}
-            onChange={(e) => { setPssTouched(true); setPss(e.target.value); }} onBlur={() => setPssTouched(true)} onKeyUp={pswdExst}
-          />
-          {!fmpss ? (<label className="lblworn">{errors.password}</label>) :
-            (errors.password ? (<label className="lblworn" style={{ color: "red" }}>{errors.password}<FontAwesomeIcon icon={faXmark} /></label>) :
-              (<label className="lblworn" style={{ color: "green" }}>Correct Password!!<FontAwesomeIcon icon={faCheck} /></label>))
-          }
-        </div>
-        {/* OTP Code Input */}
-        {isOtpStep && (
-          <div className="otpdiv">
-            {/* <input type="text" inputMode="numeric" maxLength={6} className={`inp ${otpError ? "inp-error" : ""}`}
+              <Input.Password id="pss1" placeholder="password" disabled={isOtpStep} className={`inp_1 ${isPasswordInvalid ? "inp-password-error" : ""}`}
+                maxLength={10} ref={pswdRef} value={pss} iconRender={(visible) => (visible ? <EyeTwoTone /> : <EyeInvisibleOutlined />)}
+                onChange={(e) => { setPssTouched(true); setPss(e.target.value); }} onBlur={() => setPssTouched(true)} onKeyUp={pswdExst}
+              />
+              {!fmpss ? (<label className="lblworn">{errors.password}</label>) :
+                (errors.password ? (<label className="lblworn" style={{ color: "red" }}>{errors.password}<FontAwesomeIcon icon={faXmark} /></label>) :
+                  (<label className="lblworn" style={{ color: "green" }}>Correct Password!!<FontAwesomeIcon icon={faCheck} /></label>))
+              }
+            </div>
+            {/* OTP Code Input */}
+            {isOtpStep && (
+              <div className="otpdiv">
+                {/* <input type="text" inputMode="numeric" maxLength={6} className={`inp ${otpError ? "inp-error" : ""}`}
             placeholder="Enter 6-digit verification code" value={verificationCode} disabled={timeLeft === 0 && showResendOtp}
             onChange={(e) => {const digitsOnly = e.target.value.replace(/\D/g, ""); setVerificationCode(digitsOnly); setOtpError("");}}
             /> */}
-            <div style={{ display: "flex", gap: "8px", justifyContent: "center", marginBottom: "8px", marginLeft: "10px" }}>
-              {otpDigits.map((digit, index) => (
-                <input
-                  key={index}
-                  ref={(el) => (otpRefs.current[index] = el)}
-                  type="text"
-                  inputMode="numeric"
-                  maxLength={1}
-                  value={digit}
-                  onChange={(e) => handleOtpChange(e.target.value, index)}
-                  onKeyDown={(e) => handleOtpKeyDown(e, index)}
-                  onPaste={handleOtpPaste}
-                  style={{
-                    width: "35px",
-                    height: "35px",
-                    textAlign: "center",
-                    fontSize: "18px",
-                    border: "1px solid #ccc",
-                    borderRadius: "8px",
-                    outline: "none",
-                  }}
-                />
-              ))}
-            </div>
-            {otpError && (<label className="lblworn" style={{ color: "red" }}> {otpError}</label>)}
-          </div>
-        )}
-        {/* Submit */}
-        {/* <div className="sbmtt">
+                <div style={{ display: "flex", gap: "8px", justifyContent: "center", marginBottom: "8px", marginLeft: "10px" }}>
+                  {otpDigits.map((digit, index) => (
+                    <input
+                      key={index}
+                      ref={(el) => (otpRefs.current[index] = el)}
+                      type="text"
+                      inputMode="numeric"
+                      maxLength={1}
+                      value={digit}
+                      onChange={(e) => handleOtpChange(e.target.value, index)}
+                      onKeyDown={(e) => handleOtpKeyDown(e, index)}
+                      onPaste={handleOtpPaste}
+                      style={{
+                        width: "35px",
+                        height: "35px",
+                        textAlign: "center",
+                        fontSize: "18px",
+                        border: "1px solid #ccc",
+                        borderRadius: "8px",
+                        outline: "none",
+                      }}
+                    />
+                  ))}
+                </div>
+                {otpError && (<label className="lblworn" style={{ color: "red" }}> {otpError}</label>)}
+              </div>
+            )}
+            {/* Submit */}
+            {/* <div className="sbmtt">
           {isFormValid ? (<button className="enbtn" type="button" tabIndex="9" id="btnSubmit" onClick={chkLogin} >Submit<FontAwesomeIcon icon={faCheckDouble} /></button>) :
             (<button className="disbtn" type="button" tabIndex="9" id="btnSubmit" disabled>Submit</button>)}
         </div> */}
-        <div className="sbmtt">
-          {(!isOtpStep && !isFormValid) ? (<button className="disbtn" type="button" tabIndex="9" id="btnSubmit" disabled>Submit</button>)
-            :
-            (
-              // <div className="biometric-login">
-              //   <button type="button" className="enbtn" onClick={handleBiometricLogin}>Login with Fingerprint/Face ID in the Future</button>
-              // </div>,          
-              <button className="enbtn" type="submit" tabIndex="9" id="btnSubmit" disabled={isSubmittingLogin || isVerifyingCode || (timeLeft === 0 && showResendOtp)}>
-                {isSubmittingLogin ? (
-                  <>Sending OTP Code... <Spin size="small" /></>
-                ) : isVerifyingCode ? (
-                  <>Verifying OTP Code... <Spin size="small" /></>
-                ) : isOtpStep ? (
-                  <>Verify Code <FontAwesomeIcon icon={faCheckDouble} /></>
-                ) : (
-                  <>Submit <FontAwesomeIcon icon={faCheckDouble} /></>
-                )}
-              </button>
+            <div className="sbmtt">
+              {(!isOtpStep && !isFormValid) ? (<button className="disbtn" type="button" tabIndex="9" id="btnSubmit" disabled>Submit</button>)
+                :
+                (
+                  // <div className="biometric-login">
+                  //   <button type="button" className="enbtn" onClick={handleBiometricLogin}>Login with Fingerprint/Face ID in the Future</button>
+                  // </div>,          
+                  <button className="enbtn" type="submit" tabIndex="9" id="btnSubmit" disabled={isSubmittingLogin || isVerifyingCode || (timeLeft === 0 && showResendOtp)}>
+                    {isSubmittingLogin ? (
+                      <>Sending OTP Code... <Spin size="small" /></>
+                    ) : isVerifyingCode ? (
+                      <>Verifying OTP Code... <Spin size="small" /></>
+                    ) : isOtpStep ? (
+                      <>Verify Code <FontAwesomeIcon icon={faCheckDouble} /></>
+                    ) : (
+                      <>Submit <FontAwesomeIcon icon={faCheckDouble} /></>
+                    )}
+                  </button>
 
-            )}
-        </div>
-        {
-          showOtpSection && (
-            <div className="otp-resnd">
-              {showResendOtp && (<button type="button" className='enbtn' onClick={handleResendOtp} disabled={isResendingOtp}>
-                {isResendingOtp ? "Sending..." : "Request New OTP"}</button>)}
+                )}
             </div>
-          )
-        }
-        {
-          showOtpSection && !showResendOtp && (<div className="otp-info-row">
-            <span className="otp-timer">
-              OTP Code expires in: <strong style={{ color: "red" }}>{formatTime(timeLeft)}</strong>
-            </span>
-            <span className="otp-attempts">
-              Attempts left: <strong style={{ color: "red" }}>{attemptsLabel(attemptsLeft)}</strong>
-            </span>
-          </div>)
-        }
-        {/* {!otpVerified  ? (<p></p>) :
+            {
+              showOtpSection && (
+                <div className="otp-resnd">
+                  {showResendOtp && (<button type="button" className='enbtn' onClick={handleResendOtp} disabled={isResendingOtp}>
+                    {isResendingOtp ? "Sending..." : "Request New OTP"}</button>)}
+                </div>
+              )
+            }
+            {
+              showOtpSection && !showResendOtp && (<div className="otp-info-row">
+                <span className="otp-timer">
+                  OTP Code expires in: <strong style={{ color: "red" }}>{formatTime(timeLeft)}</strong>
+                </span>
+                <span className="otp-attempts">
+                  Attempts left: <strong style={{ color: "red" }}>{attemptsLabel(attemptsLeft)}</strong>
+                </span>
+              </div>)
+            }
+            {/* {!otpVerified  ? (<p></p>) :
           (<div className="fngrprnt">
           {( !showOtpSection && showResendOtp && isOtpStep && !biometricRegistered && !isFormValid) ? (<div><p></p></div>) :
               (<Checkbox style={{ margin: "10px 10px 10px 10px", fontSize: "13px", fontWeight: "bold" }} className="fngrchkbox" checked={enableBiometric} onChange={(e) => setEnableBiometric(e.target.checked)} disabled={isSubmittingLogin || isVerifyingCode || (timeLeft === 0 && showResendOtp)}>
@@ -1331,48 +1346,67 @@ export default function SignIn() {
             )}
           </div>)
           } */}
-          {otpVerified && (
-            <div className="fngrprnt">
-              <Checkbox
-                style={{
-                  margin: "10px",
-                  fontSize: "13px",
-                  fontWeight: "bold"
-                }}
-                className="fngrchkbox"
-                checked={enableBiometric}
-                onChange={(e) => setEnableBiometric(e.target.checked)}
-                disabled={isSubmittingLogin || isVerifyingCode}
-              >
-                Use Fingerprint / Face ID on this device
-              </Checkbox>
-
-              {enableBiometric && !biometricRegistered && (
-                <button
-                  type="button"
-                  className="enbtn"
-                  onClick={handleBiometricRegister}
+            {otpVerified && (
+              <div className="fngrprnt">
+                <Checkbox
+                  style={{
+                    margin: "10px",
+                    fontSize: "13px",
+                    fontWeight: "bold"
+                  }}
+                  className="fngrchkbox"
+                  checked={enableBiometric}
+                  onChange={(e) => setEnableBiometric(e.target.checked)}
+                  disabled={isSubmittingLogin || isVerifyingCode}
                 >
-                  Enable Fingerprint / Face ID
-                </button>
-              )}
+                  Enable biometric login on this device
+                </Checkbox>
 
-              {biometricRegistered && (
-                <label
-                  className="lblworn"
-                  style={{ color: "green" }}
-                >
-                  Fingerprint / Face ID enabled successfully
-                </label>
-              )}
+                {enableBiometric && !biometricRegistered && (
+                  <button
+                    type="button"
+                    className="biobtn"
+                    // style={{  
+                    //   backgroundColor: "#15c049 !important",
+                    //   color: "white !important",
+                    //   transition: "background-color 0.3s ease !important",
+                    //   margin: "5px 5px 5px 35px !important",
+                    //   width: "200px !important",
+                    //   fontSize: "1rem !important",
+                    //   padding: "5px 10px !important",
+                    // }}                
+                    // onClick={handleBiometricRegister}
+                    // onClick={registerBiometric}
+                    onClick={async () => {
+                      if (enableBiometric) {
+                        localStorage.setItem("biometricEnabled", "true");
+                        await registerBiometric();
+                      }
+
+                      navigate("/fminfo");
+                    }}
+                  >
+                    Register Fingerprint / Face ID
+                  </button>
+                )}
+
+                {biometricRegistered && (
+                  <label
+                    className="lblworn"
+                    style={{ color: "green" }}
+                  >
+                    Fingerprint / Face ID enabled successfully
+                  </label>
+                )}
+              </div>
+            )}
+            {!isFormValid ? (<p></p>) :
+              (<div className="fminfo"><strong >Family ID:{fmDtt.famid} - Family Name:{fmDtt.famnm} </strong></div>)}
+            <div className="forgotdiv" style={{ fontSize: "14px", marginLeft: "20px" }}>
+              {isFormValid ? (<p></p>) :
+                <Link style={{ fontSize: "14px", marginLeft: "20px" }} to="/forgot-pswd" className="forgotlnk">Forgot Password</Link>}
             </div>
-          )}
-        {!isFormValid ? (<p></p>) :
-          (<div className="fminfo"><strong >Family ID:{fmDtt.famid} - Family Name:{fmDtt.famnm} </strong></div>)}
-        <div className="forgotdiv" style={{ fontSize: "14px", marginLeft: "20px" }}>
-          {isFormValid ? (<p></p>) :
-            <Link style={{ fontSize: "14px", marginLeft: "20px" }} to="/forgot-pswd" className="forgotlnk">Forgot Password</Link>}
-        </div>
+          </>)}
         <div style={{ display: "flex", flexDirection: "row" }}>
           <p style={{ fontSize: "14px", marginLeft: "20px" }}> Don't have an account?{''}</p>
           <Link style={{ fontSize: "14px", marginLeft: "20px" }} to="/signup" >Sign Up</Link>

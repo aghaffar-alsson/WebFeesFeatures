@@ -39,9 +39,7 @@ export default function StFees({ userData }) {
   console.log("onlyRem value from location state:", onlyRem);
   // const curEmailAddress = location.state?.curEmailAddress;
   const curEmailAddress = userData?.emll || location.state?.curEmailAddress || "";
-
   const [selectedRows, setSelectedRows] = useState([]);
-
   const [stfeesmtrx, setStFeesMtrx] = useState([])
   const [selectedBnk, setSelectedBnk] = useState(0);
   const [bnks, setBnks] = useState([]);

@@ -121,6 +121,13 @@ body {
   margin-left: 25px;
   margin-top: 10px;
 }
+.fngrchkbox{font-size:14px !important;
+  text-decoration: bold !important; 
+  font-weight: 800 !important; 
+  color: black !important; 
+  margin-left: 8px !important;
+  margin-top: 5px !important; 
+  margin-bottom: 2px !important;}
 
 .forgotdiv {
   margin-left: 35px;
@@ -280,6 +287,19 @@ body {
     width: 90%;
     margin-left: 10px !important;
     font-size: 1rem;
+  }
+  .biobtn
+  {
+    background-color: #15c049 !important;
+    color: white !important;
+    transition: background-color 0.3s ease !important;
+    margin: 5px 5px 5px 35px !important;
+    width: 80% !important;
+    margin-left: 10px !important;
+    font-size: 0.8rem !important;
+  }
+  .biobtn:hover {
+    background-color: #0e8c34 !important;
   }
 
   .fminfo,
