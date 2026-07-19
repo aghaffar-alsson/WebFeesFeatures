@@ -20,7 +20,7 @@ import { easing } from '@mui/material/styles';
 //to manage authentication state and session in a centralized way across the app
 import { useAuth } from "./src/AuthContext.jsx";
 //define login function from AuthContext to call after OTP verification is successful, to set auth state and store session
-
+import { faFingerprint } from "@fortawesome/free-solid-svg-icons";
 
 var MobRegExp = /^01[0-2,5]{1}[0-9]{8}$/;
 var EmlRegExp = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
@@ -28,9 +28,13 @@ var pswdRegExp = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!_@#$%^&*]).{10,}$/;
 
 
 export default function SignIn() {
+  // useEffect(() => {
+  //   localStorage.clear();
+  // }, []);
   useEffect(() => {
-    localStorage.clear();
+    localStorage.removeItem("studInfo");
   }, []);
+
 
   const { login } = useAuth();
   const [otpDigits, setOtpDigits] = useState(["", "", "", "", "", ""]);
@@ -127,7 +131,7 @@ export default function SignIn() {
       return;
     }
 
-    // remove the safety check for more than 11 digits, since the regex already enforces exactly 11 digits. 
+    // remove the safety check for more than 11 digits, since the regex already enforces exactly 11 digits.
     // This avoids unnecessary API calls and user confusion.
     // // 3) Safety: prevent more than 11
     // if (mobileValue.length > 11) {
@@ -640,8 +644,12 @@ export default function SignIn() {
           mobno: String(regMob).trim()
         })
       });
+      console.log("Login response status:", res.status);
+      console.log("Login response headers:", res.headers);
+      console.log("Login response body:", await res.clone().text()); // clone to read body without consuming it
 
       const data = await res.json();
+      console.log("Login response data:", data);
 
       if (!res.ok || !data || !data.success) {
         messageApi.open({
@@ -814,14 +822,18 @@ export default function SignIn() {
         content: "Login to our portal is successful"
       });
       login(data.user);
-      //calling biometric registration after successful OTP login, 
-      // to allow users to opt-in for biometric login in the future if they choose, 
+      //calling biometric registration after successful OTP login,
+      // to allow users to opt-in for biometric login in the future if they choose,
       // using WebAuthn library and backend endpoints
       // await registerBiometric();
       if (enableBiometric) {
+        console.log("enable Biometric:", enableBiometric);
         localStorage.setItem("biometricEnabled", "true");
+        localStorage.setItem("lastFamilyId", fmDtt.famid);
+        localStorage.setItem("lastFamilyEmail", fmDtt.eml);
         await registerBiometric();
       } else {
+        console.log("enable Biometric:", enableBiometric);
         localStorage.setItem("biometricEnabled", "false");
       }
       // Optional: store session ID or token if returned by backend for future authenticated requests
@@ -881,7 +893,7 @@ export default function SignIn() {
   //     console.error(err);
   //     messageApi.error("Biometric authentication failed");
   //   }
-  // };  
+  // };
 
   // // Handle biometric registration flow to enable biometric login for future, using WebAuthn library and backend endpoints
   // const registerBiometric = async () => {
@@ -934,22 +946,34 @@ export default function SignIn() {
   };
 
   const handleBiometricLogin = async () => {
-    if (!regMob || !regEmll) {
+    const isBioEnabled = localStorage.getItem("biometricEnabled") === "true";
+    const famid = localStorage.getItem("lastFamilyId");
+    const fmEmail = localStorage.getItem("lastFamilyEmail");
+    console.log("Biometric enabled:", isBioEnabled, "fmMob:", fmMob, "regEmll:", regEmll);
+    if (!isBioEnabled) {
+    if (!regMob || !regEmll || !fmMob || !fmEml) {
       antdMessage.error("Enter mobile & email first");
       return;
     }
-
+    }
+    if (isBioEnabled) {
+      if (!famid || !fmEmail) {
+        antdMessage.error("Please sign in normally first");
+        return;
+      }
+    }
     try {
       const res = await fetch(`${API_BASE}/webauthn/login-options`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          famid: fmMob,
-          email: regEmll
+          famid: famid,
+          email: fmEmail
         })
       });
 
       const options = await res.json();
+      console.log("Biometric login options:", options);
 
       if (!options || options.success === false) {
         antdMessage.error("No biometric registered");
@@ -1132,15 +1156,22 @@ export default function SignIn() {
               gap: "10px",
             }}
           >
-            <button
+            {/* <button
               type="button"
               className="biobtn"
               onClick={handleBiometricLogin}
             >
-              Sign in with Fingerprint / Face ID
-            </button>
-
-            <button
+              Sign in using Biometric
+            </button> */}
+          <button
+            type="button"
+            className="biobtn fingerprint-btn"
+            onClick={handleBiometricLogin}
+            title="Sign in with Fingerprint / Face ID"
+          >
+            <FontAwesomeIcon icon={faFingerprint} />
+          </button>
+            {/* <button
               type="button"
               className="disbtn"
               onClick={() => {
@@ -1149,7 +1180,7 @@ export default function SignIn() {
               }}
             >
               Use another account
-            </button>
+            </button> */}
           </div>
         ) : (
           <>
@@ -1304,7 +1335,7 @@ export default function SignIn() {
                 (
                   // <div className="biometric-login">
                   //   <button type="button" className="enbtn" onClick={handleBiometricLogin}>Login with Fingerprint/Face ID in the Future</button>
-                  // </div>,          
+                  // </div>,
                   <button className="enbtn" type="submit" tabIndex="9" id="btnSubmit" disabled={isSubmittingLogin || isVerifyingCode || (timeLeft === 0 && showResendOtp)}>
                     {isSubmittingLogin ? (
                       <>Sending OTP Code... <Spin size="small" /></>
@@ -1366,7 +1397,7 @@ export default function SignIn() {
                   <button
                     type="button"
                     className="biobtn"
-                    // style={{  
+                    // style={{
                     //   backgroundColor: "#15c049 !important",
                     //   color: "white !important",
                     //   transition: "background-color 0.3s ease !important",
@@ -1374,19 +1405,24 @@ export default function SignIn() {
                     //   width: "200px !important",
                     //   fontSize: "1rem !important",
                     //   padding: "5px 10px !important",
-                    // }}                
+                    // }}
                     // onClick={handleBiometricRegister}
                     // onClick={registerBiometric}
+                    // console.lo("emailll",fmDtt.eml);
+
                     onClick={async () => {
                       if (enableBiometric) {
+                        console.log("enable Biometric:", enableBiometric);
                         localStorage.setItem("biometricEnabled", "true");
+                        localStorage.setItem("lastFamilyId", fmDtt.famid);
+                        localStorage.setItem("lastFamilyEmail", fmDtt.eml);
                         await registerBiometric();
                       }
 
                       navigate("/fminfo");
                     }}
                   >
-                    Register Fingerprint / Face ID
+                    Register Biometric Data
                   </button>
                 )}
 

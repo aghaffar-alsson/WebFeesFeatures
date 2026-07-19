@@ -23,8 +23,11 @@ var EmlRegExp = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
 var pswdRegExp = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!_@#$%^&*]).{10,}$/;
 
 function SignUp({userData}) {
+  // useEffect(() => {
+  //   localStorage.clear();
+  // }, []);
   useEffect(() => {
-    localStorage.clear();
+    localStorage.removeItem("studInfo");
   }, []);
   //const [message, setMessage] = useState("");
   const [messageApi, contextHolder] = message.useMessage()

@@ -50,7 +50,8 @@ function App() {
   //logout_1 function to clear session and local storage and redirect to sign in page
   const logout_1 = () => {
     sessionStorage.clear();
-    localStorage.clear();
+    //localStorage.clear();
+    localStorage.removeItem("studInfo");
     window.location.href = "/signin";
   };
   //use custom hook to handle idle timeout

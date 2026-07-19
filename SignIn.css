@@ -294,14 +294,29 @@ body {
     color: white !important;
     transition: background-color 0.3s ease !important;
     margin: 5px 5px 5px 35px !important;
-    width: 80% !important;
+    width: 225px !important;
+    height: 40px !important;
+
     margin-left: 10px !important;
-    font-size: 0.8rem !important;
+    font-size: 1rem !important;
+    margin-bottom: 12px  !important;
+
   }
   .biobtn:hover {
     background-color: #0e8c34 !important;
   }
 
+.fingerprint-btn {
+  width: 50px !important;
+  height: 50px !important;
+  border-radius: 50%;
+  border: 3px solid #15c049;
+  background: white;
+  color: #15c049;
+  font-size: 50px;
+  box-shadow: 0 0 20px rgba(21, 192, 73, 0.35);
+  margin-left: 100px !important;
+}  
   .fminfo,
   .lblworn,
   .lblok {

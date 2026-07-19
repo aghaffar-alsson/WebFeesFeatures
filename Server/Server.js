@@ -223,7 +223,7 @@ const transporter = nodemailer.createTransport({
   service: "gmail",
   auth: {
     user: 'fees@alsson.com',
-    pass: 'gwwowluzlabnfyqw',
+    pass: 'utozmuzjezaabvlf',
   },
 });
 

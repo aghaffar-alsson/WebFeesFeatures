@@ -27,8 +27,11 @@ var pswdRegExp = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!_@#$%^&*]).{10,}$/;
 
 export default function SignIn()
 {
+  // useEffect(() => {
+  //   localStorage.clear();
+  // }, []);
   useEffect(() => {
-    localStorage.clear();
+    localStorage.removeItem("studInfo");
   }, []);
 
   const { login } = useAuth();
