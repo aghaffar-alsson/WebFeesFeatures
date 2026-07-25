@@ -102,7 +102,7 @@ export default function SignIn() {
   if (!API_BASE) {
     throw new Error("VITE_API_URL is not defined");
   }
-  // // console.log('API_BASE:', API_BASE);
+  //console.log('API_BASE:', API_BASE);
   // // console.log(YrNmm)
   // //console.log(API_BASE)
 
@@ -168,13 +168,18 @@ export default function SignIn() {
           mobb: mobileValue,
         }),
       });
+      console.log(mobileValue, yearValue)
       const data = await res.json();
       // if (res.ok && data && data.famid && data.famnm) {
-      // console.log("Mobile check response:", data);
-      if (res.ok && data.success && data.famid && data.famnm) {
-        // console.log(data.famid, data.famnm);
-        setFmMob(data.famid);
+      console.log("Mobile check response:", data);
+      if (res.ok && data.success && data.famid && data.famnm && data.emailAddrs ) {
+        console.log(data.famid, data.famnm, data.emailAddrs);
+        //setFmMob(data.famid);
+        console.log("mobile_value",mobileValue)
+        setFmMob(mobileValue); // store the actual mobile number instead of famid for later use
         setFmDtt(data);
+        console.log("fmdtt",fmDtt)
+
         setMobileStatus("valid");
         setErrors((prev) => ({ ...prev, mobile: "" }));
         // focus email only after success
@@ -392,7 +397,7 @@ export default function SignIn() {
 
         const data = await res.json();
 
-        if (!res.ok || !data || !data.famid || !data.famnm) {
+        if (!res.ok || !data || !data.famid || !data.famnm || !data.emailAddrs )  {
           console.error("Backend returned error:", data);
           setFmEml("");
           setEmailStatus("invalid");
@@ -400,9 +405,11 @@ export default function SignIn() {
           return;
         }
 
-        if (data && data.famid && data.famnm) {
-          setFmEml(data.famid);
+        if (data && data.famid && data.famnm && data.emailAddrs ) {
+          setFmEml(data.emailAddrs);
           setFmDtt(data);
+          console.log("fmdtt",fmDtt)
+
           // console.log(data.famid, data.famnm);
           setErrors((prev) => ({ ...prev, email: "" }));
           setEmailStatus("valid");
@@ -527,6 +534,7 @@ export default function SignIn() {
       if (data && data.pswd && data.famid && data.famnm) {
         setFmPss(data.pswd);
         setFmEml(regEmll);
+        console.log("regmob", regMob)
         setFmMob(regMob);
         setFmNmm(data.famnm);
         setFmNo(data.famid);
@@ -830,7 +838,8 @@ export default function SignIn() {
         console.log("enable Biometric:", enableBiometric);
         localStorage.setItem("biometricEnabled", "true");
         localStorage.setItem("lastFamilyId", fmDtt.famid);
-        localStorage.setItem("lastFamilyEmail", fmDtt.eml);
+        localStorage.setItem("lastFamilyEmail", fmDtt.emailAddrs);
+        localStorage.setItem("mob_noo", fmDtt.mobb);
         await registerBiometric();
       } else {
         console.log("enable Biometric:", enableBiometric);
@@ -927,48 +936,55 @@ export default function SignIn() {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         famid: fmno,
-        email: regEmll
+        email: regEmll,
+        mobb: regMob,
       })
     });
     const options = await res.json();
     // const attResp = await startRegistration(options);
     const attResp = await startRegistration({ optionsJSON: options });
-
+    console.log("Biometric registration response:", attResp);
     await fetch(`${API_BASE}/webauthn/register-verify`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         famid: fmno,
         email: regEmll,
-        response: attResp
+        response: attResp,
+        mobb: regMob,
       })
     });
   };
+  const getFamilyLogin = async() =>{
 
+  }
   const handleBiometricLogin = async () => {
     const isBioEnabled = localStorage.getItem("biometricEnabled") === "true";
     const famid = localStorage.getItem("lastFamilyId");
     const fmEmail = localStorage.getItem("lastFamilyEmail");
-    console.log("Biometric enabled:", isBioEnabled, "fmMob:", fmMob, "regEmll:", regEmll);
+    const mob_noo = localStorage.getItem("mob_noo")
+    console.log("Biometric enabled:", isBioEnabled, "fmMob:", regMob, "regEmll:", fmEmail, "famid:", famid);
     if (!isBioEnabled) {
-    if (!regMob || !regEmll || !fmMob || !fmEml) {
+    if (!mob_noo || !fmEmail || !famid || !isBioEnabled) {
       antdMessage.error("Enter mobile & email first");
       return;
     }
     }
     if (isBioEnabled) {
-      if (!famid || !fmEmail) {
+      if (!famid || !fmEmail || !mob_noo) {
         antdMessage.error("Please sign in normally first");
         return;
       }
     }
     try {
+      console.log("login-verify-params",famid, fmEmail, mob_noo )
       const res = await fetch(`${API_BASE}/webauthn/login-options`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           famid: famid,
-          email: fmEmail
+          email: fmEmail,
+          mobb: mob_noo,
         })
       });
 
@@ -979,24 +995,52 @@ export default function SignIn() {
         antdMessage.error("No biometric registered");
         return;
       }
-
-      const authResp = await startAuthentication(options);
-
+      console.log("allowCredentials_line986:", options.allowCredentials);
+      // const authResp = await startAuthentication(options);
+      const authResp = await startAuthentication({
+        optionsJSON: options,
+      });      
+      console.log("Biometric authentication response:", authResp);
       const verifyRes = await fetch(`${API_BASE}/webauthn/login-verify`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          famid: fmMob,
-          email: regEmll,
-          response: authResp
+          famid: famid,
+          email: fmEmail,
+          response: authResp,
+          mobb: mob_noo,
         })
       });
 
       const data = await verifyRes.json();
+      console.log("Biometric login verify response:", data);
+      console.log("Biometric login verify response success:", data.success);
+      console.log(famid,fmEmail, mob_noo)
 
       if (data.success) {
         sessionStorage.setItem("sessionId", data.sessionId);
-        login(data.user);
+        //here call the handler which get the user data object to be passed to fminfo component --ahmed
+        const familyRes = await fetch(`${API_BASE}/api/getFamilyLogin`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            famid,
+            email: fmEmail,
+            mobb: mob_noo,
+            yrr: YrNmm
+          }),
+        });
+
+        const familyData = await familyRes.json();
+
+        if (!familyData.success) {
+          antdMessage.error("Unable to load family information");
+          return;
+        }
+
+        login(familyData.user);
         navigate("/fminfo");
       } else {
         antdMessage.error("Biometric login failed");
@@ -1169,7 +1213,7 @@ export default function SignIn() {
             onClick={handleBiometricLogin}
             title="Sign in with Fingerprint / Face ID"
           >
-            <FontAwesomeIcon icon={faFingerprint} />
+            <FontAwesomeIcon icon={faFingerprint} size="4x"/>
           </button>
             {/* <button
               type="button"
@@ -1408,14 +1452,16 @@ export default function SignIn() {
                     // }}
                     // onClick={handleBiometricRegister}
                     // onClick={registerBiometric}
-                    // console.lo("emailll",fmDtt.eml);
+                    // console.lo("emailll",fmDtt.emailAddrs);
 
                     onClick={async () => {
                       if (enableBiometric) {
                         console.log("enable Biometric:", enableBiometric);
+                        console.log("fmDtt.famid:", fmDtt.famid, "fmDtt.emailAddrs:", fmDtt.emailAddrs);
                         localStorage.setItem("biometricEnabled", "true");
                         localStorage.setItem("lastFamilyId", fmDtt.famid);
-                        localStorage.setItem("lastFamilyEmail", fmDtt.eml);
+                        localStorage.setItem("lastFamilyEmail", fmDtt.emailAddrs);
+                        localStorage.setItem("mob_noo", fmDtt.mobb);
                         await registerBiometric();
                       }
 

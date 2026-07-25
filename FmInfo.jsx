@@ -26,7 +26,7 @@ export default function FmInfo() {
   // const CurFmNo = localStorage.getItem("loggedFamid")
   // const CurFmNm = localStorage.getItem("loggedFamNm")
   const { isAuthenticated, userData } = useAuth();
-  
+
   const CurFmNo = userData?.famid //|| localStorage.getItem("loggedFamid");
   const CurFmNm = userData?.famnm //|| localStorage.getItem("loggedFamNm");
   const emll = userData?.emll || "" //to get the email from userData & pass it to the API for fetching family info, if not available then pass empty string
@@ -41,28 +41,29 @@ export default function FmInfo() {
   if (!API_BASE) {
     throw new Error("VITE_API_URL is not defined");
   }
-  
+
   //here we use the custom hook to get the openExternal function
   const openExternal = useExternalLink();
   const sessionId = sessionStorage.getItem("sessionId");
   console.log("Session ID in FmInfo:", sessionId);
   //console.log(yrNo)
-  
+
   //To get the family info and students info based on the family number and name stored in localStorage when the component mounts or when CurFmNo or CurFmNm changes
   const getFmInfo = async () => {
+    console.log("CurFmNm", CurFmNm, "CurFmNo", CurFmNo,)
     if (!CurFmNm || !CurFmNo || !emll || CurFmNo === "undefined" || CurFmNm === "undefined" || emll === "undefined") {
       console.log(CurFmNm, CurFmNo, emll)
       console.log("Missing family info or email, cannot fetch data");
       return;
     }
-    console.log(CurFmNo , CurFmNm, emll)
+    console.log(CurFmNo, CurFmNm, emll)
     try {
       // const res = await fetch("http://localhost:3000/api/sp_GetFmInfo", {
       const res = await fetch(`${API_BASE}/sp_GetFmInfo`, {
         headers: {
           "Content-Type": "application/json",
           "x-session-id": sessionId // Include session ID in headers for authentication
-        },        
+        },
         method: "POST",
         body: JSON.stringify({
           yrNo: yrNo,
@@ -80,7 +81,7 @@ export default function FmInfo() {
         setstudInfo([data]);
       } else {
         //setstudInfo([]);
-        if (!data) return;        
+        if (!data) return;
       }
       // console.log(data)
       // console.log(studInfo)
@@ -99,89 +100,89 @@ export default function FmInfo() {
     }
 
   }
-  
+
   // Persist studInfo to localStorage whenever it changes
   useEffect(() => {
     localStorage.setItem("studInfo", JSON.stringify(studInfo));
   }, [studInfo]);
-  
+
   //effect to fetch family and students info when CurFmNo or CurFmNm changes
   useEffect(() => {
     if (!CurFmNo || !CurFmNm) return;
     getFmInfo();
   }, [CurFmNo, CurFmNm]);
 
-// const gotoStPayHist = (curStID, curStNmm, ygpp, ygpp_no) => {
-//   console.log(curStID, curStNmm, ygpp, ygpp_no)
-//   localStorage.removeItem("curstid")
-//   localStorage.setItem("curstid", curStID)
-//   localStorage.removeItem("curstname")
-//   localStorage.setItem("curstname", curStNmm)
-//   localStorage.removeItem("ygp")
-//   localStorage.setItem("ygp", ygpp)
-//   localStorage.removeItem("ygpno")
-//   localStorage.setItem("ygpno", ygpp_no)
+  // const gotoStPayHist = (curStID, curStNmm, ygpp, ygpp_no) => {
+  //   console.log(curStID, curStNmm, ygpp, ygpp_no)
+  //   localStorage.removeItem("curstid")
+  //   localStorage.setItem("curstid", curStID)
+  //   localStorage.removeItem("curstname")
+  //   localStorage.setItem("curstname", curStNmm)
+  //   localStorage.removeItem("ygp")
+  //   localStorage.setItem("ygp", ygpp)
+  //   localStorage.removeItem("ygpno")
+  //   localStorage.setItem("ygpno", ygpp_no)
 
-//   Navigate('/stpayhist')
-// }
-//navigate to payment history page with the current student info as state
-const gotoStPayHist = (curStID, curStNmm, ygpp, ygpp_no) => {
-  navigate('/stpayhist', {
-    state: {
-      curStID,
-      curStNmm,
-      ygp: ygpp,
-      ygpno: ygpp_no
-    }
-  });
-}
+  //   Navigate('/stpayhist')
+  // }
+  //navigate to payment history page with the current student info as state
+  const gotoStPayHist = (curStID, curStNmm, ygpp, ygpp_no) => {
+    navigate('/stpayhist', {
+      state: {
+        curStID,
+        curStNmm,
+        ygp: ygpp,
+        ygpno: ygpp_no
+      }
+    });
+  }
 
-const handleLogout = () => {
-  sessionStorage.removeItem("isAuthenticated");
-  sessionStorage.removeItem("userData");
+  const handleLogout = () => {
+    sessionStorage.removeItem("isAuthenticated");
+    sessionStorage.removeItem("userData");
 
-  setIsAuthenticated(false);
-  setUserData(null);
+    setIsAuthenticated(false);
+    setUserData(null);
 
-  navigate("/signin");
-};
-// const gotoStFees = (curStID, curStNmm, ygpp, onlyout) => {
-//   localStorage.removeItem("curstid")
-//   localStorage.setItem("curstid", curStID)
-//   localStorage.removeItem("curstname")
-//   localStorage.setItem("curstname", curStNmm)
-//   localStorage.removeItem("ygp")
-//   localStorage.setItem("ygp", ygpp)
-//   //console.log(onlyout)
-//   localStorage.removeItem("onlyout")
-//   localStorage.setItem("onlyout", onlyout ? 1 : 0);
+    navigate("/signin");
+  };
+  // const gotoStFees = (curStID, curStNmm, ygpp, onlyout) => {
+  //   localStorage.removeItem("curstid")
+  //   localStorage.setItem("curstid", curStID)
+  //   localStorage.removeItem("curstname")
+  //   localStorage.setItem("curstname", curStNmm)
+  //   localStorage.removeItem("ygp")
+  //   localStorage.setItem("ygp", ygpp)
+  //   //console.log(onlyout)
+  //   localStorage.removeItem("onlyout")
+  //   localStorage.setItem("onlyout", onlyout ? 1 : 0);
 
-//   Navigate('/stfees')
-// }
-const gotoStFees = (curStID, curStNmm, ygpp, onlyout, curEmailAddress) => {
-  //console.log(curStID, curStNmm, ygpp, onlyout)
-  console.log(userData)
-  console.log("onlyout value:", onlyout);
-  console.log("Navigating to StFees with:", { curStID, curStNmm, ygpp, onlyout, curEmailAddress });
-  navigate("/stfees", {
-    state: {
-      curStID,
-      curStNmm,
-      ygp: ygpp,
-      onlyout: onlyout ? 1 : 0,
-      curEmailAddress: userData?.emll || curEmailAddress
-    }
-  });
-};
+  //   Navigate('/stfees')
+  // }
+  const gotoStFees = (curStID, curStNmm, ygpp, onlyout, curEmailAddress) => {
+    //console.log(curStID, curStNmm, ygpp, onlyout)
+    console.log(userData)
+    console.log("onlyout value:", onlyout);
+    console.log("Navigating to StFees with:", { curStID, curStNmm, ygpp, onlyout, curEmailAddress });
+    navigate("/stfees", {
+      state: {
+        curStID,
+        curStNmm,
+        ygp: ygpp,
+        onlyout: onlyout ? 1 : 0,
+        curEmailAddress: userData?.emll || curEmailAddress
+      }
+    });
+  };
   return (
     <div className="crds">
       <div className="fmm">
-      <div className="logout" style={{display: "flex", alignItems: "flex-end", marginLeft: "auto", justifyContent: "flex-end"}}>
-        <Tooltip title="Logout">
-          {/* <Button type="primary"  onClick={() => {handleLogout()}}><i className="fa-solid fa-right-from-bracket"></i>Logout</Button> */}
-          <Button type="primary"  onClick={() => {logout()}}><i className="fa-solid fa-right-from-bracket"></i>Logout</Button>
-        </Tooltip>
-      </div>
+        <div className="logout" style={{ display: "flex", alignItems: "flex-end", marginLeft: "auto", justifyContent: "flex-end" }}>
+          <Tooltip title="Logout">
+            {/* <Button type="primary"  onClick={() => {handleLogout()}}><i className="fa-solid fa-right-from-bracket"></i>Logout</Button> */}
+            <Button type="primary" onClick={() => { logout() }}><i className="fa-solid fa-right-from-bracket"></i>Logout</Button>
+          </Tooltip>
+        </div>
         <strong>Family ID: {CurFmNo} </strong>
         <strong>Family Name:  {CurFmNm}</strong>
       </div >

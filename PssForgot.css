@@ -191,13 +191,13 @@ button {
     background-color: #0e8c34 !important;
   }
   .fingerprint-btn {
-    width: 50px !important;
-    height: 50px !important;
+    width: 100px !important;
+    height: 100px !important;
     border-radius: 50%;
     border: 3px solid #15c049;
     background: white;
     color: #15c049;
-    font-size: 50px;
+    font-size: 12px !important;
     box-shadow: 0 0 20px rgba(21, 192, 73, 0.35);
     margin-left: 100px !important;
 
