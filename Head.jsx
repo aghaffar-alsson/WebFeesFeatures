@@ -12,7 +12,7 @@ export default function Head() {
         <div>
           <h1>© El Alsson British & American International School</h1>
           <h2>Online Fees Portal</h2>
-          {/* <h2>Academic Year : 2025-2026</h2> */}
+          {/* <h2>Academic Year : 2026-2027</h2> */}
         </div>
       </div>
     </div>

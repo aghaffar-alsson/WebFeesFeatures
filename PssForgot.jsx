@@ -152,7 +152,7 @@ function PssForgot() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          yr: "2025",
+          yr: "2026",
           mobno: String(trgtMob).trim()
         })
       });
@@ -217,7 +217,7 @@ function PssForgot() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          yrNo: import.meta.env.VITE_YEAR || "2025",
+          yrNo: import.meta.env.VITE_YEAR || "2026",
           mobno: String(regMob).trim(),
           emll: String(regEmll).trim(),
         }),
@@ -251,14 +251,14 @@ function PssForgot() {
   const updtLogin = async () => {
     // const hashedPswd = await bcrypt.hash(ownPss1, 10);   
     // console.log({
-    //       yrno : "2025",
+    //       yrno : "2026",
     //       famid: fmDtt.famid,
     //       mobb: String(regMob).trim(),
     //       emll: String(regEmll).trim(),
     //       pswd: ownPss1
     // })
     const loginData = {
-      yr: import.meta.env.VITE_YEAR || "2025",
+      yr: import.meta.env.VITE_YEAR || "2026",
       famid: selectedFamid,
       famnm: selectedFamNm,
       emll: regEmll,
@@ -273,7 +273,7 @@ function PssForgot() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(loginData)
         // body: JSON.stringify({
-        // yrno : "2025",
+        // yrno : "2026",
         // famid: fmDtt.famid,
         // mobb: String(regMob).trim(),
         // emll: String(regEmll).trim(),

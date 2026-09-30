@@ -1,104 +1,126 @@
-import React, { useEffect, useRef, useState } from 'react'
-import './SignIn.css'
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCheck, faCheckDouble, faGreaterThan } from "@fortawesome/free-solid-svg-icons";
-import { faXmark } from "@fortawesome/free-solid-svg-icons";
-import 'antd/dist/reset.css';
-import { Button, Alert, Spin, Table, Tag, Input } from "antd";
-import { message as antdMessage } from 'antd';
-import { EyeInvisibleOutlined, EyeTwoTone } from '@ant-design/icons';
-import { Typography } from 'antd';
-import { Link } from 'react-router-dom'
-import { useNavigate } from "react-router-dom";
-import Checkbox from 'antd/es/checkbox/Checkbox';
+/***** IMPORT NECESSARY OBJECTS, COMPONENTS, ELEMENT, HOOKS FROM BUILT-IN LIBRARIES *****/
+import { useEffect, useRef, useState } from 'react' //import react and hooks
+import { useNavigate , Link } from 'react-router-dom' //import react-router-dom for navigation and linking
+import { Spin, Input, message as antdMessage } from "antd"; //import Ant Design components for UI elements
+import Checkbox from 'antd/es/checkbox/Checkbox'; //import Ant Design checkbox component
+import { EyeInvisibleOutlined, EyeTwoTone } from '@ant-design/icons'; //import Ant Design icons for password visibility toggle
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"; //import FontAwesomeIcon component for using font awesome icons
+import { faFingerprint, faXmark, faCheck, faCheckDouble } from "@fortawesome/free-solid-svg-icons"; //import specific font awesome icons for use in the component
+import 'antd/dist/reset.css'; //import Ant Design CSS reset for consistent styling across different browsers
+
 //here import the functions from simplewebauthn to handle biometric login flow on the client side (generate options, verify response)
 import { startRegistration, startAuthentication } from "@simplewebauthn/browser";
-//const { Link } = Typography;
+import { browserSupportsWebAuthn } from '@simplewebauthn/browser';
+import { Capacitor } from "@capacitor/core";
+import { authenticateWithBiometric, isNativeBiometricAvailable, enableBiometricLogin } from "./src/Services/biometricService.js";
+/* IMPORT STYLES AND LOCAL COMPONENTS */
+import './SignIn.css' 
 import '../Client/SignUp.jsx'
 import '../Client/PssForgot.jsx'
-import { easing } from '@mui/material/styles';
 //to manage authentication state and session in a centralized way across the app
-import { useAuth } from "./src/AuthContext.jsx";
 //define login function from AuthContext to call after OTP verification is successful, to set auth state and store session
-import { faFingerprint } from "@fortawesome/free-solid-svg-icons";
-
+import { useAuth } from "./src/AuthContext.jsx";
+//declare regex patterns for validating mobile number, email address, and password formats
 var MobRegExp = /^01[0-2,5]{1}[0-9]{8}$/;
 var EmlRegExp = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
 var pswdRegExp = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!_@#$%^&*]).{10,}$/;
 
 
 export default function SignIn() {
-  // useEffect(() => {
-  //   localStorage.clear();
-  // }, []);
-  useEffect(() => {
-    localStorage.removeItem("studInfo");
-  }, []);
+  console.log("Supports WebAuthn:", browserSupportsWebAuthn()); //detect browser support for WebAuthn and log the result to the console
+  console.log("PublicKeyCredential:", window.PublicKeyCredential); //detect if the PublicKeyCredential interface is available in the browser and log it to the console
+  const isNativeApp = Capacitor.isNativePlatform(); //detect if the app is running in a native environment (e.g., mobile app) using Capacitor and store the result in a variable
 
-
-  const { login } = useAuth();
-  const [otpDigits, setOtpDigits] = useState(["", "", "", "", "", ""]);
-  const otpRefs = useRef([]);
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
+  //get the login function from AuthContext to call after successful OTP verification, to set authentication state 
+  //and store the session created for the authenticated family in the context for use across the app
+  const { login } = useAuth(); 
+  const [otpDigits, setOtpDigits] = useState(["", "", "", "", "", ""]); //clear OTP array on every render to ensure a fresh state for OTP input
+  const otpRefs = useRef([]); //declare a ref to store references to the OTP input fields for programmatic focus control
+  //const [name, setName] = useState(""); //state for family name to display after successful login
+  //const [email, setEmail] = useState(""); //state for email input field to capture user input
   // const [message, setMessage] = useState("");
-  const [selectedFamid, setSelectedFamid] = useState("");
-  const [selectedFamNm, setSelectedFamNM] = useState("");
-  const [parentEmail, setParentEmail] = useState("");
-  const [mobb, setMobb] = useState("");
-  const [regEmll, setRegEmll] = useState("");
-  const [fmEml, setFmEml] = useState("");
-  const [regMob, setRegMob] = useState("");
-  const [fmMob, setFmMob] = useState("");
-  const [errors, setErrors] = useState({ email: "", mobile: "", password: "" });
-  const [vll, setVll] = useState('');
-  const [vllerr, setVllErr] = useState('');
-  const [fmDtt, setFmDtt] = useState({});
-  const [fmno, setFmNo] = useState(0);
-  const [fmnmm, setFmNmm] = useState("");
-  const [pss, setPss] = useState('')
-  const [fmpss, setFmPss] = useState('')
-  const [mobTouched, setMobTouched] = useState(false);
-  const [emailTouched, setEmailTouched] = useState(false);
-  const [pssTouched, setPssTouched] = useState(false);
+  // const [selectedFamid, setSelectedFamid] = useState("");//state for selected family ID to store the famid of the authenticated family after successful login
+  // const [selectedFamNm, setSelectedFamNM] = useState("");//state for selected family name to store the famnm of the authenticated family after successful login
+  // const [parentEmail, setParentEmail] = useState("");//state for parent email to store the email address of the authenticated family after successful
+  // const [mobb, setMobb] = useState("");//state for mobile number to store the mobb of the authenticated family after successful login
+  const [regEmll, setRegEmll] = useState("");//state for email input field to capture user input
+  const [fmEml, setFmEml] = useState("");//state for email to store the email address of the authenticated family after successful login
+  const [regMob, setRegMob] = useState("");//state for mobile number to capture user input
+  const [fmMob, setFmMob] = useState("");//state for mobile number to store the mobb of the authenticated family after successful login
+  const [errors, setErrors] = useState({ email: "", mobile: "", password: "" });//state for error messages to display validation errors for email, mobile, and password fields
+  // const [vll, setVll] = useState('');//state for validation message to display general validation messages for the form
+  // const [vllerr, setVllErr] = useState('');//state for validation error message to display specific validation errors for the form
+  const [fmDtt, setFmDtt] = useState({});//state for family details to store the details of the authenticated family after successful login
+  const [fmno, setFmNo] = useState(0);//state for family number to store the famid of the authenticated family after successful login
+  const [fmnmm, setFmNmm] = useState("");//state for family name to store the famnm of the authenticated family after successful login
+  const [pss, setPss] = useState('')// state for password input field to capture user input
+  const [fmpss, setFmPss] = useState('')//state for password to store the pswd of the authenticated family after successful login
+  const [mobTouched, setMobTouched] = useState(false);//state to track if the mobile input field has been touched (focused and blurred) to trigger validation messages
+  const [emailTouched, setEmailTouched] = useState(false);//state to track if the email input field has been touched (focused and blurred) to trigger validation messages
+  const [pssTouched, setPssTouched] = useState(false);//state to track if the password input field has been touched (focused and blurred) to trigger validation messages
   // //use this state to enable biometric login option only if the user checked the "Enable Biometric Login" checkbox
   // const [useBiometric, setUseBiometric] = useState(false);
-  const navigate = useNavigate()
-  const emlRef = useRef(null);
-  const mobRef = useRef(null);
-  const pswdRef = useRef(null);
-  const YrNmm = import.meta.env.VITE_CUR_YEAR
+  const navigate = useNavigate() //get the navigate function from react-router-dom to programmatically navigate to different routes after successful login
+  const emlRef = useRef(null); //declare a ref to store a reference to the email input field for programmatic focus control
+  const mobRef = useRef(null); //declare a ref to store a reference to the mobile input field for programmatic focus control
+  const pswdRef = useRef(null); //declare a ref to store a reference to the password input field for programmatic focus control
+  const YrNmm = import.meta.env.VITE_CUR_YEAR //get the current academic year from environment variable to use in API requests for login verification
   // const REACT_PORT = import.meta.env.VITE_PORT || 3000;
   // const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000/api";
   //Define state variables for OTP login flow
-  const [isOtpStep, setIsOtpStep] = useState(false);
-  const [verificationToken, setVerificationToken] = useState("");
+  const [isOtpStep, setIsOtpStep] = useState(false); //state to track if the user is in the OTP verification step of the login flow
+  const [verificationToken, setVerificationToken] = useState(""); //state to store the verification token received from the backend after sending the OTP, to be used for verifying the OTP entered by the user
   // const [verificationCode, setVerificationCode] = useState("");
-  const [isSubmittingLogin, setIsSubmittingLogin] = useState(false);
-  const [isVerifyingCode, setIsVerifyingCode] = useState(false);
-  const [otpError, setOtpError] = useState("");
+  const [isSubmittingLogin, setIsSubmittingLogin] = useState(false);//state to track if the login form is being submitted to disable the submit button and show a loading spinner during the submission process
+  const [isVerifyingCode, setIsVerifyingCode] = useState(false);//state to track if the OTP verification is in progress to disable the verify button and show a loading spinner during the verification process
+  const [otpError, setOtpError] = useState("");//state to store error messages related to OTP verification to display validation errors for the OTP input fields
   //const [otpCode, setOtpCode] = useState("");
   //Define state variables for resend OTP
-  const [showOtpSection, setShowOtpSection] = useState(false);
-  const [showResendOtp, setShowResendOtp] = useState(false);
-  const [isResendingOtp, setIsResendingOtp] = useState(false);
-  const [mobileStatus, setMobileStatus] = useState("idle");
-  const [emailStatus, setEmailStatus] = useState("");
-  const [lastCheckedMobile, setLastCheckedMobile] = useState("");
-  const [otpVerified, setOtpVerified] = useState(false);
+  //state to track if the OTP input section should be displayed to the user after sending the OTP
+  const [showOtpSection, setShowOtpSection] = useState(false); 
+  //state to track if the "Resend OTP" button should be displayed to the user after the OTP has expired 
+  //or if the user requests to resend the OTP
+  const [showResendOtp, setShowResendOtp] = useState(false); 
+  //state to track if the resend OTP request is in progress to disable the resend button and show a loading spinner 
+  //during the resend process
+  const [isResendingOtp, setIsResendingOtp] = useState(false); 
+  //state to track the validation status of the mobile input field (idle, checking, valid, invalid) 
+  //to provide immediate feedback to the user while typing
+  const [mobileStatus, setMobileStatus] = useState("idle"); 
+  //state to track the validation status of the email input field (idle, checking, valid, invalid) 
+  //to provide immediate feedback to the user while typing
+  const [emailStatus, setEmailStatus] = useState(""); 
+  //state to store the last checked mobile number to prevent redundant API calls when the user types the same 
+  //number repeatedly or makes edits that don't change the final number (e.g., adding spaces, retyping the same digits)
+  const [lastCheckedMobile, setLastCheckedMobile] = useState(""); 
+  //state to track if the OTP has been successfully verified to allow the user to proceed with login 
+  //after successful OTP verification
+  const [otpVerified, setOtpVerified] = useState(false); 
   //Define state variables to track OTP expiration and attempt limits (optional, can also rely on backend responses)
-  const [otpExpiresAt, setOtpExpiresAt] = useState(null);   // ISO string from backend
-  const [timeLeft, setTimeLeft] = useState(0);              // seconds remaining
-  const [attemptsLeft, setAttemptsLeft] = useState(3);      // start with 3
-  const [maxAttempts, setMaxAttempts] = useState(3);
-  const shouldRefocusOtp = useRef(false);
+  //timestamp when the OTP expires, to manage countdown timer and auto-enable resend option when expired
+  const [otpExpiresAt, setOtpExpiresAt] = useState(null);   
+  //state to track the remaining time in seconds for OTP expiration countdown, to display a countdown timer to the user
+  const [timeLeft, setTimeLeft] = useState(0);              
+  //state to track the number of remaining attempts for OTP verification, 
+  //to limit the number of incorrect attempts and provide feedback to the user
+  const [attemptsLeft, setAttemptsLeft] = useState(3);      
+  //state to store the maximum number of allowed attempts for OTP verification, to reset the attemptsLeft state 
+  //when a new OTP is sent
+  const [maxAttempts, setMaxAttempts] = useState(3); 
+  //declare a reference to track if the OTP input fields should be refocused when the OTP section is shown 
+  //or when the user clears all OTP inputs, to improve user experience by automatically focusing the first OTP input field
+  const shouldRefocusOtp = useRef(false); 
+  //declare messageApi and contextHolder from Ant Design's message component to display temporary messages 
+  //(e.g., success, error) to the user
   const [messageApi, contextHolder] = antdMessage.useMessage();
-  // Define state for biometric login option
+  //state to track if the user has enabled biometric login option, to conditionally render the biometric login button 
+  //and handle biometric authentication flow
   const [enableBiometric, setEnableBiometric] = useState(false);
   // Check if biometric login was previously enabled by the user (e.g. stored in localStorage) and set initial state accordingly
   const [biometricRegistered, setBiometricRegistered] = useState(localStorage.getItem("biometricEnabled") === "true");
   //API base URL from environment variable
   const API_BASE = `${import.meta.env.VITE_API_URL}`;
+  //check the API server
   if (!API_BASE) {
     throw new Error("VITE_API_URL is not defined");
   }
@@ -106,24 +128,38 @@ export default function SignIn() {
   // // console.log(YrNmm)
   // //console.log(API_BASE)
 
+  //to test Native Biometric Existance
+  useEffect(() => {
+      async function test() {
+        //check if native biometric authentication is available on the device (e.g., fingerprint, face recognition) 
+        // and log the result to the console
+        const result = await isNativeBiometricAvailable();
+        console.log(result);
+      }
+      test();
+      // await async () => {authenticateWithBiometric()};
+      authenticateWithBiometric();
+  }, []);  
   //define a ref to store the last checked mobile number, to prevent redundant API calls when user types the same number repeatedly or makes edits that don't change the final number (e.g. adding spaces, retyping the same digits)
   const lastCheckedRef = useRef("");
-  //mobile number validation and API check are now handled in a single function with debouncing, to provide more immediate feedback and reduce unnecessary API calls while typing
+
+  //function (1) mobile number validation and API check are now handled in a single function with debouncing, 
+  //to provide more immediate feedback and reduce unnecessary API calls while typing
   const handleMobileCheck = async () => {
-    const mobileValue = String(regMob || "").trim();
-    const yearValue = String(YrNmm || "").trim();
+    const mobileValue = String(regMob || "").trim(); //declare a variable for mobile 
+    const yearValue = String(YrNmm || "").trim(); //declare a variable for academic year
     //console.log(mobileValue, yearValue);
     if (mobileValue === lastCheckedRef.current) return; // here to skip duplicate mobile checks
-    lastCheckedRef.current = mobileValue;
+    lastCheckedRef.current = mobileValue; //set the defined reference by the entered value
     // 1) Empty field -> no API call, no error
     if (!mobileValue || mobileValue === "") {
-      setErrors((prev) => ({ ...prev, mobile: "" }));
+      setErrors((prev) => ({ ...prev, mobile: "" })); 
       setFmMob("");
       setMobileStatus("");
       return;
     }
 
-    // 2) While typing less than 11 digits -> no API call, no "invalid" yet
+    // 2) While typing less than 11 digits -> no API call, no "valid" yet so set the defined state by invalid
     if (!MobRegExp.test(mobileValue) || mobileValue.length < 11) {
       setErrors((prev) => ({ ...prev, mobile: "" }));
       setFmMob("");
@@ -141,7 +177,7 @@ export default function SignIn() {
     //   return;
     // }
 
-    // 4) Validate exact 11-digit format
+    // 4) Validate exact 11-digit format, if not exact then return
     if (!MobRegExp.test(mobileValue)) {
       setErrors((prev) => ({ ...prev, mobile: "Invalid Mobile Number" }));
       setFmMob("");
@@ -149,7 +185,7 @@ export default function SignIn() {
       return;
     }
 
-    // 5) Do not call API if year is missing
+    // 5) Do not call API if year is missing , similarly return in this case also
     if (!yearValue || yearValue === "") {
       setErrors((prev) => ({ ...prev, mobile: "Academic year is missing" }));
       setFmMob("");
@@ -158,40 +194,40 @@ export default function SignIn() {
     }
 
     try {
-      setErrors((prev) => ({ ...prev, mobile: "" }));
-      setMobileStatus("checking");
+      setErrors((prev) => ({ ...prev, mobile: "" })); //clear the mobile error state
+      setMobileStatus("checking"); //set the state: checking while calling the API
       const res = await fetch(`${API_BASE}/chkLoginByMob`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({
           yr: yearValue,
           mobb: mobileValue,
         }),
       });
-      console.log(mobileValue, yearValue)
-      const data = await res.json();
+      console.log(mobileValue, yearValue) //for debugging purposes
+      const data = await res.json(); //receive API result
       // if (res.ok && data && data.famid && data.famnm) {
-      console.log("Mobile check response:", data);
-      if (res.ok && data.success && data.famid && data.famnm && data.emailAddrs ) {
-        console.log(data.famid, data.famnm, data.emailAddrs);
+      console.log("Mobile check response:", data); //for debugging purposes
+      //check for data integrity
+      if (res.ok && data.success && data.famid && data.famnm && data.emailAddrs) {
+        console.log(data.famid, data.famnm, data.emailAddrs); //for debugging purposes
         //setFmMob(data.famid);
-        console.log("mobile_value",mobileValue)
+        console.log("mobile_value", mobileValue) //for debugging purposes
         setFmMob(mobileValue); // store the actual mobile number instead of famid for later use
-        setFmDtt(data);
-        console.log("fmdtt",fmDtt)
+        setFmDtt(data); //store the returned record on its defined state
+        console.log("fmdtt", fmDtt) //for debugging purposes
 
-        setMobileStatus("valid");
+        setMobileStatus("valid"); //modify the state by 'valid'
         setErrors((prev) => ({ ...prev, mobile: "" }));
         // focus email only after success
         setTimeout(() => emlRef.current?.focus(), 100);
       } else {
+        //in case of mistakes with data: clear states, set error message for the user
         setFmMob("");
         setFmDtt(null);
         setMobileStatus("invalid");
-        setErrors((prev) => ({
-          ...prev,
-          mobile: mobileValue !== "" ? (data.message || "Unregistered Mobile Number") : ""
-        }));
+        setErrors((prev) => ({...prev, mobile: mobileValue !== "" ? (data.message || "Unregistered Mobile Number") : ""}));
       }
     } catch (err) {
       console.error("Error fetching family data:", err);
@@ -201,9 +237,9 @@ export default function SignIn() {
       setMobileStatus("invalid");
     }
   };
-  // add debouncing to mobile check to avoid excessive API calls while typing
+  //add debouncing to mobile check to avoid excessive API calls while typing
   useEffect(() => {
-    const mobileValue = String(regMob || "").trim();
+    const mobileValue = String(regMob || "").trim(); 
     const yearValue = String(YrNmm || "").trim();
 
     // ===== KEEP MY ORIGINAL GUARDS =====
@@ -229,102 +265,14 @@ export default function SignIn() {
     }
 
     // ===== DEBOUNCE ONLY THE API CALL =====
-    const timer = setTimeout(() => {
-      handleMobileCheck(); // Call your existing function
-    }, 400);
-
+    const timer = setTimeout(() => {handleMobileCheck(); }, 400); // Call your existing function
     return () => clearTimeout(timer);
 
   }, [regMob, YrNmm]);
 
-  //   handleMobileCheck();
-  // }, [regMob, YrNmm]);
-  // const handleMobileCheck = async () => {
-  //   const mobileValue = String(regMob || "").trim();
-  //   const yearValue = String(YrNmm || "").trim();
-  //   console.log(mobileValue, yearValue);
-  //   // 1) Empty field -> no API call, no error
-  //   if (!mobileValue || mobileValue === "") {
-  //     setErrors((prev) => ({ ...prev, mobile: "" }));
-  //     setFmMob("");
-  //     setMobileStatus("");
-  //     return;
-  //   }
-
-  //   // 2) While typing less than 11 digits -> no API call, no "invalid" yet
-  //   if (!MobRegExp.test(mobileValue) || mobileValue.length < 11 ) {
-  //     setErrors((prev) => ({ ...prev, mobile: "" }));
-  //     setFmMob("");
-  //     setMobileStatus("invalid");
-  //     return;
-  //   }
-
-  //   // // 3) Safety: prevent more than 11
-  //   // if (mobileValue.length > 11) {
-  //   //   setErrors((prev) => ({ ...prev, mobile: "Invalid Mobile Number" }));
-  //   //   setFmMob("");
-  //   //   setMobileStatus("invalid");
-  //   //   return;
-  //   // }
-
-  //   // 4) Validate exact 11-digit format
-  //   if (!MobRegExp.test(mobileValue)) {
-  //     setErrors((prev) => ({ ...prev, mobile: "Invalid Mobile Number" }));
-  //     setFmMob("");
-  //     setMobileStatus("invalid");
-  //     return;
-  //   }
-
-  //   // 5) Do not call API if year is missing
-  //   if (!yearValue) {
-  //     setErrors((prev) => ({ ...prev, mobile: "Year is missing" }));
-  //     setFmMob("");
-  //     setMobileStatus("invalid");
-  //     return;
-  //   }
-
-  //   try {
-  //     setErrors((prev) => ({ ...prev, mobile: "" }));
-  //     setMobileStatus("checking");
-  //     const res = await fetch(`${API_BASE}/chkLoginByMob`, {
-  //       method: "POST",
-  //       headers: { "Content-Type": "application/json" },
-  //       body: JSON.stringify({
-  //         yr: yearValue,
-  //         mobb: mobileValue,
-  //       }),
-  //     });
-  //     const data = await res.json();
-  //     // if (res.ok && data && data.famid && data.famnm) {
-  //     if (res.ok && data.success && data.famid && data.famnm) {
-  //       console.log(data.famid, data.famnm);
-  //       setFmMob(data.famid);
-  //       setFmDtt(data);
-  //       setMobileStatus("valid");
-  //       setErrors((prev) => ({ ...prev, mobile: "" }));
-  //       // focus email only after success
-  //       setTimeout(() => emlRef.current?.focus(), 100);
-  //     } else {
-  //       setFmMob("");
-  //       setFmDtt(null);
-  //       setMobileStatus("invalid");
-  //       setErrors((prev) => ({
-  //         ...prev,
-  //         mobile: mobileValue !== "" ? (data.message || "Unregistered Mobile Number") : ""
-  //       }));
-  //     }
-  //   } catch (err) {
-  //     console.error("Error fetching family data:", err);
-  //     setFmMob("");
-  //     setFmDtt(null);
-  //     setErrors((prev) => ({ ...prev, mobile: "Server error" }));
-  //     setMobileStatus("invalid");
-  //   }
-  // };
-
   //To auto-focus first OTP input when OTP section is shown, and also refocus if user clears all OTP inputs
   useEffect(() => {
-    const allEmpty = otpDigits.every((d) => d === "");
+    const allEmpty = otpDigits.every((d) => d === ""); //clear OTP array
 
     if (showOtpSection && allEmpty && shouldRefocusOtp.current) {
       const timer = setTimeout(() => {
@@ -341,17 +289,17 @@ export default function SignIn() {
     const onlyDigits = e.target.value.replace(/\D/g, "").slice(0, 11);
     setRegMob(onlyDigits);
     // clear dependent fields while editing
-    setFmMob("");
-    setFmDtt(null);
+    setFmMob(""); //clear mobile state
+    setFmDtt(null); //clear data state
     // setMobileStatus("");
   };
-  //To format remaining time in mm:ss for display
+  //To format remaining time in mm:ss for display to the user
   const formatTime = (seconds) => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
     return `${mins}:${String(secs).padStart(2, "0")}`;
   };
-  // To check the family login using email address
+  //To check the family login using email address
   useEffect(() => {
     const handleEmailBlur = async () => {
       const email = String(regEmll || "").trim();
@@ -389,6 +337,7 @@ export default function SignIn() {
         const res = await fetch(`${API_BASE}/chkLoginByEml`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
+          credentials: "include",
           body: JSON.stringify({
             yr: year,
             emll: email,
@@ -397,18 +346,18 @@ export default function SignIn() {
 
         const data = await res.json();
 
-        if (!res.ok || !data || !data.famid || !data.famnm || !data.emailAddrs )  {
+        if (!res.ok || !data || !data.famid || !data.famnm || !data.emailAddrs) {
           console.error("Backend returned error:", data);
           setFmEml("");
           setEmailStatus("invalid");
-          setErrors((prev) => ({ ...prev, email: data.message || "Server error", }));
+          setErrors((prev) => ({ ...prev, email: data.message || "Email address is not registered", }));
           return;
         }
 
-        if (data && data.famid && data.famnm && data.emailAddrs ) {
+        if (data && data.famid && data.famnm && data.emailAddrs) {
           setFmEml(data.emailAddrs);
           setFmDtt(data);
-          console.log("fmdtt",fmDtt)
+          console.log("fmdtt", fmDtt)
 
           // console.log(data.famid, data.famnm);
           setErrors((prev) => ({ ...prev, email: "" }));
@@ -448,7 +397,7 @@ export default function SignIn() {
 
       if (diff === 0) {
         setShowResendOtp(true);  //here to show resend when timer ends
-        setOtpError((prev) => prev || "Verification code expired. Please request a new OTP.");
+        setOtpError((prev) => prev || "Verification code expired. Please request a new one.");
       }
     };
 
@@ -459,48 +408,6 @@ export default function SignIn() {
     return () => clearInterval(interval);
   }, [otpExpiresAt, showOtpSection]);
 
-  // To check the family login using password
-  //useEffect(() => {
-  // const pswdExst = async () => {
-  //   if (!pss) return; // don’t run if empty
-  //   if (!pswdRegExp.test(pss)) {
-  //     setFmPss(""); // clear previous valid email
-  //     return;
-  //   }
-  //   // console.log(pss)
-  //   try {
-  //     //const res = await fetch("http://localhost:3000/api/chkLoginByPswd", {
-  //     const res = await fetch(`${API_BASE}/chkLoginByPswd`, {
-  //       method: "POST",
-  //       headers: { "Content-Type": "application/json" },
-  //       body: JSON.stringify({
-  //         yr: YrNmm,
-  //         pswd: pss,
-  //         email_reg: String(regEmll).trim(),
-  //         phone_reg: String(regMob).trim(),
-  //       }),
-  //     });
-
-  //     const data = await res.json();
-  //     console.log(data);
-
-  //     if (data && data.pswd && data.famid && data.famnm) {
-  //       setFmPss(data.pswd);
-  //       setFmEml(regEmll);
-  //       setFmMob(regMob);
-  //       setFmNmm(data.famnm)
-  //       setFmNo(data.famid)
-  //       console.log(fmno, fmnmm)
-  //       // console.log(fmpss)
-
-  //       //console.log( data.famid, data.famnm);
-  //     } else {
-  //       setFmPss("");
-  //     }
-  //   } catch (err) {
-  //     console.error("Error fetching family data:", err);
-  //   }
-  // };
   const pswdExst = async () => {
     if (!pss || pss.trim() === "") {
       setFmPss("");
@@ -520,6 +427,7 @@ export default function SignIn() {
       const res = await fetch(`${API_BASE}/chkLoginByPswd`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({
           yr: YrNmm,
           pswd: pss,
@@ -529,9 +437,9 @@ export default function SignIn() {
       });
 
       const data = await res.json();
-      console.log(data);
+      console.log(data , data.famid , data.pswd , data.famnm );
 
-      if (data && data.pswd && data.famid && data.famnm) {
+      if (data && res.ok  && data.pswd && data.famid && data.famnm) {
         setFmPss(data.pswd);
         setFmEml(regEmll);
         console.log("regmob", regMob)
@@ -550,90 +458,29 @@ export default function SignIn() {
       setErrors((prev) => ({ ...prev, password: "Server error" }));
     }
   };
-  //handleEmailBlur();
-  //}, [pss]); //
-
-
-  // // To check the family login using email address & mobile number
-  // //  useEffect(() => {
-  // const chkLogin = async () => {
-  //   const loginData = {
-  //     yr: YrNmm,
-  //     emll: regEmll,
-  //     mobb: regMob,
-
-  //   };
-  //   //console.log(loginData);
-
-  //   try {
-  //     //const res = await fetch("http://localhost:3000/api/chkLogin", {
-  //     const res = await fetch(`${API_BASE}/chkLogin`, {
-  //       method: "POST",
-  //       headers: { "Content-Type": "application/json" },
-  //       body: JSON.stringify({
-  //         yr: YrNmm,
-  //         emll: String(regEmll).trim(),
-  //         mobb: String(regMob).trim(),
-  //       }),
-  //     });
-
-  //     const data = await res.json();
-  //     // console.log(data);
-
-  //     if (data && data.famid && data.famnm) {
-  //       setFmDtt(data);
-  //       localStorage.setItem("curFmNo", data.famid)
-  //       localStorage.setItem("curFmNm", data.famnm)
-  //     } else {
-  //       setFmDtt("");
-  //     }
-  //   } catch (err) {
-  //     console.error("Error fetching family data:", err);
-  //   }
-  //   localStorage.setItem("curEmailAddress",regEmll)
-  //   handleVerifyCode() // trigger OTP verification after checking credentials
-  //   navigate('/fminfo')
-  // };
-
-  // // Call the function only when both fields are filled
-  // if (regEmll && regMob) {
-  //   chkLogin();
-  // }
-  //}, [regEmll, regMob]);
 
   // Auto-focus mobile input after the initial render, to improve user experience by allowing immediate typing without extra clicks
-  useEffect(() => {
-    if (mobRef.current) {
-      mobRef.current.focus();
-    }
-  }, []);
-  // console.log(String(pss).trim().toLowerCase())
-  // console.log(String(fmpss).trim().toLowerCase())
-  // console.log(errors.mobile)
-  // console.log(errors.email)
-  // console.log(regEmll)
-  // console.log(regMob)
-  // console.log(fmEml)
-  // console.log(fmMob)
-  // console.log(pswdRegExp.test(pss))
+  useEffect(() => {if (mobRef.current) {mobRef.current.focus();}}, []);
 
-  // Clear OTP inputs and their error state, then focus the first input for a fresh start, used after resend or failed attempts
-  const resetOtpAndFocusFirst = () => {
-    setOtpDigits(["", "", "", "", "", ""]);
-    setOtpError("");
+  // // Clear OTP inputs and their error state, then focus the first input for a fresh start, 
+  // // used after resend or failed attempts
+  // const resetOtpAndFocusFirst = () => {
+  //   setOtpDigits(["", "", "", "", "", ""]);
+  //   setOtpError("");
 
-    setTimeout(() => {
-      setTimeout(() => {
-        otpRefs.current[0]?.focus();
-      }, 0);
-    }, 0);
-  };
+  //   setTimeout(() => {
+  //     setTimeout(() => {
+  //       otpRefs.current[0]?.focus();
+  //     }, 0);
+  //   }, 0);
+  // };
 
-  // Handle resend OTP flow, with similar logic to initial login but only for OTP
+  //Handle resend OTP flow, with similar logic to initial login but only for OTP
   const resetOtpAndFocus = () => {
     shouldRefocusOtp.current = true;
     setOtpDigits(["", "", "", "", "", ""]);
   };
+
   //Handle login submission using email, mobile and password, then trigger OTP flow if credentials are valid
   // console.log("API_BASE in SignIn.jsx:", API_BASE);
   const handleLoginChk = async () => {
@@ -644,7 +491,7 @@ export default function SignIn() {
       const res = await fetch(`${API_BASE}/loginchk`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        //credentials: "include",
+        credentials: "include",
         body: JSON.stringify({
           yr: YrNmm,
           emll: String(regEmll).trim(),
@@ -681,10 +528,8 @@ export default function SignIn() {
         setOtpExpiresAt(data.expiresAt || null);
         setMaxAttempts(data.maxAttempts || 3);
         setAttemptsLeft(data.maxAttempts || 3);
-
-        setTimeout(() => {
-          otpRefs.current[0]?.focus();
-        }, 100);
+        
+        setTimeout(() => {otpRefs.current[0]?.focus();}, 100);
         messageApi.open({
           type: "success",
           content: "Verification code sent to your email",
@@ -698,81 +543,20 @@ export default function SignIn() {
 
       messageApi.open({
         type: "error",
-        content: "Unexpected login response"
+        content: "Unexpected login response (loginchk API)"
       });
       setIsSubmittingLogin(false);
 
     } catch (err) {
-      console.error("Login error:", err);
+      console.error("Login error (loginchk API):", err);
       messageApi.open({
         type: "error",
-        content: "Server error"
+        content: "Server error (loginchk API)"
       });
       setIsSubmittingLogin(false);
     }
   };
 
-  //Unified handler for OTP input changes, auto-focus, and paste support
-  const handleOtpChange = (value, index) => {
-    const digit = value.replace(/\D/g, "").slice(-1);
-
-    const newOtp = [...otpDigits];
-    newOtp[index] = digit;
-    setOtpDigits(newOtp);
-    setOtpError("");
-
-    if (digit && index < 5) {
-      otpRefs.current[index + 1]?.focus();
-    }
-
-    // if (digit && index === 5) {
-    //   const fullCode = newOtp.join("");
-
-    //   if (fullCode.length === 6 && !newOtp.includes("") && !isVerifyingCode) {
-    //     setTimeout(() => {
-    //       handleVerifyCode(fullCode);
-    //     }, 100);
-    //   }
-    // }
-    if (digit && index === 5) {
-      const fullCode = newOtp.join("");
-      // console.log("Last digit entered:", digit);
-      // console.log("newOtp:", newOtp);
-      // console.log("fullCode:", fullCode);
-      // console.log("includes empty?", newOtp.includes(""));
-
-      if (!newOtp.includes("")) {
-        setTimeout(() => {
-          console.log("Triggering auto verify...");
-          handleVerifyCode(fullCode);
-        }, 150);
-      }
-    }
-  };
-  // Handle backspace to move focus back
-  const handleOtpKeyDown = (e, index) => {
-    // if backspace on empty input, move to previous
-    if (e.key === "Backspace" && !otpDigits[index] && index > 0) {
-      otpRefs.current[index - 1]?.focus();
-    }
-  };
-  // Handle paste of full OTP code
-  const handleOtpPaste = (e) => {
-    e.preventDefault();
-    const pasted = e.clipboardData.getData("text").replace(/\D/g, "").slice(0, 6);
-
-    if (!pasted || pasted.length !== 6) return;
-    const newOtp = ["", "", "", "", "", ""];
-
-    for (let i = 0; i < pasted.length; i++) {
-      newOtp[i] = pasted[i];
-    }
-    setOtpDigits(newOtp);
-    const nextIndex = Math.min(pasted.length, 5);
-    otpRefs.current[nextIndex]?.focus();
-  };
-  // Combine OTP digits into a single code string for submission
-  const verificationCode = otpDigits.join("");
   //Handle OTP verification submission, then finalize login if OTP is valid
   const handleVerifyCode = async (codeOverride = null) => {
     if (isVerifyingCode) return;
@@ -790,6 +574,7 @@ export default function SignIn() {
       const res = await fetch(`${API_BASE}/verify-login-code`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({
           verificationToken,
           code: codeToVerify.trim()
@@ -829,26 +614,40 @@ export default function SignIn() {
         type: "success",
         content: "Login to our portal is successful"
       });
-      login(data.user);
+
+      login(data.user, data.expiresAt);
       //calling biometric registration after successful OTP login,
       // to allow users to opt-in for biometric login in the future if they choose,
       // using WebAuthn library and backend endpoints
-      // await registerBiometric();
+      // await registerWebAuthn();
       if (enableBiometric) {
         console.log("enable Biometric:", enableBiometric);
         localStorage.setItem("biometricEnabled", "true");
         localStorage.setItem("lastFamilyId", fmDtt.famid);
         localStorage.setItem("lastFamilyEmail", fmDtt.emailAddrs);
         localStorage.setItem("mob_noo", fmDtt.mobb);
-        await registerBiometric();
+
+        //await registerWebAuthn();
+        // if (Capacitor.isNativePlatform()) {
+        //     await registerNativeBiometric();
+        // } else {
+        //     await registerWebAuthn();
+        // }        
+        await enableBiometricLogin({
+          famid: fmDtt.famid,
+          email: fmDtt.emailAddrs,
+          mobile: fmDtt.mobb,
+          registerWebAuthn,
+          registerNativeBiometric
+        });        
       } else {
         console.log("enable Biometric:", enableBiometric);
         localStorage.setItem("biometricEnabled", "false");
       }
       // Optional: store session ID or token if returned by backend for future authenticated requests
-      sessionStorage.setItem("sessionId", data.sessionId);
+      //sessionStorage.setItem("sessionId", data.sessionId);
       // // After successful OTP verification, you can choose to register biometric for future logins
-      // await registerBiometric();
+      // await registerWebAuthn();
       // // Finally, navigate to the protected area - Family Info page
       // navigate("/fminfo");
     } catch (err) {
@@ -860,80 +659,70 @@ export default function SignIn() {
     }
   };
 
-  // Handle biometric login flow using WebAuthn library in the browser and backend endpoints, as an alternative to OTP
-  // const handleBiometricLogin = async () => {
-  //   try {
-  //     // Step 1: get challenge from backend
-  //     const optionsRes = await fetch(`${API_BASE}/webauthn/login-options`, {
-  //       method: "POST",
-  //       headers: { "Content-Type": "application/json" },
-  //       body: JSON.stringify({
-  //         mobb: regMob,   // or famid if already known
-  //         yr: YrNmm
-  //       })
-  //     });
+  //Unified handler for OTP input changes, auto-focus, and paste support
+  const handleOtpChange = (value, index) => {
+    const digit = value.replace(/\D/g, "").slice(-1);
 
-  //     const options = await optionsRes.json();
+    const newOtp = [...otpDigits];
+    newOtp[index] = digit;
+    setOtpDigits(newOtp);
+    setOtpError("");
 
-  //     // Step 2: trigger biometric prompt
-  //     const authResp = await startAuthentication(options);
+    if (digit && index < 5) {
+      otpRefs.current[index + 1]?.focus();
+    }
 
-  //     // Step 3: verify on backend
-  //     const verifyRes = await fetch(`${API_BASE}/webauthn/login-verify`, {
-  //       method: "POST",
-  //       headers: { "Content-Type": "application/json" },
-  //       body: JSON.stringify(authResp)
-  //     });
+    if (digit && index === 5) {
+      const fullCode = newOtp.join("");
+      // console.log("Last digit entered:", digit);
+      // console.log("newOtp:", newOtp);
+      // console.log("fullCode:", fullCode);
+      // console.log("includes empty?", newOtp.includes(""));
 
-  //     const data = await verifyRes.json();
+      if (!newOtp.includes("")) {
+        setTimeout(() => {
+          console.log("Triggering auto verify...");
+          handleVerifyCode(fullCode);
+        }, 150);
+      }
+    }
+  };
+  // Handle backspace to move focus back
+  const handleOtpKeyDown = (e, index) => {
+    // if backspace on empty input, move to previous
+    if (e.key === "Backspace" && !otpDigits[index] && index > 0) {
+      otpRefs.current[index - 1]?.focus();
+    }
+  };
+  // Handle paste of full OTP code
+  const handleOtpPaste = (e) => {
+    e.preventDefault();
+    const pasted = e.clipboardData.getData("text").replace(/\D/g, "").slice(0, 6);
 
-  //     if (data.success) {
-  //       messageApi.success("Biometric login successful");
+    if (!pasted || pasted.length !== 6) return;
+    const newOtp = ["", "", "", "", "", ""];
 
-  //       login(data.user);
-  //       sessionStorage.setItem("sessionId", data.sessionId);
+    for (let i = 0; i < pasted.length; i++) {
+      newOtp[i] = pasted[i];
+    }
+    setOtpDigits(newOtp);
+    const nextIndex = Math.min(pasted.length, 5);
+    otpRefs.current[nextIndex]?.focus();
+  };
+  // Combine OTP digits into a single code string for submission
+  const verificationCode = otpDigits.join("");
+  //start handlers for the biometric login: registration & verification
+  const registerWebAuthn = async () => {
+    if (!browserSupportsWebAuthn()) {
+      console.log("WebAuthn is not supported on this device");
+      return;
+    }
 
-  //       navigate("/fminfo");
-  //     } else {
-  //       messageApi.error(data.message || "Biometric login failed");
-  //     }
-
-  //   } catch (err) {
-  //     console.error(err);
-  //     messageApi.error("Biometric authentication failed");
-  //   }
-  // };
-
-  // // Handle biometric registration flow to enable biometric login for future, using WebAuthn library and backend endpoints
-  // const registerBiometric = async () => {
-  //   const { startRegistration } = await import("@simplewebauthn/browser");
-
-  //   const optionsRes = await fetch(`${API_BASE}/webauthn/register-options`, {
-  //     method: "POST",
-  //     headers: { "Content-Type": "application/json" },
-  //     body: JSON.stringify({
-  //       userId: fmDtt.famid,
-  //       email: regEmll
-  //     })
-  //   });
-
-  //   const options = await optionsRes.json();
-
-  //   const attResp = await startRegistration(options);
-
-  //   await fetch(`${API_BASE}/webauthn/register-verify`, {
-  //     method: "POST",
-  //     headers: { "Content-Type": "application/json" },
-  //     body: JSON.stringify(attResp)
-  //   });
-
-  //   messageApi.success("Biometric login enabled");
-  // };
-  //handle biometric registration after successful OTP login, to allow users to opt-in for biometric login in the future if they choose, using WebAuthn library and backend endpoints
-  const registerBiometric = async () => {
+    console.log(isNativeApp);    
     const res = await fetch(`${API_BASE}/webauthn/register-options`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
+      credentials: "include",
       body: JSON.stringify({
         famid: fmno,
         email: regEmll,
@@ -947,6 +736,7 @@ export default function SignIn() {
     await fetch(`${API_BASE}/webauthn/register-verify`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
+      credentials: "include",
       body: JSON.stringify({
         famid: fmno,
         email: regEmll,
@@ -955,9 +745,7 @@ export default function SignIn() {
       })
     });
   };
-  const getFamilyLogin = async() =>{
 
-  }
   const handleBiometricLogin = async () => {
     const isBioEnabled = localStorage.getItem("biometricEnabled") === "true";
     const famid = localStorage.getItem("lastFamilyId");
@@ -965,10 +753,10 @@ export default function SignIn() {
     const mob_noo = localStorage.getItem("mob_noo")
     console.log("Biometric enabled:", isBioEnabled, "fmMob:", regMob, "regEmll:", fmEmail, "famid:", famid);
     if (!isBioEnabled) {
-    if (!mob_noo || !fmEmail || !famid || !isBioEnabled) {
-      antdMessage.error("Enter mobile & email first");
-      return;
-    }
+      if (!mob_noo || !fmEmail || !famid || !isBioEnabled) {
+        antdMessage.error("Enter mobile & email first");
+        return;
+      }
     }
     if (isBioEnabled) {
       if (!famid || !fmEmail || !mob_noo) {
@@ -977,10 +765,11 @@ export default function SignIn() {
       }
     }
     try {
-      console.log("login-verify-params",famid, fmEmail, mob_noo )
+      console.log("login-verify-params", famid, fmEmail, mob_noo)
       const res = await fetch(`${API_BASE}/webauthn/login-options`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({
           famid: famid,
           email: fmEmail,
@@ -995,15 +784,16 @@ export default function SignIn() {
         antdMessage.error("No biometric registered");
         return;
       }
-      console.log("allowCredentials_line986:", options.allowCredentials);
+      console.log("allowCredentials_line787:", options.allowCredentials);
       // const authResp = await startAuthentication(options);
       const authResp = await startAuthentication({
         optionsJSON: options,
-      });      
+      });
       console.log("Biometric authentication response:", authResp);
       const verifyRes = await fetch(`${API_BASE}/webauthn/login-verify`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({
           famid: famid,
           email: fmEmail,
@@ -1015,16 +805,15 @@ export default function SignIn() {
       const data = await verifyRes.json();
       console.log("Biometric login verify response:", data);
       console.log("Biometric login verify response success:", data.success);
-      console.log(famid,fmEmail, mob_noo)
+      console.log(famid, fmEmail, mob_noo)
 
       if (data.success) {
-        sessionStorage.setItem("sessionId", data.sessionId);
+        //sessionStorage.setItem("sessionId", data.sessionId);
         //here call the handler which get the user data object to be passed to fminfo component --ahmed
         const familyRes = await fetch(`${API_BASE}/api/getFamilyLogin`, {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
+          headers: {"Content-Type": "application/json",},
+          credentials: "include",
           body: JSON.stringify({
             famid,
             email: fmEmail,
@@ -1039,8 +828,27 @@ export default function SignIn() {
           antdMessage.error("Unable to load family information");
           return;
         }
+        console.log("========== BEFORE AUTH LOGIN ==========");
+        console.log("familyData:", familyData);
+        console.log("familyData.expiresAt:", familyData.expiresAt);
+        console.log("familyData.expiresAt type:", typeof familyData.expiresAt);
+        console.log("Browser current time:", new Date().toString());
+        console.log("Browser current ISO:", new Date().toISOString());
 
-        login(familyData.user);
+        if (familyData.expiresAt) {
+            const expiryTimer = new Date(familyData.expiresAt).getTime();
+
+            console.log("Parsed expiry:", new Date(expiryTimer).toString());
+            console.log("Parsed expiry ISO:", new Date(expiryTimer).toISOString());
+            console.log("Remaining:", expiryTimer - Date.now());
+            console.log(
+                "Remaining seconds:",
+                Math.round((expiryTimer - Date.now()) / 1000)
+            );
+        }
+
+        console.log("========================================");
+        login(familyData.user, familyData.expiresAt);
         navigate("/fminfo");
       } else {
         antdMessage.error("Biometric login failed");
@@ -1051,6 +859,32 @@ export default function SignIn() {
       antdMessage.error("Biometric error");
     }
   };
+  // Handle native biometric registration for mobile apps using Capacitor and device biometrics, after successful OTP login
+  const registerNativeBiometric = async () => {
+    try {
+      const result = await authenticateWithBiometric();
+
+      console.log("Native biometric authentication:", result);
+
+      // Save only AFTER successful authentication
+      localStorage.setItem("biometricEnabled", "true");
+      localStorage.setItem("lastFamilyId", fmDtt.famid);
+      localStorage.setItem("lastFamilyEmail", fmDtt.emailAddrs);
+      localStorage.setItem("mob_noo", fmDtt.mobb);
+
+      setBiometricRegistered(true);
+
+      messageApi.success("Fingerprint login enabled successfully.");
+
+      return true;
+    } catch (err) {
+      console.error(err);
+
+      messageApi.error("Fingerprint registration was cancelled.");
+
+      return false;
+    }
+};
   //Create a unified submit handler that checks the login credentials first, then triggers OTP verification if valid, or directly finalizes login if OTP step is not needed
   const handleSubmitAction = async () => {
     if (!isOtpStep) {
@@ -1114,7 +948,7 @@ export default function SignIn() {
         headers: {
           "Content-Type": "application/json"
         },
-        //credentials: "include",
+        credentials: "include",
 
         body: JSON.stringify({
           verificationToken
@@ -1207,14 +1041,14 @@ export default function SignIn() {
             >
               Sign in using Biometric
             </button> */}
-          <button
-            type="button"
-            className="biobtn fingerprint-btn"
-            onClick={handleBiometricLogin}
-            title="Sign in with Fingerprint / Face ID"
-          >
-            <FontAwesomeIcon icon={faFingerprint} size="4x"/>
-          </button>
+            <button
+              type="button"
+              className="biobtn fingerprint-btn"
+              onClick={handleBiometricLogin}
+              title="Sign in with Fingerprint / Face ID"
+            >
+              <FontAwesomeIcon icon={faFingerprint} size="4x" />
+            </button>
             {/* <button
               type="button"
               className="disbtn"
@@ -1251,7 +1085,7 @@ export default function SignIn() {
                   const value = e.target.value.replace(/\D/g, "").slice(0, 11);
 
                   setMobTouched(true);
-                  setRegMob(value);
+                  setRegMob(e.target.value);
 
                   // reset dependent state ONLY when editing
                   if (value.length < 11) {
@@ -1436,6 +1270,25 @@ export default function SignIn() {
                 >
                   Enable biometric login on this device
                 </Checkbox>
+                {/* if (!isBiometricEnabled()) {
+                    Modal.confirm({
+                        title: "Enable Fingerprint Login?",
+                        content:
+                            "Use your fingerprint to sign in faster next time.",
+                        okText: "Enable",
+                        cancelText: "Not Now",
+                        async onOk() {
+                        await enableBiometric({
+                            famid: fmDtt.famid,
+                            email: fmDtt.emailAddrs,
+                            mobile: fmDtt.mobb,
+                            registerWebAuthn,
+                            registerNativeBiometric
+                        });        
+                        }
+                    })
+
+                }                 */}
 
                 {enableBiometric && !biometricRegistered && (
                   <button
@@ -1451,7 +1304,7 @@ export default function SignIn() {
                     //   padding: "5px 10px !important",
                     // }}
                     // onClick={handleBiometricRegister}
-                    // onClick={registerBiometric}
+                    // onClick={registerWebAuthn}
                     // console.lo("emailll",fmDtt.emailAddrs);
 
                     onClick={async () => {
@@ -1462,9 +1315,8 @@ export default function SignIn() {
                         localStorage.setItem("lastFamilyId", fmDtt.famid);
                         localStorage.setItem("lastFamilyEmail", fmDtt.emailAddrs);
                         localStorage.setItem("mob_noo", fmDtt.mobb);
-                        await registerBiometric();
+                        await registerWebAuthn();
                       }
-
                       navigate("/fminfo");
                     }}
                   >

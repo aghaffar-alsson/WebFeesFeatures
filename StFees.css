@@ -233,11 +233,6 @@
     margin: 5mm !important; /* small margins to maximize space */
   }
   /* Hide everything by default */
-  body * {
-    visibility: hidden;
-    margin: 0;
-    padding: 0;
-  }
 
   /* Make only the printable container visible */
   .cont, .cont * {

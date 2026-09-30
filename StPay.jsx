@@ -69,9 +69,10 @@ export default function StPay({ userData }) {
     try {
       // const res = await fetch("http://localhost:3000/api/getstpayhist", {
       const res = await fetch(`${API_BASE}/getstpayhist`, {
+        credentials: "include" ,
         headers: {
           "Content-Type": "application/json" ,
-          "x-session-id": sessionStorage.getItem("sessionId")
+          //"x-session-id": sessionStorage.getItem("sessionId")
         },        
         method: "POST",
         

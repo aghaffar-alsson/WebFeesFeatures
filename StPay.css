@@ -150,9 +150,9 @@
 }
 
 @media print {
-  body * {
+  /* body * {
     visibility: hidden;
-  }
+  } */
 
   .paycont,
   .paycont * {

@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { Button } from "@mui/material";
+//import { Button } from "antd";
 import axios from "axios";
 import "./CheckoutPage.css";
 import imgg from './img/logoo.jpg'
@@ -9,6 +10,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faHouse , faLock } from "@fortawesome/free-solid-svg-icons";
 const { useBreakpoint } = Grid;
+const backendUrl = import.meta.env.VITE_PAYFORT_BACKEND;
 
 function formatDec(value) {
   if (value === null || value === undefined || Number.isNaN(Number(value))) return "-";
@@ -31,13 +33,14 @@ function ApsMerchantSection({
   curFamilyNo,
   curFamilyName,
   fullName,
+  paymentDesc,
 }) {
 
   const screens = useBreakpoint();
   const isSmallScreen = !screens.md;
 
   const [loading, setLoading] = useState(false);
-  console.log("ApsMerchantSection props:", { email, paymentItems, finalTotal, schoolNoo, curStudID, curStudName, curYgpName, curFamilyNo, curFamilyName, fullName });
+  console.log("ApsMerchantSection props:", { email, paymentItems, finalTotal, schoolNoo, curStudID, curStudName, curYgpName, curFamilyNo, curFamilyName, fullName , paymentDesc});
   const handlePay = async () => {
     try {
       setLoading(true);
@@ -59,6 +62,7 @@ function ApsMerchantSection({
       console.log("Student ID:", curStudID);
       console.log("Student Name:", curStudName);
       console.log("Year Group:", curYgpName);
+      console.log("Description:", paymentDesc);
 
       // const res = await axios.post(
       //   "https://my-payfort-backend.onrender.com/createFormPayLoad",
@@ -79,7 +83,6 @@ function ApsMerchantSection({
       //     fullName: fullName || "",
       //   }
       // );
-      const backendUrl = import.meta.env.VITE_PAYFORT_BACKEND;
 
       if (!backendUrl) {
         throw new Error("VITE_PAYFORT_BACKEND is not defined");
@@ -102,6 +105,7 @@ function ApsMerchantSection({
           familyNo: curFamilyNo || null,
           familyName: curFamilyName || "",
           fullName: fullName || "",
+          paymentDesc: paymentDesc || "",
         }
       );
       const payfortData = res.data;
@@ -239,6 +243,8 @@ function ApsMerchantSection({
 export default function CheckoutPage(userData = { userData }) {
   const { state } = useLocation();
   const navigate = useNavigate();
+  console.log("Using backend URL:", backendUrl);
+
   console.log("CheckoutPage received state:", state);
   // IMPORTANT: state only (no sessionStorage fallback)
   const checkoutData = state;
@@ -266,6 +272,7 @@ export default function CheckoutPage(userData = { userData }) {
     schoolNoo = "",
     schoolNmm = "",
     fullName = "",
+    paymentDesc= "",
   } = checkoutData;
 
   const [paymentItems] = useState(initialPaymentItems);
@@ -370,6 +377,7 @@ export default function CheckoutPage(userData = { userData }) {
         curFamilyNo={curFamilyNo}
         curFamilyName={curFamilyName}
         fullName={fullName}
+        paymentDesc={paymentDesc}
       />
     </div>
   );

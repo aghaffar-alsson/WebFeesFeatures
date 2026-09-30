@@ -34,13 +34,15 @@ export default function FeesHist() {
         method: "POST",
           headers: {
             "Content-Type": "application/json",
-            "x-session-id": sessionStorage.getItem("sessionId") // Include session ID in headers for authentication
+            //"x-session-id": sessionStorage.getItem("sessionId") // Include session ID in headers for authentication,
+            credentials: "include", 
           },        
           body: JSON.stringify({
           famid: curFamilyNo,
           curstid: curStudID,
           onlyRem: onlyRem,
         }),
+        //credentials: "include",
       });
       const data = await res.json();
       //console.log(Array.isArray(data))

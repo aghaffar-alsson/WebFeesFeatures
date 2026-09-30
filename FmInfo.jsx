@@ -30,7 +30,7 @@ export default function FmInfo() {
   const CurFmNo = userData?.famid //|| localStorage.getItem("loggedFamid");
   const CurFmNm = userData?.famnm //|| localStorage.getItem("loggedFamNm");
   const emll = userData?.emll || "" //to get the email from userData & pass it to the API for fetching family info, if not available then pass empty string
-  // const yrNo = '2025'
+  // const yrNo = '2026'
   const yrNo = import.meta.env.VITE_CUR_YEAR
   const { Meta } = Card;
   const navigate = useNavigate()
@@ -44,8 +44,9 @@ export default function FmInfo() {
 
   //here we use the custom hook to get the openExternal function
   const openExternal = useExternalLink();
-  const sessionId = sessionStorage.getItem("sessionId");
-  console.log("Session ID in FmInfo:", sessionId);
+  // const sessionId = sessionStorage.getItem("sessionId");
+  //const sessionId = req.cookies["fees.sid"] || req.headers["x-session-id"];
+  // console.log("Session ID in FmInfo:", sessionId);
   //console.log(yrNo)
 
   //To get the family info and students info based on the family number and name stored in localStorage when the component mounts or when CurFmNo or CurFmNm changes
@@ -60,16 +61,16 @@ export default function FmInfo() {
     try {
       // const res = await fetch("http://localhost:3000/api/sp_GetFmInfo", {
       const res = await fetch(`${API_BASE}/sp_GetFmInfo`, {
-        headers: {
-          "Content-Type": "application/json",
-          "x-session-id": sessionId // Include session ID in headers for authentication
-        },
         method: "POST",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json"
+        },
         body: JSON.stringify({
-          yrNo: yrNo,
-          CurFmNo: CurFmNo,
-          eml: emll || "" // Include email from userData if available
-        }),
+          yrNo: yrNo
+          // CurFmNo: CurFmNo,
+          // eml: emll || ""
+        })
       });
       const data = await res.json();
       //console.log(Array.isArray(data))
@@ -141,8 +142,8 @@ export default function FmInfo() {
     sessionStorage.removeItem("isAuthenticated");
     sessionStorage.removeItem("userData");
 
-    setIsAuthenticated(false);
-    setUserData(null);
+    //setIsAuthenticated(false);
+    //setUserData(null);
 
     navigate("/signin");
   };
@@ -179,8 +180,8 @@ export default function FmInfo() {
       <div className="fmm">
         <div className="logout" style={{ display: "flex", alignItems: "flex-end", marginLeft: "auto", justifyContent: "flex-end" }}>
           <Tooltip title="Logout">
-            {/* <Button type="primary"  onClick={() => {handleLogout()}}><i className="fa-solid fa-right-from-bracket"></i>Logout</Button> */}
-            <Button type="primary" onClick={() => { logout() }}><i className="fa-solid fa-right-from-bracket"></i>Logout</Button>
+            <Button type="primary"  onClick={() => {handleLogout()}}><i className="fa-solid fa-right-from-bracket"></i>Logout</Button>
+            {/* <Button type="primary" onClick={() => { logout() }}><i className="fa-solid fa-right-from-bracket"></i>Logout</Button> */}
           </Tooltip>
         </div>
         <strong>Family ID: {CurFmNo} </strong>

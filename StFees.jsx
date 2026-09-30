@@ -7,6 +7,7 @@ import Checkbox from 'antd/es/checkbox/Checkbox';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faHouse , faPrint } from '@fortawesome/free-solid-svg-icons'
 import axios from "axios";
+// import { join } from 'path';
 const { useBreakpoint } = Grid;
 
 export default function StFees({ userData }) {
@@ -39,7 +40,9 @@ export default function StFees({ userData }) {
   console.log("onlyRem value from location state:", onlyRem);
   // const curEmailAddress = location.state?.curEmailAddress;
   const curEmailAddress = userData?.emll || location.state?.curEmailAddress || "";
+
   const [selectedRows, setSelectedRows] = useState([]);
+
   const [stfeesmtrx, setStFeesMtrx] = useState([])
   const [selectedBnk, setSelectedBnk] = useState(0);
   const [bnks, setBnks] = useState([]);
@@ -49,6 +52,7 @@ export default function StFees({ userData }) {
   const [famnm, setFamNm] = useState("");
   const [stID, setStID] = useState("");
   const [fullName, setFullName] = useState("");
+  // const [paymentDesc, setPaymentDesc] = useState("");
   const [ygpNm, setYgpNm] = useState("");
   const [instName, setInstName] = useState("");
   const [instAm, setInstAm] = useState(0);
@@ -101,7 +105,7 @@ export default function StFees({ userData }) {
 
   // const handlePrint = useReactToPrint({
   // content: () => feesReff.current,
-  // documentTitle: 'Student Fees Report - 2025-2026',
+  // documentTitle: 'Student Fees Report - 2026-2027',
   // onBeforeGetContent: () => console.log("Preparing content for print:", feesReff.current),
   // onAfterPrint: () => message.success('PDF successfully generated!'),
   // });
@@ -123,9 +127,10 @@ export default function StFees({ userData }) {
       // const res = await fetch("http://localhost:3000/api/getstfees", {
       const res = await fetch(`${API_BASE}/getstfees`, {
         method: "POST",
+        credentials: "include" ,
         headers: {
           "Content-Type": "application/json",
-          "x-session-id": sessionStorage.getItem("sessionId") // Include session ID in headers for authentication
+          //"x-session-id": sessionStorage.getItem("sessionId") // Include session ID in headers for authentication
         },        
         body: JSON.stringify({
           famid: curFamilyNo,
@@ -359,14 +364,14 @@ const handleUserSelection = (record, index, checked) => {
   //   const parts = facename.split("_");
   //   return parts.length > 1 ? Number(parts[1]) : null;
   // };
-// Get installment code from facename like: schoolfees_1_2025
+// Get installment code from facename like: schoolfees_1_2026
   const getInstCodeFromFaceName = (facename) => {
     if (!facename) return null;
 
     const parts = facename.split("_");
     return parts.length >= 3 ? Number(parts[1]) : null;
   };
-  // schoolfees_1_2025  => 2025
+  // schoolfees_1_2026  => 2026
   const getCurYearFromFaceName = (facename) => {
     if (!facename) return null;
 
@@ -757,8 +762,9 @@ const handleUserSelection = (record, index, checked) => {
       try {
         // const res = await fetch("http://localhost:3000/api/banks");
         const res = await fetch(`${API_BASE}/banks`, {
+          credentials: "include" ,
           headers: {
-            "x-session-id": sessionStorage.getItem("sessionId")
+            //"x-session-id": sessionStorage.getItem("sessionId")
           }
         });
         const bnkdata = await res.json();
@@ -791,10 +797,12 @@ const handleUserSelection = (record, index, checked) => {
     try {
       // const res = await fetch(`http://localhost:3000/api/bankdet/${bnkId}`);
       const res = await fetch(`${API_BASE}/bankdet/${bnkId}`, {
+        credentials: "include" ,
         headers: {
-          "x-session-id": sessionStorage.getItem("sessionId")
-        }
+          //"x-session-id": sessionStorage.getItem("sessionId")
+        },
       });
+
       const bnkDetData = await res.json();
       //console.log(bnkDetData[0])
       if (bnkDetData && bnkDetData[0].BANKID && bnkDetData[0].BANKNAME && bnkDetData[0].AMACCNO && bnkDetData[0].AMACCNM
@@ -930,7 +938,7 @@ const handleUserSelection = (record, index, checked) => {
   //   printWindow.document.write(`
   //     <html>
   //       <head>
-  //         <title>Fees Form for 2025-2026 - ${schoolName}</title>
+  //         <title>Fees Form for 2026-2027 - ${schoolName}</title>
   //         <style>
   //           @page {
   //             size: A4 portrait;
@@ -971,7 +979,7 @@ const handleUserSelection = (record, index, checked) => {
   //           <img id="schoolLogo" src="${schoolLogo}" alt="School Logo" />
   //           <img id="bankLogo" src="${bankLogo}" alt="Bank Logo" />
   //         </div>
-  //         <div class="print-title">Bank Form - Academic Year: 2025-2026</div>
+  //         <div class="print-title">Bank Form - Academic Year: 2026-2027</div>
   //         <div class="print-title">${schoolName} SCHOOL</div>
   //         <div class="hdr">
   //           <h5 class="graytxt">|*************************Student Info.*********************************|</h5>
@@ -1064,8 +1072,10 @@ const handleUserSelection = (record, index, checked) => {
       console.log("Logging bank form print:", payload);
 
       await axios.post(`${API_BASE}/log-bankform-print`, payload,{
+        credentials: "include" , 
         headers: {
-        "x-session-id": sessionStorage.getItem("sessionId")
+        //"x-session-id": sessionStorage.getItem("sessionId")
+
         }},
       );
 
@@ -1314,6 +1324,14 @@ const getSelectedTotal = () => {
           //   })
           // );
           // navigate("/checkoutpage");
+          const originalDescription = curStudID+' '+curStudName+' '+selectedInstallmentsString
+          //const paymentDesc = curStudID.concat("_", selectedInstallmentsString); 
+          const paymentDesc = originalDescription
+            .replace(/[\r\n\t]/g, " ")
+            .replace(/\s+/g, " ")
+            .replace(/[^A-Za-z0-9 _-]/g, "")
+            .trim()
+            .substring(0, 150);          
           navigate("/checkoutpage", {
             state: {
               paymentItems,
@@ -1327,7 +1345,8 @@ const getSelectedTotal = () => {
               curFamilyName,
               schoolNoo,
               schoolNmm,
-              fullName
+              fullName,
+              paymentDesc,
             }
           });
         }}

@@ -217,7 +217,8 @@ export default function CheckoutResult() {
 
       const res = await axios.post(`${API_BASE}/send-receipt-email`, payload,{
         headers: {
-        "x-session-id": sessionStorage.getItem("sessionId")
+          //"x-session-id": sessionStorage.getItem("sessionId"),
+          credentials: "include" 
         }},
       );
       console.log(res.data);

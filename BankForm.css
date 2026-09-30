@@ -180,11 +180,11 @@ h5 {
 } */
 
 @media print {
-  body * {
+  /* body * {
     visibility: hidden !important;
-    /* margin: 0 !important;
-    padding: 0 !important; */
-  }
+    margin: 0 !important;
+    padding: 0 !important;
+  } */
 
   .bnkfrmcont,
   .bnkfrmcont * {

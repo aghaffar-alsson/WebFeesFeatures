@@ -19,6 +19,7 @@ import PssForgot from "../PssForgot.jsx";
 import { openExternal } from "../openExternal.js";
 import { useExternalLink } from "../useExternalLink.js";
 import { useAuth } from "./AuthContext.jsx";
+import TbPrint from '../TbPrint.jsx';
 // import ProtectedRoute from '../ProtectedRoute.jsx';
 const API_BASE = import.meta.env.VITE_API_BASE;
 const { Text } = Typography;
@@ -460,6 +461,14 @@ function App() {
           }
         />
         <Route
+          path="/tbprint"
+          element={
+            <ProtectedRoute>
+              <TbPrint />
+            </ProtectedRoute>
+          }
+        />
+        <Route
           path="/stpayhist"
           element={
             <ProtectedRoute>
@@ -500,7 +509,7 @@ function App() {
       <span className="tkt-lnk">For Fees Lists, Visit this link: 
         <strong>
           <a href="http://fees.alsson.com/" target="_blank" 
-          rel="noopener noreferrer" style={{marginLeft:"10px"}}>Fees Table 2025-2026</a>
+          rel="noopener noreferrer" style={{marginLeft:"10px"}}>Fees Table 2026-2027</a>
         </strong>
       </span>
     </div>
